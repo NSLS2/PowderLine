@@ -62,26 +62,47 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'dev']  # dev/ = in-repo
 # Treat missing cross-reference targets as warnings (not silently ignored)
 nitpicky = True
 
-# RefinementParameter fields are `Annotated[tuple[...], PlainSerializer(...)]`.
-# Sphinx's type-hint renderer expands the PlainSerializer repr into bogus
-# sub-references (its keyword args and the fully-expanded Annotated/list/dict
-# forms) that can never resolve to real objects. Silence just those synthetic
-# targets; genuine unresolved references still warn normally.
-nitpick_ignore_regex = [
-    ('py:class', r'^func=.*$'),
-    ('py:class', r'^return_type=.*$'),
-    ('py:class', r'^when_used=.*$'),
-    ('py:class', r'.*PlainSerializer.*'),
-    ('py:obj', r'.*PlainSerializer.*'),
-    ('py:class', r'^ConfigDict$'),
+# cases with out a link target
+nitpick_ignore = [
+    # pandas' public docs index `pandas.DataFrame`, but runtime type hints
+    # resolve to its internal module path; the pandas intersphinx inventory
+    # has no entry for the latter.
+    ('py:class', 'pandas.core.frame.DataFrame'),
+    # pydantic's `Field(gt=..., ge=...)` constraints are implemented via
+    # `annotated_types.Gt`/`Ge` metadata; the package has no published Sphinx
+    # inventory to link against.
+    ('py:class', 'annotated_types.Gt'),
+    ('py:class', 'annotated_types.Ge'),
+    # `RefinementParameter`'s auto-generated "alias of Annotated[...]" line
+    # (see its `#:` doc-comment in schema.py) spells out its real
+    # `PlainSerializer(func=<lambda>, ...)` metadata; Sphinx's stringifier
+    # renders the lambda's qualname fragment as its own bogus xref target.
+    ('py:class', 'lambda'),
 ]
 
-# pandas' public docs index `pandas.DataFrame`, but runtime type hints resolve
-# to its internal module path; the pandas intersphinx inventory has no entry
-# for the latter, so it can never resolve.
-nitpick_ignore = [
-    ('py:class', 'pandas.core.frame.DataFrame'),
-]
+
+def _resolve_type_alias_as_data(app, env, node, contnode):
+    """Fall back to a ``py:obj``-style lookup for unresolved ``py:class`` refs.
+
+    Type-hint rendering always emits a ``:py:class:`` xref for any bare
+    identifier (see ``sphinx.domains.python._annotations.parse_reftarget``),
+    even when the identifier is actually a module-level type alias documented
+    as ``py:data`` (e.g. ``RefinementParameter = Annotated[...]``). The
+    Python domain's ``class`` role only searches ``class``/``exception``
+    objtypes, so such a ref can never resolve as-is -- regardless of how the
+    alias itself is documented. Retry it as an ``obj`` lookup, which every
+    objtype (data, type, attribute, ...) satisfies.
+    """
+    if node.get('refdomain') != 'py' or node.get('reftype') not in {'class', 'obj'}:
+        return None
+    py_domain = env.get_domain('py')
+    return py_domain.resolve_xref(
+        env, node['refdoc'], app.builder, 'obj', node['reftarget'], node, contnode
+    )
+
+
+def setup(app):
+    app.connect('missing-reference', _resolve_type_alias_as_data)
 
 # MyST parser settings for Markdown support
 myst_enable_extensions = [
@@ -114,11 +135,15 @@ autodoc_default_options = {
     'member-order': 'bysource',
     'special-members': '__init__',
     'undoc-members': True,
-    'exclude-members': '__weakref__'
+    # model_config is pydantic's internal ConfigDict boilerplate (identical on
+    # every model, not part of the recipe schema) -- excluding it avoids ~24
+    # unresolvable `py:class reference target not found: ConfigDict` warnings
+    # (pydantic doesn't publish ConfigDict in its intersphinx inventory).
+    'exclude-members': '__weakref__,model_config',
 }
 
 # Type hints configuration
-autodoc_typehints = 'description'
+autodoc_typehints = 'signature'
 autodoc_type_aliases = {
     'RefinementParameter': 'powderline.schema.RefinementParameter',
 }
