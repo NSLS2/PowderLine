@@ -62,7 +62,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'dev']  # dev/ = in-repo
 # Treat missing cross-reference targets as warnings (not silently ignored)
 nitpicky = True
 
-# cases with out a link target
+# cases without a link target
 nitpick_ignore = [
     # pandas' public docs index `pandas.DataFrame`, but runtime type hints
     # resolve to its internal module path; the pandas intersphinx inventory

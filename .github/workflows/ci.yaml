@@ -21,13 +21,8 @@ defaults:
 
 jobs:
   test:
-    # Run on PRs (always under the upstream org's quota), on direct pushes to
-    # the upstream repo, and on manual dispatch. Skip push events from forks
-    # (no upstream PR yet) and skip same-repo PR runs that duplicate the
-    # branch-push run.
-    if: >-
-      github.repository == 'NSLS2/PowderLine' &&
-      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository)
+    # Run on pull requests, direct pushes to main, and manual dispatch in the upstream repository.
+    if: github.repository == 'NSLS2/PowderLine'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
