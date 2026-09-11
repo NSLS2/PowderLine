@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+  workflow_dispatch:
+
+# Least-privilege default: neither job here needs to write anything.
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same branch/PR to save CI minutes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    # Run on PRs (always under the upstream org's quota), on direct pushes to
+    # the upstream repo, and on manual dispatch. Skip push events from forks
+    # (no upstream PR yet) and skip same-repo PR runs that duplicate the
+    # branch-push run.
+    if: >-
+      github.repository == 'NSLS2/PowderLine' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: prefix-dev/setup-pixi@a0af7a228712d6121d37aba47adf55c1332c9c2e  # v0.9.4
+        with:
+          pixi-version: v0.74.0
+      - name: Run tests
+        run: pixi run test
+
+  docs:
+    # Build-only check that the docs still compile warning-free
+    # (`pixi run docs` uses `sphinx-build -W`, so any warning fails this
+    # job); the actual GitHub Pages deploy lives in docs.yml and only runs
+    # on pushes to main. Same fork/dedup policy as `test` above.
+    if: >-
+      github.repository == 'NSLS2/PowderLine' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: prefix-dev/setup-pixi@a0af7a228712d6121d37aba47adf55c1332c9c2e  # v0.9.4
+        with:
+          pixi-version: v0.74.0
+      - name: Build docs
+        run: pixi run docs
