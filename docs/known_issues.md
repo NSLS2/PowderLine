@@ -236,11 +236,19 @@ to a real, fixable root cause rather than papered over:
 - A `missing-reference` hook in `docs/conf.py` retries any unresolved
   `py:class` type-hint reference as a `py:obj` lookup: type-hint rendering
   always emits a `class`-role xref for bare identifiers, but a type alias
-  like `RefinementParameter` is documented as `py:data`, which the `class`
-  role's objtype search can never match — regardless of aliasing. `obj`
+  like `RefinementParameter` is documented as `py:data`, which the
+  `class` role's objtype search can never match — regardless of aliasing. `obj`
   matches every objtype, so this is a legitimate, narrowly-scoped fallback
   (not a suppression) and makes every `RefinementParameter` field a real
   hyperlink to its `#:`-documented definition.
+- A `missing-reference` hook in `docs/conf.py` retries unresolved `py:class`
+  references as `py:obj` only for the explicit
+  `RefinementParameter`/`powderline.schema.RefinementParameter` alias targets.
+  Type-hint rendering emits a `class`-role xref for the alias, but the alias is
+  documented as `py:data`, which the `class` role's objtype search cannot
+  match. Retrying only this known alias set as `obj` makes each
+  `RefinementParameter` field a real hyperlink while preserving nitpicky
+  warnings for genuine missing or wrong-role class references.
 - `model_config` (identical `ConfigDict(...)` boilerplate on every model)
   is now excluded from `autodoc_default_options`, removing ~24 warnings for
   an attribute that isn't part of the public schema anyway.
