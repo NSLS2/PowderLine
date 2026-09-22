@@ -110,7 +110,6 @@ def _resolve_type_alias_as_data(app, env, node, contnode):
     ``py:data`` documentation while preserving warnings for all other
     unresolved class references.
     """
-    if node.get('refdomain') != 'py' or node.get('reftype') not in {'class', 'obj'}:
     if (
         node.get('refdomain') != 'py'
         or node.get('reftype') != 'class'
