@@ -233,14 +233,6 @@ to a real, fixable root cause rather than papered over:
   than a regression, so we've worked around it locally: switching to
   Sphinx's own default, `'signature'`, sidesteps `make_xrefs` for our case by
   rendering types inline in the signature via `_parse_annotation` instead.
-- A `missing-reference` hook in `docs/conf.py` retries any unresolved
-  `py:class` type-hint reference as a `py:obj` lookup: type-hint rendering
-  always emits a `class`-role xref for bare identifiers, but a type alias
-  like `RefinementParameter` is documented as `py:data`, which the
-  `class` role's objtype search can never match — regardless of aliasing. `obj`
-  matches every objtype, so this is a legitimate, narrowly-scoped fallback
-  (not a suppression) and makes every `RefinementParameter` field a real
-  hyperlink to its `#:`-documented definition.
 - A `missing-reference` hook in `docs/conf.py` retries unresolved `py:class`
   references as `py:obj` only for the explicit
   `RefinementParameter`/`powderline.schema.RefinementParameter` alias targets.
