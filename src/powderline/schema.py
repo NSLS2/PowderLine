@@ -12,6 +12,8 @@ parameters (e.g. cubic a=b=c) refine together if any member is requested.
 See docs/SCHEMA_HISTORY.md.
 """
 
+from __future__ import annotations
+
 from typing import Annotated, Any, Literal
 from typing_extensions import Self
 from pathlib import Path
@@ -27,6 +29,9 @@ ACCEPTED_SCHEMA_NAMES: list[str] = ["GSASII_Rietveld", "GSASII_SPF"]
 
 # Type alias for refinement parameter format: [value, refine_flag, min, max]
 # Using tuple to preserve types at each position
+#: Format for a single refinement parameter, ``[value, refine_flag, min, max]``.
+#: Modeled as a fixed 4-tuple (rather than a list) so each position keeps its
+#: own type; serialized back to a JSON list via the attached ``PlainSerializer``.
 RefinementParameter = Annotated[
     tuple[float | None, bool | None, float | None, float | None],
     PlainSerializer(lambda x: list(x), return_type=list, when_used='json')

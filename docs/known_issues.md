@@ -203,24 +203,69 @@ so this *did* already fail the build) printed **266 warnings**
 
 **Evidence.** Reproduced by `pixi run docs-clean && pixi run docs`.
 
-**Decision.** Fixed:
-- added `docs/_static/.gitkeep` so the configured `html_static_path` exists;
-- reworded the `RecipeModel` docstring to use a proper
-  `.. code-block:: javascript` directive and double-backtick literals
-  instead of markdown fences/single-backticks;
-- relabeled the illustrative, comment-bearing ```json fences as
-  ```javascript (tolerant of `//` comments and `...`) in `DEVELOPMENT.md`
-  and `TROUBLESHOOTING.md`;
-- fixed a handful of docstrings in `kicker.py` whose `Returns:` sections
-  (e.g. `is_template_file`, `extract_refined_params_from_project`,
-  `calculate_cell_esds_from_A_matrix`, `_extract_fit_profile`) were
-  misparsed by Napoleon as bogus `name (type):` pairs;
-  `docs/conf.py` `nitpick_ignore_regex`/`nitpick_ignore` for the
-  unresolvable pydantic-`PlainSerializer` and `pandas.core.frame.DataFrame`
-  noise; fixed the `pydandtic` intersphinx key typo; set
+**Decision.** Fixed. Most of the ~230 pydantic-internals warnings were traced
+to a real, fixable root cause rather than papered over:
+- `RefinementParameter = Annotated[tuple[...], PlainSerializer(lambda ...)]`
+  fields were expanding to their full runtime type in generated docs because
+  `schema.py` lacked `from __future__ import annotations` (PEP 563); without
+  it, autodoc evaluates each field's annotation back to the real
+  `Annotated[..., PlainSerializer(...)]` object instead of keeping the
+  written `RefinementParameter` name. Adding the import keeps annotations
+  as their literal source text, so every field now renders (and links) as
+  the clean `RefinementParameter` alias.
+- `autodoc_typehints` was set to `'description'`, which routes type info
+  through `sphinx.ext.autodoc.typehints.record_typehints` — a path that
+  re-stringifies each annotation independently of `autodoc_type_aliases` and
+  hands the result to the Python domain's `make_xrefs` helper to turn into
+  cross-references. This is a known, kindly-acknowledged rough edge in
+  Sphinx itself, not a pydantic quirk:
+  [sphinx-doc/sphinx#9641](https://github.com/sphinx-doc/sphinx/issues/9641)
+  ("`make_xrefs` should be consistent with `_parse_annotation`"). A Sphinx
+  maintainer confirmed the inconsistency in the thread, and explained the
+  tradeoff behind it: `make_xrefs` still has to support old-style, pre-typing
+  narrative `:type:` text (e.g. `"int or float"`), which isn't valid Python
+  and can't go through the same `ast.parse()`-based path (`_parse_annotation`,
+  used for real signatures) that degrades gracefully instead of splitting
+  unexpected input apart. That legacy-compatibility split is exactly what
+  trips up comma-bearing `Annotated` metadata like
+  `PlainSerializer(func=, return_type=, when_used=)`, turning it into several
+  unresolvable sub-references. It's an open, unscheduled enhancement rather
+  than a regression, so we've worked around it locally: switching to
+  Sphinx's own default, `'signature'`, sidesteps `make_xrefs` for our case by
+  rendering types inline in the signature via `_parse_annotation` instead.
+- A `missing-reference` hook in `docs/conf.py` retries unresolved `py:class`
+  references as `py:obj` only for the explicit
+  `RefinementParameter`/`powderline.schema.RefinementParameter` alias targets.
+  Type-hint rendering emits a `class`-role xref for the alias, but the alias is
+  documented as `py:data`, which the `class` role's objtype search cannot
+  match. Retrying only this known alias set as `obj` makes each
+  `RefinementParameter` field a real hyperlink while preserving nitpicky
+  warnings for genuine missing or wrong-role class references.
+- `model_config` (identical `ConfigDict(...)` boilerplate on every model)
+  is now excluded from `autodoc_default_options`, removing ~24 warnings for
+  an attribute that isn't part of the public schema anyway.
+- also: added `docs/_static/.gitkeep` (and un-ignored `docs/_static/` in
+  `.gitignore`) so the configured `html_static_path` exists; reworded the
+  `RecipeModel` docstring to use a proper `.. code-block:: javascript`
+  directive and double-backtick literals instead of markdown
+  fences/single-backticks; relabeled the illustrative, comment-bearing
+  ```json fences as ```javascript (tolerant of `//` comments and `...`) in
+  `DEVELOPMENT.md`/`TROUBLESHOOTING.md`; fixed a handful of `kicker.py`
+  docstrings whose `Returns:` sections (e.g. `is_template_file`,
+  `extract_refined_params_from_project`, `calculate_cell_esds_from_A_matrix`,
+  `_extract_fit_profile`) were misparsed by Napoleon as bogus `name (type):`
+  pairs; fixed the `pydandtic` intersphinx key typo; set
   `myst_heading_anchors = 4` so `cross-platform-guide.md`'s TOC anchors
-  resolve; and promoted `known_issues.md`'s `### KI-NN` headers to `##`
-  (the file has no other H2, so H1→H3 was a level skip).
+  resolve; and promoted `known_issues.md`'s `### KI-NN` headers to `##` (the
+  file had no other H2, so H1→H3 was a level skip).
+
+What's left is a 4-entry `nitpick_ignore` for targets that genuinely aren't
+documented anywhere Sphinx can link to: `pandas.core.frame.DataFrame`
+(pandas' intersphinx inventory only indexes the public `pandas.DataFrame`
+path), `annotated_types.Gt`/`Ge` (the package publishes no Sphinx inventory),
+and the literal `lambda` fragment inside `RefinementParameter`'s
+auto-generated "alias of ..." line (which, accurately, spells out its real
+`PlainSerializer(func=<lambda>, ...)` metadata).
 
 **Revisit.** Closed; kept for history.
 
