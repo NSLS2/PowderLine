@@ -119,7 +119,7 @@ def _resolve_type_alias_as_data(app, env, node, contnode):
 
     py_domain = env.get_domain('py')
     return py_domain.resolve_xref(
-        env, node['refdoc'], app.builder, 'obj', node['reftarget'], node, contnode
+        env, node['refdoc'], app.builder, 'obj', node['reftarget'], node, contnode)
 
 
 def setup(app):
