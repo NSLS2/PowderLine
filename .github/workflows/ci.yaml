@@ -38,7 +38,9 @@ jobs:
     # Build-only check that the docs still compile warning-free
     # (`pixi run docs` uses `sphinx-build -W`, so any warning fails this
     # job); the actual GitHub Pages deploy lives in docs.yml and only runs
-    # on pushes to main. Same fork/dedup policy as `test` above.
+    # on pushes to main. For pull requests we intentionally only run this for
+    # external forks: same-repository PRs are not the normal contribution path
+    # and would otherwise duplicate CI for the upstream branch workflow.
     if: >-
       github.repository == 'NSLS2/PowderLine' &&
       (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository)
