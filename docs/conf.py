@@ -81,8 +81,19 @@ nitpick_ignore = [
 ]
 
 
+# Sphinx's type-hint renderer emits ``py:class`` references for bare names in
+# annotations, even when the target is a module-level type alias documented as
+# ``py:data``. Keep this workaround explicit so misspelled or wrong-role class
+# references still warn under ``nitpicky = True``.
+_TYPE_ALIAS_OBJ_FALLBACK_TARGETS = {
+    'RefinementParameter',
+    'powderline.schema.RefinementParameter',
+}
+
+
 def _resolve_type_alias_as_data(app, env, node, contnode):
     """Fall back to a ``py:obj``-style lookup for unresolved ``py:class`` refs.
+    Resolve known type aliases documented as Python data objects.
 
     Type-hint rendering always emits a ``:py:class:`` xref for any bare
     identifier (see ``sphinx.domains.python._annotations.parse_reftarget``),
@@ -92,13 +103,24 @@ def _resolve_type_alias_as_data(app, env, node, contnode):
     objtypes, so such a ref can never resolve as-is -- regardless of how the
     alias itself is documented. Retry it as an ``obj`` lookup, which every
     objtype (data, type, attribute, ...) satisfies.
+    ``RefinementParameter`` is a module-level ``Annotated[...]`` alias. Sphinx
+    renders references to it from type annotations as ``py:class`` links, but
+    the Python domain's ``class`` role only searches class/exception objects.
+    Retry just this explicit alias set as ``py:obj`` so it can link to its
+    ``py:data`` documentation while preserving warnings for all other
+    unresolved class references.
     """
     if node.get('refdomain') != 'py' or node.get('reftype') not in {'class', 'obj'}:
+    if (
+        node.get('refdomain') != 'py'
+        or node.get('reftype') != 'class'
+        or node.get('reftarget') not in _TYPE_ALIAS_OBJ_FALLBACK_TARGETS
+    ):
         return None
+
     py_domain = env.get_domain('py')
     return py_domain.resolve_xref(
         env, node['refdoc'], app.builder, 'obj', node['reftarget'], node, contnode
-    )
 
 
 def setup(app):
