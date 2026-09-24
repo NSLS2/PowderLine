@@ -3,7 +3,7 @@ authors = ["Dan Olds <dpolds@gmail.com>", "Adam Corrao <95718914+AdamCorrao@user
 channels = ["conda-forge"]
 name = "PowderLine"
 platforms = ["linux-64", "win-64", "osx-arm64"]
-version = "0.1.0"
+version = "0.1.1"
 preview = ["pixi-build"]
 
 [tasks]

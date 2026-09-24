@@ -16,7 +16,7 @@ authors:
     affiliation: "Brookhaven National Laboratory"
 license: BSD-3-Clause
 repository-code: "https://github.com/NSLS2/PowderLine"
-version: 0.1.0
+version: 0.1.1
 identifiers:
   - type: doi
     value: "10.48550/arXiv.2608.17009"

@@ -1,6 +1,6 @@
 """PowderLine: Automated powder diffraction analysis using GSAS-II."""
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 # The GSAS-II-backed public API is imported eagerly when GSAS-II is available,
 # preserving the original behaviour exactly (including `powderline.kicker` being
