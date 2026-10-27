@@ -104,10 +104,17 @@ The imports a consuming project will use:
 | Import | Purpose | Track |
 |---|---|---|
 | `from powderline.schema import RecipeModel` | Validate recipe dicts with Pydantic | Both |
-| `powderline.validate()` | Validate a recipe dict (returns a `RecipeModel`); raises on invalid input | Both |
-| `powderline.load_recipe_asset()` | Load a recipe from a `.json`/`.yaml`/`.txt` file into a dict | Both |
+| `powderline.validate()` | Validate a recipe dict (returns a `RecipeModel`); raises on invalid input. Adds the simulation-mode check to the schema validation | Full only |
+| `powderline.load_recipe_asset()` | Load a recipe from a `.json`/`.yaml`/`.txt` file into a dict | Full only |
 | `powderline.run()` | Primary programmatic entry point (validates + runs + returns DataFrames). Pass `validate_only=True` to validate without refining | Full only |
 | `from powderline.gsas_client import GSASClient` | Run via the persistent GSAS-II server | Full only |
+
+`powderline.validate()` and `powderline.load_recipe_asset()` are exported only
+when GSAS-II is installed, so they are not available on the schema-only track.
+There, validate with `RecipeModel.model_validate()` (below) and load JSON or
+YAML yourself. `RecipeModel.model_validate()` runs the same schema checks but
+not the simulation-mode check (no refine flag may be `true` when
+`refinement_cycles` is 1).
 
 ### Schema validation
 

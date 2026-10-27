@@ -114,7 +114,7 @@ In addition to the comprehensive `refined_parameters.csv`, each phase generates 
 - `value`: Refined unit cell parameter
 - `esd`: Estimated standard deviation
 
-**Note on simulations**: Simulation mode (all `refine_flag=false`) does not generate `refined_parameters.csv` since no parameters are refined. Unit cell reports still generated with `esd=0.0`.
+**Note on simulations**: Simulation mode (all `refine_flag=false`) does not generate `refined_parameters.csv` since no parameters are refined. Unit cell reports are still generated, with an empty `esd` column (read as `NaN`).
 
 ### Schema Evolution
 

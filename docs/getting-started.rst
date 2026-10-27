@@ -98,15 +98,32 @@ All examples use schema 0.26.0 file-less payloads with embedded data.
         "instrument": {
           "description": "28-ID-2",
           "initialization": [
-            {},
+            {
+              "Type": ["PXC", "PXC", false],
+              "Bank": [1, 1, false],
+              "Lam": [0.45236, 0.45236, false],
+              "Zero": [0.0, 0.0, false],
+              "Polariz.": [0.99, 0.99, false],
+              "U": [2.0, 2.0, false],
+              "V": [-2.0, -2.0, false],
+              "W": [5.0, 5.0, false],
+              "X": [0.0, 0.0, false],
+              "Y": [0.0, 0.0, false],
+              "Z": [0.0, 0.0, false],
+              "SH/L": [0.002, 0.002, false]
+            },
             {}
           ],
           "parameterization": {
             "wavelength": [0.45236, false, null, null],
             "broadening": {
-              "U": [0.01, true, null, null],
-              "V": [-0.005, true, null, null],
-              "W": [0.002, true, null, null]
+              "U": [null, true, null, null],
+              "V": [null, true, null, null],
+              "W": [null, true, null, null]
+            },
+            "corrections": {
+              "zero_shift": null,
+              "axial_divergence": null
             }
           }
         },
@@ -143,18 +160,34 @@ All examples use schema 0.26.0 file-less payloads with embedded data.
           }
         },
         "refinement_controls": {
-
           "refinement_cycles": 5
         }
       }
     }
 
-See ``examples/`` directory for complete working examples.
+``initialization`` holds the GSAS-II instrument parameters (the contents of a
+``.instprm`` file) as ``[value, value, refine_flag]`` lists; ``parameterization``
+lists what to refine, with ``null`` values meaning "start from the
+``initialization`` value". See ``examples/`` for complete working recipes, and
+:doc:`building-recipes` for every section, how to validate a recipe, and how to
+build one from your own CIF, instrument, and data files.
 
 Output Files
 ------------
 
 After refinement, PowderLine generates standardized outputs with fixed filenames (Schema 0.26.0):
+
+.. note::
+
+   **ESD and standard uncertainty.** PowderLine labels uncertainties ``esd``
+   (estimated standard deviation) to match the terminology of the refinement
+   engines it drives. The quantity reported is what is now called the
+   *standard uncertainty* (s.u.): the IUCr recommends "standard uncertainty"
+   in place of "estimated standard deviation" (Schwarzenbach et al., `Acta
+   Cryst. A51, 565 (1995) <https://doi.org/10.1107/S0108767395002340>`_), in
+   line with `NIST Technical Note 1297
+   <https://www.nist.gov/pml/nist-technical-note-1297>`_ (Taylor & Kuyatt,
+   1994).
 
 **GSAS-II files:**
 

@@ -111,7 +111,7 @@ PowderLine generates fixed output filenames:
 - `single_peaks_report.txt` - Peak fit results (position, width, intensity per peak)
 - `peak_convergence_diagnostics.txt` - Convergence warnings for aphysical parameters
 
-**Note:** Simulation mode (all `refine_flag=false`) does not generate `refined_parameters.csv` since no parameters are refined. Unit cell reports still generated with `esd=0.0`.
+**Note:** Simulation mode (all `refine_flag=false`) does not generate `refined_parameters.csv` since no parameters are refined. Unit cell reports are still generated, with an empty `esd` column (read as `NaN`).
 
 **`DESCRIPTION.md`**: Explains the scientific purpose, input parameters, expected behavior, and any known issues for this specific refinement. Just fill in the template sections.
 

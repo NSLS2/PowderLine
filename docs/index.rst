@@ -19,11 +19,14 @@ fresh clone to a finished refinement, on Linux or Windows.
 
    quickstart
    getting-started
+   building-recipes
+   capabilities
    integration-guide
    mp-simulation
    TROUBLESHOOTING
    SCHEMA_HISTORY
    api
+   citing
 
 .. toctree::
    :maxdepth: 1

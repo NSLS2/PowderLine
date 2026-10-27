@@ -73,6 +73,8 @@ This is the fastest way to confirm your own recipe is valid before a full run.
 - Copy an example directory (e.g. `examples/example_LaB6/`) and edit its
   `input.json` — replace the `xrd_data`, structure, and refinement flags with your
   own. `examples/example_template/` is a blank skeleton to start from.
+- Starting from your own CIF, instrument, and data files? See
+  [Building Recipes](building-recipes.md).
 - Send results elsewhere with `--output DIR`.
 - See more detail in each example's `DESCRIPTION.md`.
 

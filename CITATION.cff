@@ -42,3 +42,62 @@ preferred-citation:
     - type: doi
       value: "10.48550/arXiv.2608.17009"
       description: "arXiv preprint"
+# Refinement engines PowderLine drives. Please cite the engine you used in
+# addition to PowderLine (see the "Citation" section of README.md).
+references:
+  - type: article
+    title: "GSAS-II: the genesis of a modern open-source all purpose crystallography software package"
+    authors:
+      - family-names: "Toby"
+        given-names: "Brian H."
+      - family-names: "Von Dreele"
+        given-names: "Robert B."
+    journal: "Journal of Applied Crystallography"
+    volume: 46
+    start: 544
+    end: 549
+    year: 2013
+    doi: "10.1107/S0021889813003531"
+  - type: article
+    title: "A scripting interface for GSAS-II"
+    authors:
+      - family-names: "O'Donnell"
+        given-names: "Jackson H."
+      - family-names: "Von Dreele"
+        given-names: "Robert B."
+      - family-names: "Chan"
+        given-names: "Maria K. Y."
+      - family-names: "Toby"
+        given-names: "Brian H."
+    journal: "Journal of Applied Crystallography"
+    volume: 51
+    start: 1244
+    end: 1250
+    year: 2018
+    doi: "10.1107/S1600576718008075"
+  - type: article
+    title: "TOPAS and TOPAS-Academic: an optimization program integrating computer algebra and crystallographic objects written in C++"
+    authors:
+      - family-names: "Coelho"
+        given-names: "Alan A."
+    journal: "Journal of Applied Crystallography"
+    volume: 51
+    start: 210
+    end: 218
+    year: 2018
+    doi: "10.1107/S1600576718000183"
+  - type: software
+    title: "easydiffraction"
+    version: "0.20.1"
+    authors:
+      - family-names: "Sazonov"
+        given-names: "Andrew"
+      - family-names: "Lindgren"
+        given-names: "Eric"
+      - family-names: "Rozyczko"
+        given-names: "Piotr"
+      - family-names: "Seth"
+        given-names: "Mridul"
+    year: 2026
+    doi: "10.5281/zenodo.21999827"
+    repository-code: "https://github.com/easyscience/diffraction-lib"
