@@ -4,6 +4,7 @@ channels = ["conda-forge"]
 name = "PowderLine"
 platforms = ["linux-64", "win-64", "osx-arm64"]
 version = "0.2.0"
+requires-pixi = ">=0.82.1"
 preview = ["pixi-build"]
 
 # ---------------------------------------------------------------------------
@@ -59,7 +60,7 @@ fields-check = { cmd = "python scripts/gen_schema_field_tables.py --check", env 
 # Core = the pyproject runtime dependencies + what the editable install and the
 # test runner need. Keep this engine-free (A31): no engine package may appear here.
 python = ">=3.10"
-pip = ">=25.2,<26"
+pip = ">=26.2.2"
 hatchling = ">=1.24"
 pytest = ">=8.3.4,<9"
 pydantic = ">=2.0"
