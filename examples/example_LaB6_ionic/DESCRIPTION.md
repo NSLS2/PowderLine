@@ -7,7 +7,7 @@ atom — the form factor of the ion, not of the atom. This is the reference case
 for PowderLine's ionic scattering types: the recipe states them in
 the engine's phase block, `scattering_types`, in the CIF spelling, and each
 engine computes with the form factor it has for that ion. Boron stays neutral:
-neither GSAS-II nor CrysPy has a boron ion, and mixed ionic / neutral types are
+none of GSAS-II, CrysPy or TOPAS has a boron ion, and mixed ionic / neutral types are
 normal.
 
 ## Input Parameters

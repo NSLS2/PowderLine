@@ -12471,7 +12471,7 @@
       "UID": "70c707"
     },
     "ionic": {
-      "what": "example_LaB6 with La as La3+ (B neutral: neither engine has a boron ion); P-47"
+      "what": "example_LaB6 with La as La3+ (B neutral: none of GSAS-II, CrysPy or TOPAS has a boron ion)"
     }
   }
 }

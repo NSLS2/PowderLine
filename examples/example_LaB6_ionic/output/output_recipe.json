@@ -7,13 +7,15 @@
       "UID": "70c707"
     },
     "ionic": {
-      "what": "example_LaB6 with La as La3+ (B neutral: neither engine has a boron ion); P-47"
+      "what": "example_LaB6 with La as La3+ (B neutral: none of GSAS-II, CrysPy or TOPAS has a boron ion)"
     },
     "powderline_provenance": {
-      "parent_run_id": "d03ce4a1-ebad-40e6-bb2f-5864271b249e",
+      "parent_run_id": "88d9d221-3acf-4646-880f-5b32f43cd647",
       "schema_name": "gsasii.rietveld",
+      "engine": "gsasii",
+      "engine_version": "5.7.9",
       "powderline_version": "0.2.0",
-      "created": "2026-10-21T00:28:44+00:00"
+      "created": "2026-11-04T19:26:36+00:00"
     }
   },
   "payload": {

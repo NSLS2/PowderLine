@@ -8,10 +8,12 @@
       "first_temperature_C": 25
     },
     "powderline_provenance": {
-      "parent_run_id": "ec738979-a725-485a-8de0-5969481185e2",
+      "parent_run_id": "9443d030-743a-4c06-a135-8089b1c567ab",
       "schema_name": "gsasii.rietveld",
+      "engine": "gsasii",
+      "engine_version": "5.7.9",
       "powderline_version": "0.2.0",
-      "created": "2026-10-20T16:54:20+00:00"
+      "created": "2026-11-04T19:27:16+00:00"
     }
   },
   "payload": {

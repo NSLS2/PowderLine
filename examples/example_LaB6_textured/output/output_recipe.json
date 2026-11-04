@@ -7,10 +7,12 @@
       "what": "simulated LaB6 with March-Dollase r = 0.6 along [001]; a mathematical demonstration (LaB6 does not texture); see DESCRIPTION.md and data/truth.json"
     },
     "powderline_provenance": {
-      "parent_run_id": "7ab31930-99ac-4188-afdd-72ab7893021f",
+      "parent_run_id": "4f047c4f-6f6c-4889-b1be-98b288613938",
       "schema_name": "gsasii.rietveld",
+      "engine": "gsasii",
+      "engine_version": "5.7.9",
       "powderline_version": "0.2.0",
-      "created": "2026-10-21T01:13:51+00:00"
+      "created": "2026-11-04T19:26:41+00:00"
     }
   },
   "payload": {
