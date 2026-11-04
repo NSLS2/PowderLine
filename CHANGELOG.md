@@ -216,8 +216,9 @@ limitations are listed in the [known-issues register](docs/known_issues.md).
   `EngineExecutionError(reason="engine_crashed")`, like one in the fit.
 - A TOPAS `output_missing` failure carries its envelope: the files kept,
   `tc_path`, the exit code and any console text.
-- A TOPAS output folder outside the Windows ANSI code page is run through its
-  8.3 short path, or refused with a clear message before `tc.exe` starts.
+- A TOPAS output folder outside the Windows ANSI code page is run through the
+  folder's 8.3 short path (file names kept), or refused with a clear message
+  before `tc.exe` starts.
 - The TOPAS at-limit warning tolerates TOPAS stopping just past a bound or a fit
   window edge.
 - A timed-out GSAS-II server request is a `timeout` failure and no longer falls

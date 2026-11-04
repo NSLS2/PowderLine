@@ -604,7 +604,10 @@ simulated peak heights changed at the 0.2.0 re-baseline.
   TOPAS 6 write nothing, also when it is the working directory; a Latin-1 name
   and spaces work, and so does the folder's 8.3 short path. *Policy:* on
   Windows an INP path the ANSI code page cannot encode is passed to `tc.exe`
-  as its short path; if the volume has none (8.3 names disabled), the run is
+  with its folder in the short form and the file name as written (TOPAS
+  names its own `.out` after the name it is given, so a shortened file name
+  would leave e.g. `TOPAS_~1.out`); if the volume has no short name for the
+  folder (8.3 names disabled), the run is
   refused before `tc.exe` starts (`ExecutionBackendError`, reason
   `backend_error`) with a message to use an ASCII output folder. A non-ASCII
   base name is still replaced by `topas` (`topas_base_name_sanitized`).

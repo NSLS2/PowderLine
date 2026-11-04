@@ -155,15 +155,19 @@ def _short_path(path: str) -> str | None:
 def tc_input_path(inp: Path) -> str:
     """The INP path as tc.exe gets it. TOPAS reads its command line in the ANSI code page: a folder outside it
     (Greek, say, on a Western-European Windows) makes TOPAS write nothing, while its 8.3 short path works
-    (measured on TOPAS 6). So on Windows a path the ANSI code page cannot hold is passed in its short form; if the
-    volume has no short name for it, the run is refused before tc.exe starts (``ExecutionBackendError``
-    ``backend_error``)."""
+    (measured on TOPAS 6). So on Windows a path the ANSI code page cannot hold is passed with its **folder** in the
+    short form and the file name as written (the base name is ASCII already): TOPAS names its own ``.out`` after
+    the name it is given, so a shortened file name (``topas_bkg.inp`` -> ``TOPAS_~1.INP``) would leave
+    ``TOPAS_~1.out`` (seen on TOPAS 6, A197). If the volume has no short name for the folder, the run is refused
+    before tc.exe starts (``ExecutionBackendError`` ``backend_error``)."""
     text = str(inp)
     if not _on_windows() or _ansi_encodable(text):
         return text
-    short = _short_path(text)
-    if short and _ansi_encodable(short):
-        return short
+    short_dir = _short_path(str(inp.parent))
+    if short_dir:
+        candidate = str(Path(short_dir) / inp.name)
+        if _ansi_encodable(candidate):
+            return candidate
     raise ExecutionBackendError(
         f"TOPAS cannot open {inp.name} in the folder {inp.parent}: TOPAS reads file paths in the Windows ANSI code "
         "page, which cannot hold this folder's name, and the volume gives it no 8.3 short name. Write the output "

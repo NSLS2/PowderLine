@@ -1496,13 +1496,21 @@ def test_tc_input_path_ansi_path_is_passed_as_is(monkeypatch):
     assert calls == []
 
 
-def test_tc_input_path_non_ansi_path_uses_the_short_name(monkeypatch):
-    calls = _windows(monkeypatch, lambda s: s.isascii(), "C:/data/E8A2~1/x.inp")
-    assert native_run.tc_input_path(Path("C:/data/Ελληνικά/x.inp")) == "C:/data/E8A2~1/x.inp"
-    assert calls == [str(Path("C:/data/Ελληνικά/x.inp"))]
+def test_tc_input_path_non_ansi_path_uses_the_short_folder(monkeypatch):
+    calls = _windows(monkeypatch, lambda s: s.isascii(), "C:/data/E8A2~1")
+    assert native_run.tc_input_path(Path("C:/data/Ελληνικά/x.inp")) == str(Path("C:/data/E8A2~1") / "x.inp")
+    assert calls == [str(Path("C:/data/Ελληνικά"))]
 
 
-@pytest.mark.parametrize("short", [None, "C:/data/Ελληνικά/x.inp"])  # no 8.3 name / short name still not ANSI
+def test_tc_input_path_keeps_a_long_file_name(monkeypatch):
+    """A197: only the folder is shortened. TOPAS names its .out after the INP name it is given, so a shortened
+    file name (topas_bkg.inp -> TOPAS_~1.INP) left TOPAS_~1.out on TOPAS 6."""
+    _windows(monkeypatch, lambda s: s.isascii(), "C:/data/E8A2~1")
+    assert native_run.tc_input_path(Path("C:/data/Ελληνικά/example_LaB6_bkg.inp")) == \
+        str(Path("C:/data/E8A2~1") / "example_LaB6_bkg.inp")
+
+
+@pytest.mark.parametrize("short", [None, "C:/data/Ελληνικά"])  # no 8.3 name / short name still not ANSI
 def test_tc_input_path_without_a_usable_short_name_is_refused(monkeypatch, short):
     _windows(monkeypatch, lambda s: s.isascii(), short)
     with pytest.raises(ExecutionBackendError) as e:
@@ -1527,7 +1535,7 @@ def test_non_ansi_folder_is_refused_before_tc_runs(tmp_path, monkeypatch):
 
 
 def test_non_ansi_folder_runs_tc_with_the_short_path(tmp_path, monkeypatch):
-    _windows(monkeypatch, lambda s: s.startswith("SHORT"), lambda p: "SHORT~1\\" + Path(p).name)
+    _windows(monkeypatch, lambda s: s.startswith("SHORT"), lambda p: "SHORT~1")
     seen = []
 
     def runner(cmd, **kw):
@@ -1535,4 +1543,4 @@ def test_non_ansi_folder_runs_tc_with_the_short_path(tmp_path, monkeypatch):
         raise subprocess.TimeoutExpired(cmd, 1)  # stop there: only the command line matters
     with pytest.raises(ExecutionBackendError):
         native_run.run_tc(tmp_path / "tc.exe", tmp_path / "x.inp", runner=runner, timeout=1)
-    assert seen == [[str(tmp_path / "tc.exe"), "SHORT~1\\x.inp"]]
+    assert seen == [[str(tmp_path / "tc.exe"), str(Path("SHORT~1") / "x.inp")]]
