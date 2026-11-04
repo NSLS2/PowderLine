@@ -191,7 +191,7 @@ class Corrections(CoreModel):
                                              description="GSAS-II 'Polariz.'")
     axial_divergence: RefinableParameter = Field(
         json_schema_extra=unit_schema(UNIT_DIMENSIONLESS),
-        description=f"GSAS-II 'SH/L' (asymmetry); at least {AXIAL_DIVERGENCE_MIN} (GSAS-II's own floor, A91)")
+        description=f"GSAS-II 'SH/L' (asymmetry); at least {AXIAL_DIVERGENCE_MIN} (GSAS-II's own floor)")
 
     @field_validator("axial_divergence")
     @classmethod
@@ -216,7 +216,7 @@ class InstrumentBroadening(CoreModel):
 
 
 class Instrument(CoreModel):
-    """The instrument, single source (A99, A103): the gateway builds GSAS-II's instrument parameters from it."""
+    """The instrument, single source: the gateway builds GSAS-II's instrument parameters from it."""
 
     description: Optional[str] = Field(default=None, json_schema_extra=absent_not_null_schema(),
                                        description="Free text, e.g. the beamline")
@@ -318,7 +318,7 @@ class Background(CoreModel):
     chebyshev: ChebyshevBackground = Field(
         default_factory=_no_background,
         description="Left out: one fixed Chebyshev term 0.0 (no background), with the warning "
-                    "gsasii_background_default_applied (P-33)")
+                    "gsasii_background_default_applied")
     single_peaks: Optional[BackgroundPeaks] = Field(default=None, json_schema_extra=absent_not_null_schema(),
                                                    description="Left out: no background peaks")
 
@@ -413,7 +413,7 @@ class PeakBroadening(CoreModel):
 
 
 class GsasiiPhase(Phase[RefinableParameter]):
-    """A gsasii phase: core's space group, cell and atoms, plus ``scale`` and ``peak_broadening`` (A93).
+    """A gsasii phase: core's space group, cell and atoms, plus ``scale`` and ``peak_broadening``.
 
     The phase name is the key in ``payload.phases`` (A100). GSAS-II-specific
     rules: the space group must be a setting GSAS-II reads as itself (EB-03,
@@ -424,14 +424,14 @@ class GsasiiPhase(Phase[RefinableParameter]):
                                       description="Phase scale factor, >= 0 (0 allowed for reusable recipes)")
     peak_broadening: PeakBroadening = Field(
         default_factory=PeakBroadening,
-        description="Left out (in whole or part): 10 um, 0 microstrain, isotropic, fixed, with a warning (A107)")
+        description="Left out (in whole or part): 10 um, 0 microstrain, isotropic, fixed, with a warning")
     scattering_types: Optional[dict[str, str]] = Field(
         default=None, json_schema_extra=absent_not_null_schema(),
         description="Ionic X-ray scattering types by atom label, CIF spelling ('La3+', 'O2-'); an atom left out "
-                    "scatters as the neutral element; only ions GSAS-II 5.7.9 has a form factor for (P-47)")
+                    "scatters as the neutral element; only ions GSAS-II 5.7.9 has a form factor for")
     preferred_orientation: Optional[MarchDollase[RefinableParameter]] = Field(
         default=None, json_schema_extra=absent_not_null_schema(),
-        description="March-Dollase preferred orientation (GSAS-II 'MD': one axis, coefficient r > 0); left out: none (P-48)")
+        description="March-Dollase preferred orientation (GSAS-II 'MD': one axis, coefficient r > 0); left out: none")
 
     _gsasii_not_null = field_validator("peak_broadening", "scattering_types", "preferred_orientation",
                                        mode="before")(absent_not_null)
@@ -485,7 +485,7 @@ class GsasiiPhase(Phase[RefinableParameter]):
 
 
 class RietveldControls(CoreModel):
-    """Refinement controls; ``refinement_cycles == 1`` is a simulation (nothing refined, A88)."""
+    """Refinement controls; ``refinement_cycles == 1`` is a simulation (nothing refined)."""
 
     refinement_cycles: CoreInt = Field(default=5, ge=1, description="GSAS-II least-squares cycles")
 

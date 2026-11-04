@@ -364,7 +364,7 @@ CALCULATOR_PEAK_TYPES = {
 
 
 class Instrument(CoreModel):
-    """The instrument block (A30, A103 layout)."""
+    """The instrument block."""
 
     description: Optional[str] = Field(default=None, json_schema_extra=absent_not_null_schema(),
                                        description="Free text")
@@ -430,7 +430,7 @@ class EasydiffractionMarchDollase(MarchDollase[BoundedRefinableParameter]):
 
 
 class EasydiffractionPhase(Phase[BoundedRefinableParameter]):
-    """An easydiffraction phase: core's space group, cell and atoms, plus ``scale`` (A93).
+    """An easydiffraction phase: core's space group, cell and atoms, plus ``scale``.
 
     easydiffraction rules: a setting easydiffraction has (EB-42); values inside
     its physical limits (EB-71); ``scale >= 0`` (A161).
@@ -440,11 +440,11 @@ class EasydiffractionPhase(Phase[BoundedRefinableParameter]):
     scattering_types: Optional[dict[str, str]] = Field(
         default=None, json_schema_extra=absent_not_null_schema(),
         description="Ionic X-ray scattering types by atom label, CIF spelling ('La3+', 'O1-'); an atom left out "
-                    "scatters as the neutral element; cryspy calculator only, and only ions CrysPy has (P-47)")
+                    "scatters as the neutral element; cryspy calculator only, and only ions CrysPy has")
     preferred_orientation: Optional[EasydiffractionMarchDollase] = Field(
         default=None, json_schema_extra=absent_not_null_schema(),
         description="March-Dollase preferred orientation (one axis, march_r > 0, march_random_fract 0..1); cryspy "
-                    "calculator only -- CrysFML ignores it; left out: none (P-48)")
+                    "calculator only -- CrysFML ignores it; left out: none")
 
     _easydiffraction_not_null = field_validator("scattering_types", "preferred_orientation", mode="before")(absent_not_null)
 
@@ -491,12 +491,12 @@ class EasydiffractionPhase(Phase[BoundedRefinableParameter]):
 
 
 class RefinementControls(CoreModel):
-    """How the pattern is calculated and fitted, all stated (A162). lmfit runs only if a flag is set."""
+    """How the pattern is calculated and fitted, all stated. lmfit runs only if a flag is set."""
 
     calculator: Literal["cryspy", "crysfml"] = Field(
         description="easydiffraction calculator; they compute different intensities and offer different "
                     "peak types (EB-76..EB-79)")
-    minimizer: Literal["lmfit (leastsq)"] = Field(description="Minimizer (lmfit's Levenberg-Marquardt only, A162)")
+    minimizer: Literal["lmfit (leastsq)"] = Field(description="Minimizer (lmfit's Levenberg-Marquardt only)")
     max_iterations: CoreInt = Field(ge=1, description="easydiffraction max_iterations = lmfit max_nfev: the maximum number of function evaluations (not iterations)")
     chi_square_change_tolerance: CoreFloat = Field(gt=0, description="Relative chi-square change that stops the fit "
                                                                       "(lmfit ftol)")

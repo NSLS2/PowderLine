@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|
 | `payload.xrd_data` | core | xrd_data (core block) |  | yes | Measured pattern: 2theta, intensity, weights. |
 | `payload.fit_range` | core | fit_range (core block) | `degree 2theta` | no | Left out: the data's weighted points, end to end |
-| `payload.instrument` | engine | block |  | yes | The instrument block (A30, A103 layout). |
+| `payload.instrument` | engine | block |  | yes | The instrument block. |
 | `payload.instrument.description` | engine | string |  | no | Free text |
 | `payload.instrument.radiation` | engine | block |  | yes | Incident radiation: one wavelength, optionally a Kα2 line (both stated or neither). |
 | `payload.instrument.radiation.setup_wavelength` | engine | `[value, flag, min, max]` | `angstrom` | yes | Wavelength (Kα1), > 0 |
@@ -58,21 +58,21 @@
 | `payload.background` | engine | block |  | no | Left out: no background |
 | `payload.background.chebyshev` | core | Chebyshev background (core block) |  | yes | Chebyshev polynomial background: `num_coefficients`, `coefficients`, `refine_flag`. |
 | `payload.phases` | engine | object keyed by name |  | yes |  |
-| `payload.phases.<phase>` | engine | block |  | yes | An easydiffraction phase: core's space group, cell and atoms, plus `scale` (A93). |
+| `payload.phases.<phase>` | engine | block |  | yes | An easydiffraction phase: core's space group, cell and atoms, plus `scale`. |
 | `payload.phases.<phase>.space_group` | core | canonical space-group name (core) |  | yes | see the core fields |
 | `payload.phases.<phase>.unit_cell` | core | unit cell (core block) |  | yes | see the core fields |
 | `payload.phases.<phase>.atoms` | core | atoms (core block) |  | yes | see the core fields |
 | `payload.phases.<phase>.scale` | engine | `[value, flag, min, max]` | `arbitrary` | yes | Phase scale factor, >= 0 |
-| `payload.phases.<phase>.scattering_types` | engine | object keyed by name |  | no | Ionic X-ray scattering types by atom label, CIF spelling ('La3+', 'O1-'); an atom left out scatters as the neutral element; cryspy calculator only, and only ions CrysPy has (P-47) |
+| `payload.phases.<phase>.scattering_types` | engine | object keyed by name |  | no | Ionic X-ray scattering types by atom label, CIF spelling ('La3+', 'O1-'); an atom left out scatters as the neutral element; cryspy calculator only, and only ions CrysPy has |
 | `payload.phases.<phase>.scattering_types.<name>` | engine | string |  | yes |  |
-| `payload.phases.<phase>.preferred_orientation` | engine | block |  | no | March-Dollase preferred orientation (one axis, march_r > 0, march_random_fract 0..1); cryspy calculator only -- CrysFML ignores it; left out: none (P-48) |
+| `payload.phases.<phase>.preferred_orientation` | engine | block |  | no | March-Dollase preferred orientation (one axis, march_r > 0, march_random_fract 0..1); cryspy calculator only -- CrysFML ignores it; left out: none |
 | `payload.phases.<phase>.preferred_orientation.model` | engine | `"march_dollase"` |  | yes | The only model in 1.0.0 |
 | `payload.phases.<phase>.preferred_orientation.hkl` | engine | list of 3 |  | yes | Texture axis as Miller indices, not all zero |
 | `payload.phases.<phase>.preferred_orientation.ratio` | engine | `[value, flag, min, max]` |  | yes | March coefficient r: 1 = random, < 1 platy, > 1 needle; > 0 |
 | `payload.phases.<phase>.preferred_orientation.march_random_fract` | engine | `[value, flag, min, max]` |  | yes | Fraction of the sample with no preferred orientation, 0..1 (easydiffraction 'march_random_fract') |
-| `payload.refinement_controls` | engine | block |  | yes | How the pattern is calculated and fitted, all stated (A162). lmfit runs only if a flag is set. |
+| `payload.refinement_controls` | engine | block |  | yes | How the pattern is calculated and fitted, all stated. lmfit runs only if a flag is set. |
 | `payload.refinement_controls.calculator` | engine | `"cryspy"` \| `"crysfml"` |  | yes | easydiffraction calculator; they compute different intensities and offer different peak types (EB-76..EB-79) |
-| `payload.refinement_controls.minimizer` | engine | `"lmfit (leastsq)"` |  | yes | Minimizer (lmfit's Levenberg-Marquardt only, A162) |
+| `payload.refinement_controls.minimizer` | engine | `"lmfit (leastsq)"` |  | yes | Minimizer (lmfit's Levenberg-Marquardt only) |
 | `payload.refinement_controls.max_iterations` | engine | integer |  | yes | easydiffraction max_iterations = lmfit max_nfev: the maximum number of function evaluations (not iterations) |
 | `payload.refinement_controls.chi_square_change_tolerance` | engine | number |  | yes | Relative chi-square change that stops the fit (lmfit ftol) |
 | `payload.refinement_controls.parameter_change_tolerance` | engine | number |  | yes | Relative parameter change that stops the fit (lmfit xtol) |

@@ -200,7 +200,7 @@ reconsider the peak). The floors are listed on the
 
 **Error (topas):**
 ```
-  • ... atoms -> La -> Uiso: Value error, Uiso (TOPAS beq = 8 pi^2 Uiso, limits -10..20) is refined from 0.3, above TOPAS's default maximum 0.2533: TOPAS would move it to the limit without saying so; start at or below 0.2533, or state max to replace TOPAS's limit (A138)
+  • ... atoms -> La -> Uiso: Value error, Uiso (TOPAS beq = 8 pi^2 Uiso, limits -10..20) is refined from 0.3, above TOPAS's default maximum 0.2533: TOPAS would move it to the limit without saying so; start at or below 0.2533, or state max to replace TOPAS's limit
 ```
 A refined start outside a TOPAS default limit on a `null` side is refused;
 state a bound to override TOPAS, or start inside.

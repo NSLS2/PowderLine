@@ -136,13 +136,13 @@ def limit_problems(p: Optional[P], lo: Optional[float], hi: Optional[float], loc
         problems.append(custom_error(
             "topas_default_limit",
             "{what} is refined from {value}, below TOPAS's default minimum {limit}: TOPAS would move it to the "
-            "limit without saying so; start at or above {limit}, or state min to replace TOPAS's limit (A138)",
+            "limit without saying so; start at or above {limit}, or state min to replace TOPAS's limit",
             loc, p.model_dump(), what=what, value=p.value, limit=_limit_text(lo, "min")))
     if hi is not None and p.max is None and p.value > hi:
         problems.append(custom_error(
             "topas_default_limit",
             "{what} is refined from {value}, above TOPAS's default maximum {limit}: TOPAS would move it to the "
-            "limit without saying so; start at or below {limit}, or state max to replace TOPAS's limit (A138)",
+            "limit without saying so; start at or below {limit}, or state max to replace TOPAS's limit",
             loc, p.model_dump(), what=what, value=p.value, limit=_limit_text(hi, "max")))
     return problems
 
@@ -322,7 +322,7 @@ class FullAxialModel(CoreModel):
 
 
 class Capillary(CoreModel):
-    """TOPAS capillary absorption (TOPAS 6 keywords; the focusing-beam keywords are TOPAS 7 only, A143)."""
+    """TOPAS capillary absorption (TOPAS 6 keywords; the focusing-beam keywords are TOPAS 7 only)."""
 
     diameter_mm: P = Field(json_schema_extra=unit_schema(UNIT_MILLIMETRE), description="TOPAS 'capillary_diameter_mm'")
     u_cm_inv: P = Field(json_schema_extra=unit_schema(UNIT_INV_CM),
@@ -606,7 +606,7 @@ class PeakBroadening(CoreModel):
 
 
 class TopasPhase(Phase[BoundedRefinableParameter]):
-    """A topas phase: core's space group, cell and atoms, plus ``scale`` and ``peak_broadening`` (A93).
+    """A topas phase: core's space group, cell and atoms, plus ``scale`` and ``peak_broadening``.
 
     TOPAS rules: a setting TOPAS reads as itself (EB-43); refined cell, ``Uiso``
     (as beq) and ``scale`` starts within TOPAS's fixed default limits where no
@@ -618,12 +618,12 @@ class TopasPhase(Phase[BoundedRefinableParameter]):
                                                       description="Left out: no sample broadening")
     scattering_types: Optional[dict[str, str]] = Field(
         default=None, json_schema_extra=absent_not_null_schema(),
-        description="Ionic scattering types: NOT available in topas 1.0.0 (a validation error; the TOPAS half of "
-                    "P-47 awaits a TOPAS 6 run, T7)")
+        description="Ionic scattering types: not yet available for TOPAS (a validation error until the TOPAS "
+                    "path has been verified on a TOPAS machine)")
     preferred_orientation: Optional[MarchDollase[BoundedRefinableParameter]] = Field(
         default=None, json_schema_extra=absent_not_null_schema(),
-        description="March-Dollase preferred orientation: NOT available in topas 1.0.0 (a validation error; the "
-                    "TOPAS PO(...) macro awaits a TOPAS 6 run, P-48)")
+        description="March-Dollase preferred orientation: not yet available for TOPAS (a validation error until "
+                    "the PO(...) macro path has been verified on a TOPAS machine)")
 
     _topas_not_null = field_validator("peak_broadening", "scattering_types", "preferred_orientation",
                                       mode="before")(absent_not_null)
@@ -644,16 +644,16 @@ class TopasPhase(Phase[BoundedRefinableParameter]):
         if self.scattering_types is not None:
             raise_problems(type(self).__name__, [custom_error(
                 "topas_ions_unavailable",
-                "ionic scattering types are not available for TOPAS in schema 1.0.0: TOPAS spells them 'Fe+3' in "
-                "occ and reports an unknown ion only on its console, and that path has not been run on a TOPAS "
-                "machine (P-08, T7); use the neutral elements, or a gsasii / easydiffraction (cryspy) recipe",
+                "ionic scattering types are not yet available for TOPAS: TOPAS spells them 'Fe+3' in occ and "
+                "reports an unknown ion only on its console, and that path has not yet been verified on a TOPAS "
+                "machine; use the neutral elements, or a gsasii / easydiffraction (cryspy) recipe",
                 ("scattering_types",), self.scattering_types)])
         if self.preferred_orientation is not None:
             raise_problems(type(self).__name__, [custom_error(
                 "topas_po_unavailable",
-                "preferred orientation is not available for TOPAS in schema 1.0.0: the PO(...) March-Dollase macro, "
-                "its bounds and the read-back of the refined r have not been run on a TOPAS machine (P-08, P-48); "
-                "leave preferred_orientation out, or use a gsasii / easydiffraction (cryspy) recipe",
+                "preferred orientation is not yet available for TOPAS: the PO(...) March-Dollase macro, its bounds "
+                "and the read-back of the refined r have not yet been verified on a TOPAS machine; leave "
+                "preferred_orientation out, or use a gsasii / easydiffraction (cryspy) recipe",
                 ("preferred_orientation",), self.preferred_orientation.model_dump())])
         return self
 
@@ -824,7 +824,7 @@ class _TopasRecipe(EngineRecipe):
     gateway_name: ClassVar[str] = "topas"
     schema_declarations: ClassVar[Mapping[str, Any]] = DECLARATIONS
 
-    engine_version: StrictStr = Field(description="TOPAS major version the recipe is written for (A144), e.g. '6'")
+    engine_version: StrictStr = Field(description="TOPAS major version the recipe is written for, e.g. '6'")
 
     @field_validator("engine_version")
     @classmethod

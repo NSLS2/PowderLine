@@ -109,7 +109,7 @@ def test_topas_refuses_preferred_orientation_in_1_0_0():
     r = _lab6("topas"); r["payload"]["phases"]["LaB6"]["preferred_orientation"] = {k: v for k, v in PO_ED.items() if k != "march_random_fract"}
     with pytest.raises(ValidationError) as exc:
         topas_schema.validate_recipe(r)
-    assert any("not available for TOPAS in schema 1.0.0" in msg and "PO(...)" in msg for _, msg in _errors(exc))
+    assert any("not yet available for TOPAS" in msg and "PO(...)" in msg for _, msg in _errors(exc))
     assert "preferred_orientation" not in topas_schema.validate_recipe(_lab6("topas")).model_dump(mode="json")["payload"]["phases"]["LaB6"]
 
 

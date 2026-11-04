@@ -48,7 +48,7 @@ def test_table_has_both_cases_and_all_engines(generated):
     for case in ("LaB6", "DRX_33"):
         engines = {row["engine"] for row in data["cases"][case]["rows"]}
         assert engines == {"GSAS-II", "TOPAS", "easydiffraction"}, (case, engines)
-    assert "not run here, P-08" in md  # the TOPAS rows are labelled as goldens
+    assert "TOPAS 6 (golden)" in md  # the TOPAS rows are labelled as goldens
     assert "Versions and dates" in md
 
 

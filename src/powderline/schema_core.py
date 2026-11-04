@@ -799,7 +799,7 @@ class Atom(CoreModel, Generic[P]):
     x: P = Field(description="Fractional x coordinate")
     y: P = Field(description="Fractional y coordinate")
     z: P = Field(description="Fractional z coordinate")
-    occupancy: P = Field(description="Site occupancy, 0 to 1 inclusive (A76)")
+    occupancy: P = Field(description="Site occupancy, 0 to 1 inclusive")
     Multiplicity: Optional[CoreInt] = Field(default=None, json_schema_extra=absent_not_null_schema(),
                                             description="Site multiplicity; optional, cross-checked when stated")
     ADP: Literal["Uiso", "Uaniso"] = Field(description="Displacement-parameter type")
@@ -955,7 +955,7 @@ class Phase(CoreModel, Generic[P]):
     """
 
     space_group: str = Field(description="gemmi's canonical extended Hermann-Mauguin name, e.g. "
-                                         "'P m -3 m', 'C 1 2/m 1', 'R -3 m:H', 'F d -3 m:2' (A105)")
+                                         "'P m -3 m', 'C 1 2/m 1', 'R -3 m:H', 'F d -3 m:2'")
     unit_cell: UnitCell[P]
     atoms: dict[CoreName, Atom[P]] = Field(
         min_length=1, json_schema_extra=name_keyed,
@@ -1007,7 +1007,7 @@ class Phase(CoreModel, Generic[P]):
             if redeclared:
                 raise TypeError(
                     f"{klass.__name__} redeclares the core phase field(s) {', '.join(redeclared)}; "
-                    "core owns space_group, unit_cell and atoms (A93)"
+                    "core owns space_group, unit_cell and atoms"
                 )
             reused = sorted(n for n in _reserved_phase_members() if n in klass.__dict__ or n in annotations)
             if reused:
@@ -1020,13 +1020,13 @@ class Phase(CoreModel, Generic[P]):
             if entry:
                 raise TypeError(
                     f"{klass.__name__} defines {', '.join(entry)}; a phase model may not override pydantic's "
-                    "entry points, which could skip or replace core's validation (A122)"
+                    "entry points, which could skip or replace core's validation"
                 )
         decorators = cls.__pydantic_decorators__
         replaced = sorted(name for kind, name, func in _core_decorators()
                           if _underlying(getattr(decorators, kind).get(name)) is not func)
         if replaced:
-            raise TypeError(f"{cls.__name__} replaces the core validator(s) {', '.join(replaced)} (A109, A122)")
+            raise TypeError(f"{cls.__name__} replaces the core validator(s) {', '.join(replaced)}")
         core_names = {name for _kind, name, _func in _core_decorators()}
         rewriting = sorted(
             [n for n, d in decorators.model_validators.items() if n not in core_names and d.info.mode != "after"]
@@ -1038,10 +1038,10 @@ class Phase(CoreModel, Generic[P]):
             raise TypeError(
                 f"{cls.__name__}: validator(s) {', '.join(rewriting)} must be 'after' validators (pydantic v2 "
                 "@model_validator / @field_validator): a 'before', 'wrap' or 'plain' validator could rewrite "
-                "the recipe before core reads it, or skip core's validation (A115, A122)"
+                "the recipe before core reads it, or skip core's validation"
             )
         if cls.model_config.get("extra") != "forbid":
-            raise TypeError(f"{cls.__name__} must keep extra='forbid' (A19)")
+            raise TypeError(f"{cls.__name__} must keep extra='forbid'")
         if cls.__pydantic_generic_metadata__["parameters"] and "__orig_bases__" not in cls.__dict__:
             # ``class EnginePhase(Phase)`` forgot the parameter type. A deliberately generic
             # subclass declares ``Generic[P]`` and is checked again when it is validated.
@@ -1663,7 +1663,7 @@ def recipe_validator(models: Mapping[str, type], *, engine: str, title: str) -> 
         return model.model_validate(recipe)
 
     validate_recipe.__doc__ = (f"Validate {article} ``{engine}.*`` recipe (dict or model); return the model "
-                               "(idempotent, A50).")
+                               "(idempotent).")
     return validate_recipe
 
 

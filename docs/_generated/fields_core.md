@@ -19,7 +19,7 @@ Core schema version `1.0.0` (accepted: `==1.0.0`). Where an engine places the Ch
 | `payload.background.chebyshev.coefficients` | list of number |  | yes | Coefficient values |
 | `payload.background.chebyshev.refine_flag` | boolean |  | yes | Whether to refine background |
 | `payload.phases.<phase>` | block |  | yes |  |
-| `payload.phases.<phase>.space_group` | string |  | yes | gemmi's canonical extended Hermann-Mauguin name, e.g. 'P m -3 m', 'C 1 2/m 1', 'R -3 m:H', 'F d -3 m:2' (A105) |
+| `payload.phases.<phase>.space_group` | string |  | yes | gemmi's canonical extended Hermann-Mauguin name, e.g. 'P m -3 m', 'C 1 2/m 1', 'R -3 m:H', 'F d -3 m:2' |
 | `payload.phases.<phase>.unit_cell` | block |  | yes |  |
 | `payload.phases.<phase>.unit_cell.a` | parameter (`[value, flag]`; `[value, flag, min, max]` in engines with bounds) | `angstrom` | yes |  |
 | `payload.phases.<phase>.unit_cell.b` | parameter (`[value, flag]`; `[value, flag, min, max]` in engines with bounds) | `angstrom` | yes |  |
@@ -33,7 +33,7 @@ Core schema version `1.0.0` (accepted: `==1.0.0`). Where an engine places the Ch
 | `payload.phases.<phase>.atoms.<label>.x` | parameter (`[value, flag]`; `[value, flag, min, max]` in engines with bounds) |  | yes | Fractional x coordinate |
 | `payload.phases.<phase>.atoms.<label>.y` | parameter (`[value, flag]`; `[value, flag, min, max]` in engines with bounds) |  | yes | Fractional y coordinate |
 | `payload.phases.<phase>.atoms.<label>.z` | parameter (`[value, flag]`; `[value, flag, min, max]` in engines with bounds) |  | yes | Fractional z coordinate |
-| `payload.phases.<phase>.atoms.<label>.occupancy` | parameter (`[value, flag]`; `[value, flag, min, max]` in engines with bounds) |  | yes | Site occupancy, 0 to 1 inclusive (A76) |
+| `payload.phases.<phase>.atoms.<label>.occupancy` | parameter (`[value, flag]`; `[value, flag, min, max]` in engines with bounds) |  | yes | Site occupancy, 0 to 1 inclusive |
 | `payload.phases.<phase>.atoms.<label>.Multiplicity` | integer |  | no | Site multiplicity; optional, cross-checked when stated |
 | `payload.phases.<phase>.atoms.<label>.ADP` | `"Uiso"` \| `"Uaniso"` |  | yes | Displacement-parameter type |
 | `payload.phases.<phase>.atoms.<label>.Uiso` | parameter (`[value, flag]`; `[value, flag, min, max]` in engines with bounds) | `angstrom^2` | no | Isotropic ADP; required when ADP is 'Uiso', else left out |

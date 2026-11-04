@@ -92,7 +92,7 @@ MODEL_NOTES = {
                      "CS_L 10000 nm fixed; **cell fixed** (fixture)",
     "drx33_rietveld": "TCHZ instrument fixed; Chebyshev; Strain_L/Strain_G per phase; no size term",
     "lab6_crysfml_tch": "Thompson-Cox-Hastings + FCJ axial asymmetry (S/L = H/L = 0.001, fixed); "
-                        "no background peak; no sample broadening (start-dependent, A175)",
+                        "no background peak; no sample broadening (start-dependent)",
     "lab6_cryspy_pv": "pseudo-Voigt, no asymmetry; no background peak; no sample broadening",
     "drx33_two_phase_cryspy": "pseudo-Voigt, no asymmetry; U-V-W-X-Y refined instead of per-phase size/strain",
 }
@@ -201,7 +201,7 @@ def gsasii_recipe(case: str) -> tuple[dict, list[str]]:
     if recipe.get("schema_name", "").startswith("GSASII_"):
         peaks = recipe["payload"].get("background", {}).pop("single_peaks", None)
         if peaks:
-            report.append("payload.background.single_peaks: dropped before conversion (P-01)")
+            report.append("payload.background.single_peaks: dropped before conversion")
         recipe, conv_report = _load_converter().convert(recipe)
         report.extend(conv_report)
     if CASES[case]["free_cell"]:
@@ -224,12 +224,12 @@ def run_gsasii(case: str, work: Path) -> dict:
         raise RuntimeError(f"GSAS-II run of {case} produced no fit: status {result['status']}")
     cells = {phase: _records_to_cell(df.to_dict("records")) for phase, df in result["unit_cell_data"].items()}
     shl = recipe["payload"]["instrument"]["corrections"]["axial_divergence"][0]
-    notes = [f"FCJ axial asymmetry (SH/L {shl})", "no background peak (P-01)"]
+    notes = [f"FCJ axial asymmetry (SH/L {shl})", "no background peak"]
     phases = recipe["payload"]["phases"]
     if any("peak_broadening" in ph for ph in phases.values()):
         notes.append("isotropic size + microstrain refined per phase")
     else:
-        notes.append("size 10 µm / strain 0 defaults (A87/A107), not refined")
+        notes.append("size 10 µm / strain 0 defaults, not refined")
     d = result["engine_details"]
     if d.get("converged") is False:
         notes.append(f"not converged in {recipe['payload']['refinement_controls']['refinement_cycles']} cycles")
@@ -260,7 +260,7 @@ def topas_golden_row(fixture: str) -> dict:
                 shutil.copy(f, out / f.name)
         result = native_run.build_result(model, native, out, [], elapsed=0.0)
     cells = {phase: _records_to_cell(df.to_dict("records")) for phase, df in result["unit_cell_data"].items()}
-    return _row("TOPAS", f"{model.engine_version} (golden; not run here, P-08)", f"golden `{fixture}`",
+    return _row("TOPAS", f"{model.engine_version} (golden)", f"golden `{fixture}`",
                 MODEL_NOTES.get(fixture, ""), result, cells, _refined_cell(recipe),
                 {"golden_files": [f.name for f in files]})
 
@@ -348,7 +348,7 @@ def render_markdown(data: dict, generated: dict) -> str:
         rows = block["rows"]
         ref_row = next(r for r in rows if r["engine"] == "GSAS-II")
         lines += [f"### {case}", ""]
-        lines += [f"Fit window and points: {rows[0]['n_points']} points (every engine scores the same points; A149)."
+        lines += [f"Fit window and points: {rows[0]['n_points']} points (every engine scores the same points)."
                   if len({r['n_points'] for r in rows}) == 1 else
                   "Points per engine: " + ", ".join(f"{r['engine']} {r['n_points']}" for r in rows), ""]
         lines += ["| Engine (version) | Source | Model | Varied | Rwp % | Rexp % | GoF | Warnings |",
@@ -399,7 +399,7 @@ def render_markdown(data: dict, generated: dict) -> str:
     reruns = data.get("easydiffraction_reruns") or []
     if reruns:
         lines += ["### easydiffraction goldens reproduced", "",
-                  "| Fixture | Rwp % (rerun / golden) | Worst cell deviation (rel.) | Within A179 (1e-4) | Run date |",
+                  "| Fixture | Rwp % (rerun / golden) | Worst cell deviation (rel.) | Within 1e-4 | Run date |",
                   "|---|---:|---:|---|---|"]
         for x in reruns:
             lines.append(f"| `{x['fixture']}` | {x['rwp']:.3f} / {x['golden_rwp']:.3f} | {x['cell_worst_rel']:.1e} | "
@@ -417,7 +417,7 @@ def render_markdown(data: dict, generated: dict) -> str:
     if tp:
         lines.append(f"- TOPAS: TOPAS-64 Version {tp[0]['engine_version'].split()[0]} goldens "
                      "(`tests/data/topas/native/golden/`, TOPAS machine runs of 2026-10-09); **not executed "
-                     "for this page** (P-08): the rows are the gateway's result built from the committed files.")
+                     "for this page**: the rows are the gateway's result built from the committed files.")
     if ed:
         v = ed[0].get("versions", {})
         lines.append("- easydiffraction goldens (`tests/data/easydiffraction/native/golden/`, runs of 2026-10-09): "

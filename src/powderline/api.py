@@ -198,7 +198,7 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
         if name in engine_options:
             raise TypeError(
                 f"{name} is not a powderline.run() option: it is the gateway's test-only bypass of the "
-                "engine version check (A53); call the gateway's run() directly for compatibility testing")
+                "engine version check; call the gateway's run() directly for compatibility testing")
     gateway = gateway_for(recipe)
     if validate_only:
         return gateway.run(recipe, output_dir, verbose=verbose, validate_only=True, **engine_options)

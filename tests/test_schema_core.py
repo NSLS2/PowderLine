@@ -1539,7 +1539,7 @@ def test_phase_reserved_field_cannot_be_redeclared(field):
     with pytest.raises(TypeError) as exc_info:
         type("EnginePhase", (Phase[RP],), {"__annotations__": {field: int}, "__module__": __name__})
     assert str(exc_info.value) == (f"EnginePhase redeclares the core phase field(s) {field}; "
-                                   "core owns space_group, unit_cell and atoms (A93)")
+                                   "core owns space_group, unit_cell and atoms")
 
 
 def test_phase_reserved_fields_guarded_below_an_engine_subclass():
@@ -1618,7 +1618,7 @@ def test_phase_engine_subclass_must_keep_extra_forbid():
     with pytest.raises(TypeError) as exc_info:
         class EnginePhase(Phase[RP]):
             model_config = ConfigDict(extra="allow")
-    assert str(exc_info.value) == "EnginePhase must keep extra='forbid' (A19)"
+    assert str(exc_info.value) == "EnginePhase must keep extra='forbid'"
 
 
 def test_phase_engine_validators_with_their_own_names_run_with_core_rules():

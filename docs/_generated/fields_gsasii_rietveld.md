@@ -5,7 +5,7 @@
 | Field | Owner | Type | Unit | Required | Notes |
 |---|---|---|---|---|---|
 | `payload.xrd_data` | core | xrd_data (core block) |  | yes | Measured pattern: 2theta, intensity, weights. |
-| `payload.instrument` | engine | block |  | yes | The instrument, single source (A99, A103): the gateway builds GSAS-II's instrument parameters from it. |
+| `payload.instrument` | engine | block |  | yes | The instrument, single source: the gateway builds GSAS-II's instrument parameters from it. |
 | `payload.instrument.description` | engine | string |  | no | Free text, e.g. the beamline |
 | `payload.instrument.radiation` | engine | block |  | yes | Radiation: GSAS-II type `PXC` (powder X-ray, constant wavelength) only; one wavelength. |
 | `payload.instrument.radiation.type` | engine | `"PXC"` |  | yes | GSAS-II instrument type; 'PXC' only (Kα doublets, TOF and neutron are not supported) |
@@ -16,7 +16,7 @@
 | `payload.instrument.corrections` | engine | block |  | yes | Instrument corrections: zero shift, polarization, axial divergence (GSAS-II 'SH/L'). |
 | `payload.instrument.corrections.zero_shift` | engine | `[value, flag]` | `centidegree 2theta` | yes | GSAS-II 'Zero' |
 | `payload.instrument.corrections.polarization` | engine | `[value, flag]` | `dimensionless` | yes | GSAS-II 'Polariz.' |
-| `payload.instrument.corrections.axial_divergence` | engine | `[value, flag]` | `dimensionless` | yes | GSAS-II 'SH/L' (asymmetry); at least 0.002 (GSAS-II's own floor, A91) |
+| `payload.instrument.corrections.axial_divergence` | engine | `[value, flag]` | `dimensionless` | yes | GSAS-II 'SH/L' (asymmetry); at least 0.002 (GSAS-II's own floor) |
 | `payload.instrument.broadening` | engine | block |  | yes | Instrument profile (Caglioti U, V, W; Lorentzian X, Y, Z). |
 | `payload.instrument.broadening.U` | engine | `[value, flag]` | `centidegree^2 2theta` | yes |  |
 | `payload.instrument.broadening.V` | engine | `[value, flag]` | `centidegree^2 2theta` | yes |  |
@@ -26,19 +26,19 @@
 | `payload.instrument.broadening.Z` | engine | `[value, flag]` | `centidegree 2theta` | yes |  |
 | `payload.fit_range` | core | fit_range (core block) | `degree 2theta` | no | Left out: the data's full 2theta range |
 | `payload.background` | engine | block |  | no | Background: a Chebyshev polynomial (GSAS-II `chebyschev-1`) and optional single peaks. |
-| `payload.background.chebyshev` | core | Chebyshev background (core block) |  | no | Left out: one fixed Chebyshev term 0.0 (no background), with the warning gsasii_background_default_applied (P-33) |
+| `payload.background.chebyshev` | core | Chebyshev background (core block) |  | no | Left out: one fixed Chebyshev term 0.0 (no background), with the warning gsasii_background_default_applied |
 | `payload.background.single_peaks` | engine | block |  | no | Left out: no background peaks |
 | `payload.background.single_peaks.positions` | engine | list of `[value, flag]` | `degree 2theta` | yes |  |
 | `payload.background.single_peaks.intensities` | engine | list of `[value, flag]` | `arbitrary` | yes |  |
 | `payload.background.single_peaks.pv_gaussian_sigma_sq` | engine | list of `[value, flag]` | `centidegree^2 2theta` | yes |  |
 | `payload.background.single_peaks.pv_lorentzian_gamma` | engine | list of `[value, flag]` | `centidegree 2theta` | yes |  |
 | `payload.phases` | engine | object keyed by name |  | yes |  |
-| `payload.phases.<phase>` | engine | block |  | yes | A gsasii phase: core's space group, cell and atoms, plus `scale` and `peak_broadening` (A93). |
+| `payload.phases.<phase>` | engine | block |  | yes | A gsasii phase: core's space group, cell and atoms, plus `scale` and `peak_broadening`. |
 | `payload.phases.<phase>.space_group` | core | canonical space-group name (core) |  | yes | see the core fields |
 | `payload.phases.<phase>.unit_cell` | core | unit cell (core block) |  | yes | see the core fields |
 | `payload.phases.<phase>.atoms` | core | atoms (core block) |  | yes | see the core fields |
 | `payload.phases.<phase>.scale` | engine | `[value, flag]` | `arbitrary` | yes | Phase scale factor, >= 0 (0 allowed for reusable recipes) |
-| `payload.phases.<phase>.peak_broadening` | engine | block |  | no | Left out (in whole or part): 10 um, 0 microstrain, isotropic, fixed, with a warning (A107) |
+| `payload.phases.<phase>.peak_broadening` | engine | block |  | no | Left out (in whole or part): 10 um, 0 microstrain, isotropic, fixed, with a warning |
 | `payload.phases.<phase>.peak_broadening.size_broadening` | engine | block |  | no | Crystallite-size broadening; isotropic only in gsasii 1.0.0. |
 | `payload.phases.<phase>.peak_broadening.size_broadening.model` | engine | `"isotropic"` |  | yes | 'isotropic' (uniaxial and ellipsoidal are not supported) |
 | `payload.phases.<phase>.peak_broadening.size_broadening.isotropic_size` | engine | `[value, flag]` | `micrometre` | yes | > 0 |
@@ -47,11 +47,11 @@
 | `payload.phases.<phase>.peak_broadening.strain_broadening.model` | engine | `"isotropic"` |  | yes | 'isotropic' (uniaxial and generalized are not supported) |
 | `payload.phases.<phase>.peak_broadening.strain_broadening.isotropic_strain` | engine | `[value, flag]` | `microstrain` | yes | Microstrain, Δd/d × 10^6 |
 | `payload.phases.<phase>.peak_broadening.strain_broadening.LG_eta` | engine | `[value, flag]` | `dimensionless` | yes | Lorentzian fraction of the strain profile (1 = Lorentzian) |
-| `payload.phases.<phase>.scattering_types` | engine | object keyed by name |  | no | Ionic X-ray scattering types by atom label, CIF spelling ('La3+', 'O2-'); an atom left out scatters as the neutral element; only ions GSAS-II 5.7.9 has a form factor for (P-47) |
+| `payload.phases.<phase>.scattering_types` | engine | object keyed by name |  | no | Ionic X-ray scattering types by atom label, CIF spelling ('La3+', 'O2-'); an atom left out scatters as the neutral element; only ions GSAS-II 5.7.9 has a form factor for |
 | `payload.phases.<phase>.scattering_types.<name>` | engine | string |  | yes |  |
-| `payload.phases.<phase>.preferred_orientation` | engine | block |  | no | March-Dollase preferred orientation (GSAS-II 'MD': one axis, coefficient r > 0); left out: none (P-48) |
+| `payload.phases.<phase>.preferred_orientation` | engine | block |  | no | March-Dollase preferred orientation (GSAS-II 'MD': one axis, coefficient r > 0); left out: none |
 | `payload.phases.<phase>.preferred_orientation.model` | engine | `"march_dollase"` |  | yes | The only model in 1.0.0 |
 | `payload.phases.<phase>.preferred_orientation.hkl` | engine | list of 3 |  | yes | Texture axis as Miller indices, not all zero |
 | `payload.phases.<phase>.preferred_orientation.ratio` | engine | `[value, flag]` |  | yes | March coefficient r: 1 = random, < 1 platy, > 1 needle; > 0 |
-| `payload.refinement_controls` | engine | block |  | yes | Refinement controls; `refinement_cycles == 1` is a simulation (nothing refined, A88). |
+| `payload.refinement_controls` | engine | block |  | yes | Refinement controls; `refinement_cycles == 1` is a simulation (nothing refined). |
 | `payload.refinement_controls.refinement_cycles` | engine | integer |  | no | GSAS-II least-squares cycles; default `5` |

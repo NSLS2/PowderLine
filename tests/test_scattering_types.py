@@ -132,6 +132,6 @@ def test_topas_refuses_ions_in_1_0_0_naming_the_topas_item():
     with pytest.raises(ValidationError) as exc:
         topas_schema.validate_recipe(r)
     errs = _errors(exc)
-    assert any("not available for TOPAS in schema 1.0.0" in msg and "T7" in msg for _, msg in errs), errs
+    assert any("not yet available for TOPAS" in msg and "verified on a TOPAS machine" in msg for _, msg in errs), errs
     plain = topas_schema.validate_recipe(_lab6("topas")).model_dump(mode="json")
     assert "scattering_types" not in plain["payload"]["phases"]["LaB6"]

@@ -184,7 +184,7 @@ def run_native(model, output_dir, *, base_name: str | None = None, topas_dir=Non
             message=(f"TOPAS is not configured, so only {base}.inp and {base}.xye were written (generate-only). "
                      "To run TOPAS, set --topas-dir (the folder containing tc.exe) or topas.dir in "
                      ".powderline_config.yaml and declare its version (--topas-version / topas.version), or run "
-                     "the INP on the TOPAS machine; PowderLine never guesses where TOPAS is (P-35)"))
+                     "the INP on the TOPAS machine; PowderLine never guesses where TOPAS is"))
         env = envelopes.generated_envelope(
             elapsed=time.time() - started, method="topas_generate_only", warnings=validated_warnings + [note],
             output_files=sorted(str(f) for f in out.glob("*") if f.is_file()), simulation_mode=native.simulation,
@@ -303,7 +303,7 @@ def _nearest(grid: np.ndarray, x: np.ndarray) -> np.ndarray:
 
 
 def _diverged(what: str) -> EngineExecutionError:
-    return EngineExecutionError(f"the refinement diverged: {what} is not finite (A130)", reason="diverged")
+    return EngineExecutionError(f"the refinement diverged: {what} is not finite", reason="diverged")
 
 
 def build_result(model, native: NativeInput, out: Path, validated_warnings: list, *, elapsed: float,
@@ -580,7 +580,7 @@ def _background_column(model, native: NativeInput, out: Path, x: np.ndarray):
     return column, StructuredWarning(
         code="topas_background_not_calculated",
         message=(f"the background column is empty where TOPAS's background run ({path.name}) gave no value: "
-                 "TOPAS 6 cannot report the background of the fit itself (A152)"),
+                 "TOPAS 6 cannot report the background of the fit itself"),
         field_path="payload.background")
 
 

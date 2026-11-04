@@ -4,7 +4,7 @@
 
 | Field | Owner | Type | Unit | Required | Notes |
 |---|---|---|---|---|---|
-| `engine_version` | engine | string |  | yes | TOPAS major version the recipe is written for (A144), e.g. '6' |
+| `engine_version` | engine | string |  | yes | TOPAS major version the recipe is written for, e.g. '6' |
 | `payload.xrd_data` | core | xrd_data (core block) |  | yes | Measured pattern: 2theta, intensity, weights. |
 | `payload.fit_range` | core | fit_range (core block) | `degree 2theta` | no | Left out: the data's full 2theta range |
 | `payload.instrument` | engine | block |  | yes | The instrument: emission line, radii, corrections, peak type. |
@@ -35,7 +35,7 @@
 | `payload.instrument.corrections.Full_Axial_Model.primary_soller_angle` | engine | `[value, flag, min, max]` | `degree` | no |  |
 | `payload.instrument.corrections.Full_Axial_Model.secondary_soller_angle` | engine | `[value, flag, min, max]` | `degree` | no |  |
 | `payload.instrument.corrections.Full_Axial_Model.axial_n_beta` | engine | integer |  | yes | TOPAS 'axial_n_beta': rays per point source |
-| `payload.instrument.corrections.capillary` | engine | block |  | no | TOPAS capillary absorption (TOPAS 6 keywords; the focusing-beam keywords are TOPAS 7 only, A143). |
+| `payload.instrument.corrections.capillary` | engine | block |  | no | TOPAS capillary absorption (TOPAS 6 keywords; the focusing-beam keywords are TOPAS 7 only). |
 | `payload.instrument.corrections.capillary.diameter_mm` | engine | `[value, flag, min, max]` | `millimetre` | yes | TOPAS 'capillary_diameter_mm' |
 | `payload.instrument.corrections.capillary.u_cm_inv` | engine | `[value, flag, min, max]` | `1/cm` | yes | TOPAS 'capillary_u_cm_inv': linear absorption coefficient |
 | `payload.instrument.corrections.capillary.beam` | engine | `"parallel"` \| `"divergent"` |  | yes | TOPAS 'capillary_parallel_beam' or 'capillary_divergent_beam' (the capillary is assumed fully illuminated) |
@@ -58,7 +58,7 @@
 | `payload.refinement_controls.chi2_convergence_criteria` | engine | number |  | yes | TOPAS 'chi2_convergence_criteria' |
 | `payload.refinement_controls.x_calculation_step` | engine | number | `degree 2theta` | yes | TOPAS 'x_calculation_step' (required for .xye data) |
 | `payload.phases` | engine | object keyed by name |  | yes |  |
-| `payload.phases.<phase>` | engine | block |  | yes | A topas phase: core's space group, cell and atoms, plus `scale` and `peak_broadening` (A93). |
+| `payload.phases.<phase>` | engine | block |  | yes | A topas phase: core's space group, cell and atoms, plus `scale` and `peak_broadening`. |
 | `payload.phases.<phase>.space_group` | core | canonical space-group name (core) |  | yes | see the core fields |
 | `payload.phases.<phase>.unit_cell` | core | unit cell (core block) |  | yes | see the core fields |
 | `payload.phases.<phase>.atoms` | core | atoms (core block) |  | yes | see the core fields |
@@ -72,9 +72,9 @@
 | `payload.phases.<phase>.peak_broadening.strain_broadening.model` | engine | `"isotropic"` |  | yes |  |
 | `payload.phases.<phase>.peak_broadening.strain_broadening.Strain_L` | engine | `[value, flag, min, max]` | `degree 2theta` | no |  |
 | `payload.phases.<phase>.peak_broadening.strain_broadening.Strain_G` | engine | `[value, flag, min, max]` | `degree 2theta` | no |  |
-| `payload.phases.<phase>.scattering_types` | engine | object keyed by name |  | no | Ionic scattering types: NOT available in topas 1.0.0 (a validation error; the TOPAS half of P-47 awaits a TOPAS 6 run, T7) |
+| `payload.phases.<phase>.scattering_types` | engine | object keyed by name |  | no | Ionic scattering types: not yet available for TOPAS (a validation error until the TOPAS path has been verified on a TOPAS machine) |
 | `payload.phases.<phase>.scattering_types.<name>` | engine | string |  | yes |  |
-| `payload.phases.<phase>.preferred_orientation` | engine | block |  | no | March-Dollase preferred orientation: NOT available in topas 1.0.0 (a validation error; the TOPAS PO(...) macro awaits a TOPAS 6 run, P-48) |
+| `payload.phases.<phase>.preferred_orientation` | engine | block |  | no | March-Dollase preferred orientation: not yet available for TOPAS (a validation error until the PO(...) macro path has been verified on a TOPAS machine) |
 | `payload.phases.<phase>.preferred_orientation.model` | engine | `"march_dollase"` |  | yes | The only model in 1.0.0 |
 | `payload.phases.<phase>.preferred_orientation.hkl` | engine | list of 3 |  | yes | Texture axis as Miller indices, not all zero |
 | `payload.phases.<phase>.preferred_orientation.ratio` | engine | `[value, flag, min, max]` |  | yes | March coefficient r: 1 = random, < 1 platy, > 1 needle; > 0 |

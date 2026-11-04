@@ -5,7 +5,7 @@
 | Field | Owner | Type | Unit | Required | Notes |
 |---|---|---|---|---|---|
 | `payload.xrd_data` | core | xrd_data (core block) |  | yes | Measured pattern: 2theta, intensity, weights. |
-| `payload.instrument` | engine | block |  | yes | The instrument, single source (A99, A103): the gateway builds GSAS-II's instrument parameters from it. |
+| `payload.instrument` | engine | block |  | yes | The instrument, single source: the gateway builds GSAS-II's instrument parameters from it. |
 | `payload.instrument.description` | engine | string |  | no | Free text, e.g. the beamline |
 | `payload.instrument.radiation` | engine | block |  | yes | Radiation: GSAS-II type `PXC` (powder X-ray, constant wavelength) only; one wavelength. |
 | `payload.instrument.radiation.type` | engine | `"PXC"` |  | yes | GSAS-II instrument type; 'PXC' only (Kα doublets, TOF and neutron are not supported) |
@@ -16,7 +16,7 @@
 | `payload.instrument.corrections` | engine | block |  | yes | Instrument corrections: zero shift, polarization, axial divergence (GSAS-II 'SH/L'). |
 | `payload.instrument.corrections.zero_shift` | engine | `[value, flag]` | `centidegree 2theta` | yes | GSAS-II 'Zero' |
 | `payload.instrument.corrections.polarization` | engine | `[value, flag]` | `dimensionless` | yes | GSAS-II 'Polariz.' |
-| `payload.instrument.corrections.axial_divergence` | engine | `[value, flag]` | `dimensionless` | yes | GSAS-II 'SH/L' (asymmetry); at least 0.002 (GSAS-II's own floor, A91) |
+| `payload.instrument.corrections.axial_divergence` | engine | `[value, flag]` | `dimensionless` | yes | GSAS-II 'SH/L' (asymmetry); at least 0.002 (GSAS-II's own floor) |
 | `payload.instrument.broadening` | engine | block |  | yes | Instrument profile (Caglioti U, V, W; Lorentzian X, Y, Z). |
 | `payload.instrument.broadening.U` | engine | `[value, flag]` | `centidegree^2 2theta` | yes |  |
 | `payload.instrument.broadening.V` | engine | `[value, flag]` | `centidegree^2 2theta` | yes |  |
@@ -26,7 +26,7 @@
 | `payload.instrument.broadening.Z` | engine | `[value, flag]` | `centidegree 2theta` | yes |  |
 | `payload.fit_range` | core | fit_range (core block) | `degree 2theta` | no | Left out: the data's full 2theta range |
 | `payload.background` | engine | block |  | no | Background: a Chebyshev polynomial (GSAS-II `chebyschev-1`) and optional single peaks. |
-| `payload.background.chebyshev` | core | Chebyshev background (core block) |  | no | Left out: one fixed Chebyshev term 0.0 (no background), with the warning gsasii_background_default_applied (P-33) |
+| `payload.background.chebyshev` | core | Chebyshev background (core block) |  | no | Left out: one fixed Chebyshev term 0.0 (no background), with the warning gsasii_background_default_applied |
 | `payload.background.single_peaks` | engine | block |  | no | Left out: no background peaks |
 | `payload.background.single_peaks.positions` | engine | list of `[value, flag]` | `degree 2theta` | yes |  |
 | `payload.background.single_peaks.intensities` | engine | list of `[value, flag]` | `arbitrary` | yes |  |

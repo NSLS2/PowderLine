@@ -4,7 +4,7 @@
 
 | Field | Owner | Type | Unit | Required | Notes |
 |---|---|---|---|---|---|
-| `engine_version` | engine | string |  | yes | TOPAS major version the recipe is written for (A144), e.g. '6' |
+| `engine_version` | engine | string |  | yes | TOPAS major version the recipe is written for, e.g. '6' |
 | `payload.xrd_data` | core | xrd_data (core block) |  | yes | Measured pattern: 2theta, intensity, weights. |
 | `payload.fit_range` | core | fit_range (core block) | `degree 2theta` | no | Left out: the data's full 2theta range |
 | `payload.instrument` | engine | block |  | yes | The instrument: emission line, radii, corrections, peak type. |
@@ -35,7 +35,7 @@
 | `payload.instrument.corrections.Full_Axial_Model.primary_soller_angle` | engine | `[value, flag, min, max]` | `degree` | no |  |
 | `payload.instrument.corrections.Full_Axial_Model.secondary_soller_angle` | engine | `[value, flag, min, max]` | `degree` | no |  |
 | `payload.instrument.corrections.Full_Axial_Model.axial_n_beta` | engine | integer |  | yes | TOPAS 'axial_n_beta': rays per point source |
-| `payload.instrument.corrections.capillary` | engine | block |  | no | TOPAS capillary absorption (TOPAS 6 keywords; the focusing-beam keywords are TOPAS 7 only, A143). |
+| `payload.instrument.corrections.capillary` | engine | block |  | no | TOPAS capillary absorption (TOPAS 6 keywords; the focusing-beam keywords are TOPAS 7 only). |
 | `payload.instrument.corrections.capillary.diameter_mm` | engine | `[value, flag, min, max]` | `millimetre` | yes | TOPAS 'capillary_diameter_mm' |
 | `payload.instrument.corrections.capillary.u_cm_inv` | engine | `[value, flag, min, max]` | `1/cm` | yes | TOPAS 'capillary_u_cm_inv': linear absorption coefficient |
 | `payload.instrument.corrections.capillary.beam` | engine | `"parallel"` \| `"divergent"` |  | yes | TOPAS 'capillary_parallel_beam' or 'capillary_divergent_beam' (the capillary is assumed fully illuminated) |
