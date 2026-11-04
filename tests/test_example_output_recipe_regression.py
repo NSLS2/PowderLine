@@ -44,10 +44,14 @@ INVALID_PER_ENGINE = {"example_LaB6_ionic/easydiffraction"}
 
 #: The older gsasii references that carry output_recipe.json + parameter_dispositions.csv
 #: (maintainer decision on the 0.2.0 handover question Q3; equivalence record in the devkit,
-#: tasks/cleanup-step3-q3-equivalence.md). example_DRX_33, example_DRX_33_anisoADP and
-#: example_DRX_33_atomrefine are not added yet: a fresh run on the reference build did not
-#: reproduce every committed file byte for byte (see the record).
+#: tasks/cleanup-step3-q3-equivalence.md). The three DRX_33 refinements reproduce their older
+#: reference files only within the regression tolerances on this build (phase-angle sign flips
+#: 180/-180, last-digit drift); their two files were added from this build without touching the
+#: older ones (maintainer, option a).
 OUTPUT_RECIPE_CASES = [
+    "example_DRX_33",
+    "example_DRX_33_anisoADP",
+    "example_DRX_33_atomrefine",
     "example_DRX_33_simulation",
     "example_DRX_33_strainonly",
     "example_LaB6",
