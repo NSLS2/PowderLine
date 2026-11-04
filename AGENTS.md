@@ -17,8 +17,8 @@ drive schema evolution and are the regression references.
 deliberate changes, frozen code, engine pins, review, "ask, don't
 assume"), `docs/SCHEMA_HISTORY.md` (schema facts), `docs/engine-behavior.md`
 (what the engines do and PowderLine's policy), `docs/known_issues.md`
-(`KI-NN`). Maintainers who have their private design records checked out as
-`_dev/` also follow `_dev/AGENTS.md`. **If a decision is not written down,
+(`KI-NN`). Maintainers who work with the private design records (the devkit)
+also follow the devkit's own agent guidance. **If a decision is not written down,
 stop and ask the maintainer; do not infer it from the code or from another
 engine.**
 
@@ -121,19 +121,25 @@ tooling). `pixi install -e <env>`.
 - `pixi run -e gsasii kicker <recipe.json>` — run a `gsasii.*` recipe
   (`--use-server`/`--no-server`, `--output DIR`, `--verbose`);
   `pixi run -e easydiffraction kicker <recipe.json>` for `easydiffraction.*`;
-  `pixi run kicker <recipe.json> --topas-version 6 [--topas-dir DIR]` for
-  `topas.*` (Windows with `tc.exe`; elsewhere writes the INP and fails).
+  `pixi run kicker <recipe.json> --topas-version 6 [--topas-dir DIR]
+  [--topas-timeout SECONDS]` for `topas.*` (runs `tc.exe` on Windows; when no
+  `tc.exe` is found the run is generate-only: the INP and `.xye` are written,
+  the result has status `generated` and the CLI exits 0).
   After `pixi reinstall powderline` the installed command is `powderline …`.
 - `pixi run test` — the engine-free suites (`core or topas_gen`, any env);
   `pixi run -e gsasii test-gsasii`, `pixi run -e easydiffraction
-  test-easydiffraction` per engine; `pixi run test-all` — everything (`dev`).
+  test-easydiffraction` per engine; `pixi run test-topas` — `topas_gen` +
+  `topas_exec` (the exec tests run `tc.exe` only when `POWDERLINE_TOPAS_DIR`
+  and `POWDERLINE_TOPAS_VERSION` are set, on the TOPAS Windows machine; else
+  they skip); `pixi run test-all` — everything (`dev`).
 - `pixi run -e gsasii gsas-server start|status|stop|restart|logs` — the
   persistent GSAS-II server (task in the `gsasii` feature; without `-e` pixi
   reports it ambiguous).
 - `pixi run docs` / `pixi run docs-clean` — Sphinx HTML with `-W` (zero warnings).
 - `PYTHONPATH=src python scripts/gen_schema_field_tables.py [--check]` — after
   editing a schema module or a gateway's declarations (regenerates
-  `docs/_generated/fields_*.md`, `support_matrix.md`).
+  `docs/_generated/fields_*.md`, `support_matrix.md`); `pixi run fields-check`
+  runs the `--check` form (fails when the committed fragments are stale).
 - `pixi reinstall powderline --all` — after editing `[project.entry-points]`
   or `[project.scripts]` in `pyproject.toml`: entry-point metadata is written
   at install time, per env; the registry finds nothing until the editable

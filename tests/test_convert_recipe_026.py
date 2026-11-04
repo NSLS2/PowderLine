@@ -230,7 +230,7 @@ def test_multiplicity_kept_or_dropped():
     assert new["payload"]["phases"]["LaB6"]["atoms"]["B"]["Multiplicity"] == 6
     new, report = _convert(_load("example_DRX_33"))
     assert "Multiplicity" not in new["payload"]["phases"]["Li4MgWO6_SG12"]["atoms"]["O1"]
-    assert "atoms.O1.Multiplicity: stated 1, derived 8: dropped (A101)" in report
+    assert "atoms.O1.Multiplicity: stated 1, derived 8: dropped (the site symmetry fixes it)" in report
 
 
 def test_silent_defaults_written():
@@ -374,7 +374,7 @@ def test_committed_example(path):
     model = validate_recipe(new)
     assert validate_recipe(json.loads(json.dumps(new))).model_dump() == model.model_dump()
     if name.startswith("example_DRX_33"):
-        assert "Multiplicity: stated 1, derived 8: dropped (A101)" in "\n".join(report)
+        assert "Multiplicity: stated 1, derived 8: dropped (the site symmetry fixes it)" in "\n".join(report)
     if name == "example_LaB6_singlepeakfit":
         assert "SH/L 0.0 -> 0.002" in "\n".join(report)
 

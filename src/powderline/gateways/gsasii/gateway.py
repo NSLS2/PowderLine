@@ -98,7 +98,7 @@ def run(
 ) -> dict:
     """Execute a GSAS-II refinement from an in-memory recipe.
 
-    The full pipeline: schema validation, the engine version check (A44),
+    The full pipeline: schema validation, the engine version check,
     output directory creation, and refinement execution with automatic
     backend selection. Reached through ``powderline.run()`` for a ``gsasii.*``
     recipe, which forwards ``execution_mode``.
@@ -136,11 +136,11 @@ def run(
             (``1``/``true``/``yes``/``on``), ``'auto'`` runs in-process without
             starting a server and ``'server'`` returns an error result.
         allow_unsupported_engine_version: test-only bypass of the engine
-            version check (A53). Not reachable through ``powderline.run()``.
+            version check. Not reachable through ``powderline.run()``.
 
     Returns:
         **Normal refinement** (``validate_only=False``) — the ``ok`` envelope
-        (re/12, :mod:`powderline.results`); a failed run raises, see below:
+        (:mod:`powderline.results`); a failed run raises, see below:
 
         - ``status`` (``"ok"``), ``converged`` (bool, or ``None`` for a
           simulation and for single peak fitting), ``envelope_version``
@@ -167,14 +167,13 @@ def run(
         - ``peak_fit`` (dict | None) — SPF only: ``{"parameters": [{"name",
           "value", "esd"}]}``, every parameter GSAS-II's peak fit varied by
           its own name (``Back;0``, ``U``, ``pos3`` …) with its ESD; the
-          source of the output recipe for a peak fit (re/21)
+          source of the output recipe for a peak fit
         - ``output_files`` (list[str]) — paths written to ``output_dir``
         - ``r_exp``, ``gof``, ``chi2_red``, ``simulation_mode``,
-          ``engine_details`` and the structured ``warnings`` list (A125,
-          A129, A115)
+          ``engine_details`` and the structured ``warnings`` list
 
         **Validate-only** (``validate_only=True``) — the summary every gateway
-        returns (``powderline.registry.validate_only_summary``, P-28): no
+        returns (``powderline.registry.validate_only_summary``): no
         refinement executed, no output files written, no ``run_id``;
         ``engine`` holds ``refinement_cycles``.
 

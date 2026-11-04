@@ -46,8 +46,8 @@ ENGINES = {
         "task": "test-topas",
         "spec_file": "src/powderline/gateways/topas/schema.py",
         "spec_name": "SUPPORTED_ENGINE_VERSION_SPEC",
-        "pin": "none: TOPAS is not installable; the recipe's engine_version (A144) and the installed version "
-               "declared in .powderline_config.yaml (A145)",
+        "pin": "none: TOPAS is not installable; the recipe's engine_version and the installed version "
+               "declared in .powderline_config.yaml (or --topas-version)",
         "pin_pattern": None,
     },
 }
@@ -118,7 +118,7 @@ def main(argv: list[str] | None = None) -> int:
             "   - regenerate the table: pixi run -e easydiffraction python scripts/generate_easydiffraction_space_groups.py",
             "   - re-verify the settings (about 1.5 h, at most 4 workers):",
             "       pixi run -e easydiffraction python scripts/verify_easydiffraction_settings.py --workers 4",
-            "   - re-run the devkit engine-issue reproductions (engine-issues/repro/easydiffraction/)",
+            "   - re-run the maintainers' engine-issue reproductions for easydiffraction (an upstream fix may retire a workaround)",
         ]
     else:
         lines += [
@@ -126,8 +126,7 @@ def main(argv: list[str] | None = None) -> int:
             f"{info['spec_name']} is derived from it; several versions need a decision on its form)",
             f"   - .powderline_config.yaml on the TOPAS machine: topas.dir / topas.version = {candidate}",
             "   - the generation goldens (tests/data/topas/native/golden/<version>/, by the fixture's engine_version)",
-            "     are TOPAS 6 output: a TOPAS 7 run needs the TOPAS 7 machine (A182) and is out of scope until the",
-            "     maintainer says otherwise (A143)",
+            "     are TOPAS 6 output: a TOPAS 7 run needs a TOPAS 7 installation; TOPAS 7 support is a separate addition",
         ]
     env_flag = f"-e {info['env']} " if info["env"] else ""
     lines += [
@@ -135,8 +134,8 @@ def main(argv: list[str] | None = None) -> int:
         f"2. Run the suite incl. slow:  pixi run {env_flag}{info['task']}",
         f"   (equivalently: pixi run {env_flag}pytest -m \"{'topas_gen or topas_exec' if args.engine == 'topas' else args.engine}\")",
         "",
-        f"3. Record pass/fail and the numeric deltas of every regression case in the devkit:",
-        f"   dossiers/multi-engine/tasks/{report_name}",
+        "3. Record pass/fail and the numeric deltas of every regression case in a compatibility report:",
+        f"   {report_name}",
         "",
         "4. Pass: one PR widening the spec + moving the pin + updating the support matrix; references unchanged.",
         "   Fail: record the behaviour change; decide schema bump vs stay pinned. The pin does not move before that.",

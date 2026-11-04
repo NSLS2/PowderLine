@@ -41,12 +41,12 @@ class ValidationResult:
     """What :func:`validate` returns: the validated recipe and its warnings.
 
     - ``recipe``: the gateway's validated model (e.g. ``GsasiiRietveldRecipe``,
-      ``TopasRietveldRecipe``). Validation never changes a recipe (A115), so
+      ``TopasRietveldRecipe``). Validation never changes a recipe, so
       the model is the recipe as written plus the schema's defaults.
     - ``warnings``: the structured warnings (:class:`~powderline.exceptions.StructuredWarning`
       dicts: ``code``, ``message``, ``field_path``) collected from that model
-      once, in the same call -- a default applied (A107, A119), a symmetry
-      remark (``Phase.warnings()``, A118).
+      once, in the same call -- a default applied, a symmetry remark
+      (``Phase.warnings()``).
 
     Why a result object rather than the bare model: the warnings are a product
     of validating the user's recipe (what the recipe left out), which a dump of
@@ -115,7 +115,7 @@ def validate(recipe, *, verbose: bool = False) -> ValidationResult:
 
     Engine-free: only the gateway's schema layer runs, so this works where no
     engine is installed. A recipe that is already a validated model passes
-    through (idempotent, A50). Nothing is written and nothing is printed unless
+    through (idempotent). Nothing is written and nothing is printed unless
     ``verbose`` (forwarded to the gateway).
 
     Args:
@@ -147,15 +147,18 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
     ``verbose`` and ``validate_only`` are handed to its ``run`` together with
     ``**engine_options``, unchanged and uninterpreted. Each gateway takes its
     options as explicit keywords, so an option it does not know is a
-    ``TypeError`` naming it (A59):
+    ``TypeError`` naming it:
 
     - ``gsasii``: ``execution_mode`` (``'auto'`` | ``'server'`` | ``'subprocess'``);
-    - ``topas``: ``topas_dir``, ``topas_version`` (a real run needs a declared
-      installed version, A145);
+    - ``topas``: ``topas_dir`` (the folder holding ``tc.exe``), ``topas_version``
+      (the installed TOPAS release, e.g. ``"6"``; a real run needs it declared,
+      here or in ``.powderline_config.yaml``) and ``topas_timeout`` (seconds per
+      ``tc.exe`` run, default 3600, 0 = no limit; past it the run raises
+      ``ExecutionBackendError`` ``timeout``);
     - ``easydiffraction``: none.
 
     ``allow_unsupported_engine_version`` is the gateways' test-only bypass of the
-    engine version check (A53) and is refused here (``TypeError``); call the
+    engine version check and is refused here (``TypeError``); call the
     gateway's ``run`` directly for compatibility testing.
 
     Args:
@@ -166,7 +169,7 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
             engine needed, nothing written).
 
     Returns:
-        The gateway's ``ok`` or ``generated`` envelope (re/12; :mod:`powderline.results`).
+        The gateway's ``ok`` or ``generated`` envelope (:mod:`powderline.results`).
         Every engine returns the same keys and types: ``status`` (``"ok"``, or
         ``"generated"`` when TOPAS's input was written but no ``tc.exe`` is
         declared), ``converged`` (``True`` / ``False`` / ``None`` when the engine

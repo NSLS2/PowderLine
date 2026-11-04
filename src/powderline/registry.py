@@ -36,15 +36,15 @@ ENTRY_POINT_GROUP = "powderline.gateways"
 
 @dataclass(frozen=True)
 class Gateway:
-    """A gateway's contract (A54).
+    """A gateway's contract.
 
     - ``name``: registry name (``"gsasii"``, ``"topas"``, ``"easydiffraction"``).
     - ``capabilities()``: dict with at least ``name``, ``workflows`` and
-      ``engine_version_spec`` (a PEP 440 specifier string, A41).
+      ``engine_version_spec`` (a PEP 440 specifier string).
     - ``validate(recipe, *, verbose=False)``: schema layer, engine-free. Takes a
       recipe dict or an already-validated model, raises on an invalid recipe,
-      returns the validated model (A50). The same explicit keywords on every
-      gateway (A59); new options are added to the contract deliberately.
+      returns the validated model. The same explicit keywords on every
+      gateway; new options are added to the contract deliberately.
     - ``run(recipe, output_dir, **opts)``: runtime layer; imports the engine
       lazily; returns the standardized result dict. With ``validate_only=True``
       it returns the ``validate_only_summary`` dict (the same keys on every gateway).
@@ -168,10 +168,10 @@ def _not_installed_message(name: str, eps: Dict[str, Any]) -> str:
 
 def check_engine_version(*, gateway: str, engine: str, installed, spec: str,
                          allow_unsupported: bool = False) -> None:
-    """Raise :class:`~powderline.exceptions.EngineVersionError` unless ``installed`` satisfies ``spec`` (A44).
+    """Raise :class:`~powderline.exceptions.EngineVersionError` unless ``installed`` satisfies ``spec``.
 
     A hard error. ``allow_unsupported=True`` is the explicit test-only bypass
-    for compatibility testing of candidate engine versions (A53); gateways
+    for compatibility testing of candidate engine versions; gateways
     expose it as ``allow_unsupported_engine_version`` on their ``run()``.
     """
     if allow_unsupported:

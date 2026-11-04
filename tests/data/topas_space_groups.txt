@@ -1,5 +1,5 @@
 # Canonical space-group names (gemmi 0.7.5 xhm) that topas 0.1.0 accepts, with the TOPAS symbol written.
-# Evidence: TOPAS 6 accepted each symbol and its own operator file equals gemmi's (devkit re05-topas6-compat C16).
+# Evidence: TOPAS 6 accepted each symbol, and its own operator file for each equals gemmi's operators.
 # Regenerate with tests/test_topas_schema.py::test_space_group_table (see its docstring).
 P 1	p1
 P -1	p-1

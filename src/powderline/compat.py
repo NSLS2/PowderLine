@@ -129,13 +129,13 @@ def check_engine_schema_version(core_schema_version: str, engine_schema_version:
 
 
 def support_matrix() -> List[Dict[str, Any]]:
-    """One row per registered gateway: its declarations plus core's (A40).
+    """One row per registered gateway: its declarations plus core's.
 
     Loads each gateway's engine-free factory through the registry; imports no
     engine. Undeclared gateways get ``"declared": False``. A gateway whose
     declarations are malformed (only some keys present) raises ``ValueError``
     naming it, rather than being listed as undeclared. Consumed by the docs
-    generation in re/10.
+    generation (``scripts/gen_schema_field_tables.py``).
     """
     from powderline import registry
 

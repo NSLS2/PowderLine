@@ -57,7 +57,7 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
     """Run a recipe; see :func:`.native_run.run_native` for the result dict.
 
     ``allow_unsupported_engine_version`` is the test-only bypass of the engine
-    version check (A53); the check is skipped for ``validate_only``.
+    version check; the check is skipped for ``validate_only``.
     """
     from powderline.gateways.easydiffraction import native_run
 

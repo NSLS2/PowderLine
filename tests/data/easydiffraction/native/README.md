@@ -1,6 +1,6 @@
 # Native `easydiffraction.*` test fixtures (easydiffraction 0.21.1)
 
-Hand-derived recipes for the native easydiffraction schema (A137, A157 B8).
+Hand-derived recipes for the native easydiffraction schema.
 They are not converted recipes: PowderLine ships no 0.26.0 →
 `easydiffraction.*` converter. The data arrays are the committed LaB6 example's
 (`examples/example_LaB6`; the 0.26.0 `example_LaB6_easydiff` recipe they were first written against is kept as `tests/data/convert_026/example_LaB6_easydiff/input.json`, a converter fixture); the values are worked out as below.
@@ -34,7 +34,7 @@ They are not converted recipes: PowderLine ships no 0.26.0 →
   (degrees); the example's is 0.
 - **Axial asymmetry (TCH fixture).** GSAS-II's SH/L is (S + H)/L
   (`GSASIIpwd.getFCJVoigt3` docstring), floored at 0.002 in the Rietveld
-  calculation (EB-37, A91), so the example's stated 0.0005 ran as 0.002.
+  calculation (EB-37), so the example's stated 0.0005 ran as 0.002.
   The fixture splits that equally, S/L = H/L = 0.001 (`asym_fcj_1`,
   `asym_fcj_2`); the equal split is an assumption (GSAS-II's Fortran split is
   not visible). The legacy builder sets both to 0.0005.
@@ -56,5 +56,5 @@ They are not converted recipes: PowderLine ships no 0.26.0 →
 - **Refinement controls.** easydiffraction 0.21.1's own lmfit defaults
   (`max_iterations` = lmfit `max_nfev` 1000; tolerances 1e-8, 1e-8, 0).
 
-The generator that wrote these files is in the devkit:
-`probes/re06/make_native_fixtures.py` (run from the PowderLine root).
+The script that wrote these files is not part of the repository; the
+derivations above account for every value in them.

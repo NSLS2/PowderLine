@@ -1,4 +1,4 @@
-"""The run-result envelope every gateway produces and every caller receives (re/12 spec §3–§5).
+"""The run-result envelope every gateway produces and every caller receives.
 
 Errors are values on the wire and raised in the local API: a gateway (or the
 GSAS-II server, or a future worker) builds a *failed* envelope with
@@ -51,7 +51,7 @@ def failure_envelope(kind: str, reason: str, message: str, *, run_id: Optional[s
     """A ``failed`` envelope. ``kind`` is ``"engine"`` (the engine ran and failed) or ``"backend"`` (it did not run).
 
     ``output_files`` lists the files kept for diagnosis: the engine's own files written so far and, once
-    :func:`powderline.run` has recorded the failure, ``failure.json`` (re/30). PowderLine's result tables are never
+    :func:`powderline.run` has recorded the failure, ``failure.json``. PowderLine's result tables are never
     written for a failed run.
     """
     if kind not in _KINDS:
@@ -81,7 +81,7 @@ def generated_envelope(*, run_id: Optional[str] = None, elapsed: float, method: 
 def with_status_fields(result: dict, *, status: str, converged: Optional[bool]) -> dict:
     """Stamp an engine's ``ok``/``generated`` result with the envelope fields; drop the pre-0.2.0 keys.
 
-    The pre-envelope ``success`` flag is dropped with ``error`` and ``traceback`` (re/19, P-42 D2): ``status``
+    The pre-envelope ``success`` flag is dropped with ``error`` and ``traceback``: ``status``
     is the outcome.
     """
     if status not in ("ok", "generated"):

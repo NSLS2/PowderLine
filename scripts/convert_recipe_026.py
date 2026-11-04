@@ -160,7 +160,7 @@ class _Conversion:
         self.note("schema_name", f"{name} -> {new_name}; schema_version {old.get('schema_version')!r} -> "
                                  "core_schema_version 0.1.0, engine_schema_version 0.1.0")
         if payload.get("asset_path") is not None:
-            self.note("payload.asset_path", f"dropped ({payload['asset_path']!r}; not a gateway input, A50)")
+            self.note("payload.asset_path", f"dropped ({payload['asset_path']!r}; not a gateway input)")
         new: dict[str, Any] = {}
         metadata: dict[str, Any] = {}
         new["xrd_data"] = self.xrd_data(payload.get("xrd_data") or {}, metadata)
@@ -251,7 +251,7 @@ class _Conversion:
         if shl[0] < AXIAL_DIVERGENCE_MIN:
             self.note("payload.instrument.corrections.axial_divergence",
                       f"SH/L {shl[0]} -> {AXIAL_DIVERGENCE_MIN} (GSAS-II computed with {AXIAL_DIVERGENCE_MIN} "
-                      "anyway, EB-37; A91, deliberate change)")
+                      "anyway, EB-37; deliberate change)")
             shl[0] = AXIAL_DIVERGENCE_MIN
         return new
 
@@ -262,7 +262,7 @@ class _Conversion:
         cheb = (old or {}).get("chebyshev")
         if cheb is None:
             self.note("payload.background.chebyshev", "left out: no background (one fixed 0.0 term), where v0.1.1 "
-                                                      "used GSAS-II's constant 1.0 (D1, A119; deliberate change)")
+                                                      "used GSAS-II's constant 1.0 (deliberate change)")
         else:
             new["chebyshev"] = {k: cheb[k] for k in ("num_coefficients", "coefficients", "refine_flag")}
         peaks = (old or {}).get("single_peaks")
@@ -277,13 +277,13 @@ class _Conversion:
                     kept.append([[e[0], bool(e[1])] for e in entries])
             if dropped:
                 self.note("payload.background.single_peaks", f"{dropped} peak(s) with a null entry dropped "
-                                                             "(v0.1.1 dropped them silently, D4)")
+                                                             "(v0.1.1 dropped them silently)")
             if kept:
                 new["single_peaks"] = {k: [peak[j] for peak in kept] for j, k in
                                        enumerate(("positions", "intensities", "pv_gaussian_sigma_sq",
                                                   "pv_lorentzian_gamma"))}
                 self.note("payload.background.single_peaks", "pv_gaussian_sigma renamed pv_gaussian_sigma_sq "
-                                                             "(the value always was σ², A89)")
+                                                             "(the value always was σ²)")
         return new
 
     def unused_peak_list(self, old) -> None:
@@ -302,7 +302,7 @@ class _Conversion:
             new["refinement_cycles"] = old["refinement_cycles"]
         if old.get("refinement_algorithm") is not None:
             self.note("payload.refinement_controls.refinement_algorithm",
-                      f"dropped ({old['refinement_algorithm']!r}; v0.1.1 ignored it, D17)")
+                      f"dropped ({old['refinement_algorithm']!r}; v0.1.1 ignored it)")
         if schema_name == "gsasii.spf" and old.get("single_peak_fitting_mode") is not None:
             new["single_peak_fitting_mode"] = old["single_peak_fitting_mode"]
         return new
@@ -316,7 +316,7 @@ class _Conversion:
                         walk(v, f"{path}.{k}")
             elif isinstance(obj, list):
                 if len(obj) == 4 and isinstance(obj[1], bool) and (obj[2] is not None or obj[3] is not None):
-                    self.note(path, f"bounds [{obj[2]}, {obj[3]}] dropped (gsasii 0.1.0 exposes no bounds, A84)")
+                    self.note(path, f"bounds [{obj[2]}, {obj[3]}] dropped (gsasii 0.1.0 exposes no bounds)")
                 else:
                     for i, v in enumerate(obj):
                         walk(v, f"{path}[{i}]")
@@ -330,7 +330,7 @@ class _Conversion:
         param = old.get("parameterization") or {}
         if structure.get("phase_name") != name:
             self.problems.append(f"{path}.structure.phase_name: {structure.get('phase_name')!r} differs from the "
-                                 f"phase key {name!r} (the key is the name, A100)")
+                                 f"phase key {name!r} (the key is the name)")
         try:
             sg = canonical_space_group(structure.get("space_group", ""))
         except ValueError as exc:
@@ -338,7 +338,7 @@ class _Conversion:
             return {}
         if sg != structure.get("space_group"):
             self.note(f"{path}.space_group", f"{structure.get('space_group')!r} -> {sg!r} (canonical name, as "
-                                             "GSAS-II read it; A105)")
+                                             "GSAS-II read it)")
         new: dict[str, Any] = {"space_group": sg}
         new["unit_cell"] = self.cell(path, sg, structure.get("unit_cell") or {}, param.get("unit_cell") or {})
         new["atoms"] = {label: self.atom(f"{path}.atoms.{label}", sg, atom, (param.get("atoms") or {}).get(label))
@@ -349,7 +349,7 @@ class _Conversion:
             if m:
                 atom["element"], ions[label] = m.group(1), f"{m.group(1)}{m.group(3)}{m.group(2)}"
                 self.note(f"{path}.atoms.{label}.element", f"{m.group(0)!r} -> neutral {m.group(1)!r} + "
-                          f"scattering_types[{label!r}] = {ions[label]!r} (P-47; GSAS-II spelling -> recipe spelling)")
+                          f"scattering_types[{label!r}] = {ions[label]!r} (GSAS-II spelling -> recipe spelling)")
         if ions:
             new["scattering_types"] = ions
         for label in sorted(set(param.get("atoms") or {}) - set(structure.get("atoms") or {})):
@@ -357,7 +357,7 @@ class _Conversion:
                                                                  "(v0.1.1 skipped it)")
         scale = param.get("scale")
         if scale is None or scale[0] is None:
-            self.note(f"{path}.scale", "no value: [1.0, flag] (GSAS-II's default, D9)")
+            self.note(f"{path}.scale", "no value: [1.0, flag] (GSAS-II's default)")
         new["scale"] = [1.0 if _value(scale) is None else scale[0], _flag(scale)]
         broadening = self.broadening(path, param.get("peak_broadening") or {})
         if broadening:
@@ -389,7 +389,7 @@ class _Conversion:
         cell = {k: [self.merged(f"{path}.unit_cell.{k}", structure.get(k), param.get(k)), _flag(param.get(k))]
                 for k in CELL}
         if structure.get("volume") is not None:
-            self.note(f"{path}.unit_cell.volume", "dropped (derived from a..gamma, A75)")
+            self.note(f"{path}.unit_cell.volume", "dropped (derived from a..gamma)")
         self.expand(f"{path}.unit_cell", cell, cell_tie_groups(sg), gsasii_cell_groups(sg))
         return cell
 
@@ -416,14 +416,14 @@ class _Conversion:
             if exact is not None and exact.denominator in (1, 2, 4, 8) and new[k][0] != float(exact) \
                     and abs(new[k][0] - float(exact)) <= SPECIAL_POSITION_TOL:
                 self.note(f"{path}.{k}", f"{new[k][0]} -> {float(exact)} (the exact special-position value; "
-                                         "v0.1.1 snapped it, validation reads constants exactly, A121)")
+                                         "v0.1.1 snapped it, validation reads constants exactly)")
                 new[k][0] = float(exact)
         if structure.get("Multiplicity") is not None:
             if structure["Multiplicity"] == site.multiplicity:
                 new["Multiplicity"] = structure["Multiplicity"]
             else:
                 self.note(f"{path}.Multiplicity", f"stated {structure['Multiplicity']}, derived "
-                                                  f"{site.multiplicity}: dropped (A101)")
+                                                  f"{site.multiplicity}: dropped (the site symmetry fixes it)")
         self.adp(path, structure, param, new, ties)
         return new
 
@@ -467,7 +467,7 @@ class _Conversion:
         self.expand(f"{path}.Uaniso", uaniso, ties.uij)
         for k in ties.uij.fixed:  # a fixed Uij v0.1.1 snapped (A121)
             if uaniso[k][0] != 0.0 and abs(uaniso[k][0]) <= UIJ_TOL:
-                self.note(f"{path}.Uaniso.{k}", f"{uaniso[k][0]} -> 0.0 (fixed by symmetry, A121)")
+                self.note(f"{path}.Uaniso.{k}", f"{uaniso[k][0]} -> 0.0 (fixed by symmetry)")
                 uaniso[k][0] = 0.0
         new["Uaniso"] = uaniso
 
@@ -480,7 +480,7 @@ class _Conversion:
             if block is None or _value(block.get(field)) is None:
                 self.note(f"{path}.peak_broadening.{part}", f"left out: the documented default {default_new} "
                                                             f"applies, where v0.1.1 used GSAS-II's {default_026} "
-                                                            "(A87, A107; deliberate change)")
+                                                            "(deliberate change)")
                 continue
             if block.get("model") != "isotropic":
                 self.problems.append(f"{path}.peak_broadening.{part}.model: {block.get('model')!r}; gsasii 0.1.0 "

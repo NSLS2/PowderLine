@@ -1,4 +1,4 @@
-# Ionic scattering-type gate (re/28, P-47)
+# Ionic scattering-type gate
 
 `lab6_la3_over_la_gsasii.json` — GSAS-II 5.7.9's La3+/La per-reflection
 integrated-intensity ratios for the `example_LaB6_simulation` recipe (one

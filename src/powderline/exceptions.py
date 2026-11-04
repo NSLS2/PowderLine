@@ -144,10 +144,10 @@ class StructuredWarning(_StructuredWarningRequired, total=False):
     """One entry of the ``warnings`` list in results and ``validate()`` output.
 
     ``field_path`` is the dotted recipe path the warning refers to, or ``None``
-    when it is not tied to one field. Plumbed into results per gateway in
-    re/04-06.
+    when it is not tied to one field. Every gateway carries these into its
+    results.
 
-    ``level`` (P-34) is ``"warning"`` -- something the user should act on or
+    ``level`` is ``"warning"`` -- something the user should act on or
     decide about (a default applied, a parameter at a limit) -- or ``"info"``
     -- a record of something PowderLine did that changes no outcome, such as a
     coordinate held at its exact symmetry value. Absent means ``"warning"``;
