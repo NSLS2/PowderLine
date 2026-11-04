@@ -51,4 +51,8 @@ awaits a TOPAS 6 run), so this example has no topas recipe.
 `easydiffraction/input.json`: the LaB6 CrysPy pseudo-Voigt fixture
 (`tests/data/easydiffraction/native/lab6_cryspy_pv.json`) with the same
 `scattering_types`; the cryspy calculator is required (CrysFML computes neutral
-atoms only, EB-96). No easydiffraction output is committed under `examples/`.
+atoms only, EB-96). `easydiffraction/output/` is the committed reference of a run
+of it (easydiffraction 0.21.1). Like the fixture's own golden, that refinement takes
+`broad_lorentz_x` negative, so the Lorentzian FWHM is negative at the top of the
+window (`easydiffraction_negative_width`, EB-87) and its output recipe is not valid
+as written.

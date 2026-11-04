@@ -160,3 +160,67 @@ def unit_cell_match(test_df, ref_df, rtol=1e-4, atol=1e-6):
     unit-cell regression comparisons.
     """
     return _numeric_frame_match(test_df, ref_df, rtol=rtol, atol=atol)
+
+
+# ---------------------------------------------------------------------------
+# The output recipe and the parameter dispositions (KI-04) of a reference run
+# ---------------------------------------------------------------------------
+
+#: The run-specific block of ``output_recipe.json`` (timestamp, run id, versions): never compared.
+OUTPUT_RECIPE_PROVENANCE = ("metadata", "powderline_provenance")
+
+#: Recipe paths of the ill-conditioned size/strain class (``category`` "other" in refined_parameters.csv),
+#: which gets ``loose_rtol`` as in ``refined_params_match``.
+_ILL_CONDITIONED_RECIPE_PATH = ".peak_broadening."
+
+
+def _path_rtol(path: str, rtol: float, loose_rtol: float) -> float:
+    return loose_rtol if _ILL_CONDITIONED_RECIPE_PATH in path else rtol
+
+
+def output_recipe_mismatches(test: Any, ref: Any, rtol=1e-3, atol=1e-4, loose_rtol=1e-2,
+                             ignore=(OUTPUT_RECIPE_PROVENANCE,)) -> list[str]:
+    """Differences between two ``output_recipe.json`` documents, ``[]`` when they match.
+
+    Exact on structure (keys, list lengths), strings, booleans and nulls; numbers within the
+    ``refined_params_match`` tolerances (``loose_rtol`` for size/strain broadening). The paths in
+    ``ignore`` (key tuples; by default the provenance block) are skipped.
+    """
+    out: list[str] = []
+
+    def walk(a: Any, b: Any, loc: tuple) -> None:
+        where = ".".join(map(str, loc)) or "<root>"
+        if loc in ignore:
+            return
+        if isinstance(b, dict):
+            if not isinstance(a, dict) or a.keys() != b.keys():
+                out.append(f"{where}: keys {sorted(a) if isinstance(a, dict) else type(a).__name__} != {sorted(b)}")
+                return
+            for k in b:
+                walk(a[k], b[k], loc + (k,))
+        elif isinstance(b, list):
+            if not isinstance(a, list) or len(a) != len(b):
+                out.append(f"{where}: {type(a).__name__} of length {len(a) if isinstance(a, list) else '-'} != list of {len(b)}")
+                return
+            for i, (x, y) in enumerate(zip(a, b)):
+                walk(x, y, loc + (i,))
+        elif isinstance(b, (int, float)) and not isinstance(b, bool):
+            if isinstance(a, bool) or not isinstance(a, (int, float)):
+                out.append(f"{where}: {a!r} != {b!r}")
+            elif not abs(a - b) <= atol + _path_rtol(where, rtol, loose_rtol) * abs(b):
+                out.append(f"{where}: {a!r} != {b!r} (beyond tolerance)")
+        elif a != b or type(a) is not type(b):
+            out.append(f"{where}: {a!r} != {b!r}")
+
+    walk(test, ref, ())
+    return out
+
+
+def dispositions_match(test_df, ref_df, rtol=1e-3, atol=1e-4, loose_rtol=1e-2):
+    """Compare parameter_dispositions.csv tables: exact on path, disposition and at_limit, value/esd within the
+    ``refined_params_match`` tolerances (``loose_rtol`` for size/strain broadening paths)."""
+    if "path" in ref_df.columns and test_df.shape == ref_df.shape:
+        row_rtol = np.array([_path_rtol(p, rtol, loose_rtol) for p in ref_df["path"].astype(str)])
+    else:
+        row_rtol = rtol
+    return _numeric_frame_match(test_df, ref_df, rtol=row_rtol, atol=atol)

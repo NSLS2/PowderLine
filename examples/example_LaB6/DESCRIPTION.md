@@ -53,6 +53,8 @@ This Rietveld refinement produces:
 - **LaB6_unit_cell_report.csv** - Unit cell parameters with ESDs (3 columns: parameter, value, esd)
 - **LaB6_peak_list_report.csv** - Reflection list (hkl, d-spacing, 2θ, intensities)
 - **fit_profile.txt** - Observed/calculated/background/difference intensities
+- **output_recipe.json** - The resolved recipe with the refined values written back (KI-04); `metadata.powderline_provenance` names the run
+- **parameter_dispositions.csv** - One row per refinable value: path, value, esd, disposition (`varied`, `held_by_user`, `held_by_symmetry`, `default_applied`, ...), at_limit
 
 
 ## Known Issues

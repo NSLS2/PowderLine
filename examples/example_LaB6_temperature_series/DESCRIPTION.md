@@ -150,7 +150,7 @@ Lorentzian `broad_lorentz_x` **held** at 10⁻⁵ — see `easydiffraction/READM
 The **same** `run_series.py` drives it (`--recipe easydiffraction/input.json`):
 the loop does not know which engine it runs. Reference: the golden
 `tests/data/easydiffraction/native/golden/lab6_temperature_series.json`
-(no easydiffraction output is committed under `examples/`). About 30 s per
+(`easydiffraction/output/` holds a single run of the first step's recipe only). About 30 s per
 step.
 
 | T (°C) | a programmed (Å) | a refined (Å) | ESD (Å) | Δ (ppm) | La Uiso refined / programmed (Å²) | GoF |

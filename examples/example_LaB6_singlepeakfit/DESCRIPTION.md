@@ -43,7 +43,7 @@ With `use_instrument_profile: false`, the peak widths are refined directly rathe
   - fwhm_gaussian, fwhm_lorentzian, fwhm_pseudovoigt
   - integral_breadth_gaussian, integral_breadth_lorentzian, integral_breadth_pseudovoigt
   - fwhm_gsas_verification, converged, convergence_detail
-- Standard outputs: `fit_profile.txt` and `single_peaks_report.txt` (plus `dummy.gpx`, gitignored; no `.lst` — see the note below)
+- Standard outputs: `fit_profile.txt`, `single_peaks_report.txt`, `output_recipe.json` and `parameter_dispositions.csv` (plus `dummy.gpx`, gitignored; no `.lst` — see the note below)
 
 ## Schema Features Demonstrated
 
@@ -75,6 +75,8 @@ This single peak fitting analysis produces:
 - **single_peaks_report.txt** - Fitted peak parameters (position, intensity, FWHM, area) for each peak
 - **peak_convergence_diagnostics.txt** - Per-peak convergence diagnostics, written only when a peak has a convergence issue (all 36 peaks of the committed reference converged cleanly, so the reference set has no such file)
 - **fit_profile.txt** - Observed/calculated/background/difference intensities
+- **output_recipe.json** - The resolved recipe with the refined values written back (KI-04; not valid as posed, see below); `metadata.powderline_provenance` names the run
+- **parameter_dispositions.csv** - One row per refinable value: path, value, esd, disposition (`varied`, `held_by_user`, `held_by_symmetry`, `default_applied`, ...), at_limit
 
 **Note**: Single peak fitting does not produce `refined_parameters.csv`, human-readable refinement log (.lst), unit cell reports, or peak list reports because there is no structural model - only empirical peak shapes are fitted.
 

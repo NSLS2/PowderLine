@@ -29,8 +29,9 @@ pixi run -e easydiffraction python examples/example_LaB6_temperature_series/run_
     --recipe examples/example_LaB6_temperature_series/easydiffraction/input.json --output <dir>
 ```
 
-No easydiffraction output is committed under `examples/` (project rule); the
-chain's reference table is the golden
+`output/` is the committed reference of a single run of `input.json` (the
+first step alone, easydiffraction 0.21.1). The chain's reference table is the
+golden
 `tests/data/easydiffraction/native/golden/lab6_temperature_series.json`,
 compared by `tests/test_example_temperature_series.py`. The results and what
 they show about the two engines are in `../DESCRIPTION.md`.

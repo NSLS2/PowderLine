@@ -108,8 +108,10 @@ The schemas evolve based on actual use cases rather than premature abstraction; 
 
 4. **Run the refinement**: `pixi run -e gsasii kicker my_refinement_name/input.json`
    writes `output/` next to the recipe; commit it (it becomes a regression
-   reference). For a `topas.*` or `easydiffraction.*` recipe, commit the recipe
-   and its README only (no engine output under `examples/`).
+   reference). For an `easydiffraction.*` recipe, `pixi run -e easydiffraction
+   kicker my_refinement_name/easydiffraction/input.json` writes
+   `easydiffraction/output/`; commit it too. For a `topas.*` recipe, commit the
+   recipe and its README only (its reference comes from the TOPAS machine).
 
 5. **Submit your example via Pull Request**:
    ```bash
@@ -134,7 +136,9 @@ my_refinement_name/
 ├── output/                    # its GSAS-II results (regression references)
 ├── DESCRIPTION.md             # context and explanation
 ├── topas/input.json           # optional: the same case as a topas.* recipe (+ README.md)
-└── easydiffraction/input.json # optional: the same case as an easydiffraction.* recipe (+ README.md)
+└── easydiffraction/           # optional: the same case as an easydiffraction.* recipe
+    ├── input.json             #   (+ README.md)
+    └── output/                #   its easydiffraction results (regression references)
 ```
 
 ### File Descriptions
@@ -142,8 +146,10 @@ my_refinement_name/
 **`input.json`**: The recipe that defines this refinement; it must pass
 `powderline input.json --validate-only`. Per-engine recipes live in the
 `topas/` and `easydiffraction/` subdirectories with a short README saying how
-they were derived; no TOPAS or easydiffraction output is committed under
-`examples/` (the TOPAS 6 goldens live in `tests/data/topas/native/golden/`).
+they were derived. An easydiffraction recipe's results are committed in
+`easydiffraction/output/` beside it (the same fixed filenames, no `dummy.*`);
+no TOPAS output is committed under `examples/` yet (the TOPAS 6 goldens live in
+`tests/data/topas/native/golden/`).
 
 **`output/`**: After running the refinement, the GSAS-II output files go here. **These output files should be committed to the repository** (except `dummy.gpx`, which is gitignored) - they are the regression references, compared within the tolerances of `docs/regression-tolerance.md`; they move only as a recorded deliberate change.
 
@@ -156,6 +162,8 @@ PowderLine generates fixed output filenames:
 - `<phase_name>_unit_cell_report.csv` - Unit cell parameters with ESDs (3 columns: parameter, value, esd; seven rows `cell_a` … `cell_volume`, the same for every engine — `docs/schemas.md`, "Two vocabularies, one bridge")
 - `<phase_name>_peak_list_report.csv` - Reflection lists (hkl, d-spacing, 2θ, intensities) per phase
 - `fit_profile.txt` - Observed/calculated/background/difference intensities
+- `output_recipe.json` - The resolved recipe with the refined values written back (KI-04); its `metadata.powderline_provenance` block (run id, timestamp, engine version) is run-specific. When a refinement ends on a value the schema refuses, it is written anyway and is not valid as written (KI-15)
+- `parameter_dispositions.csv` - One row per refinable value: path, value, esd, disposition, at_limit
 
 **Single peak fitting mode (SPF) additional files:**
 - `single_peaks_report.txt` - Peak fit results (position, width, intensity per peak)

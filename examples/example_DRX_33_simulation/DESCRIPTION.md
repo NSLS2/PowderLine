@@ -91,6 +91,8 @@ This two-phase simulation produces:
 - **Li4MgWO6_SG12_unit_cell_report.csv** - Phase 2 unit cell parameters (unchanged from input; every `esd` is `0.0` — nothing refined, no covariance)
 - **Li4MgWO6_SG12_peak_list_report.csv** - Phase 2 reflection list (hkl, d-spacing, 2θ, intensities)
 - **fit_profile.txt** - Calculated pattern (2θ, Iobs, Iweight, Icalc, Ibackground, Idifference)
+- **output_recipe.json** - The resolved recipe of the run (KI-04; nothing refined, so the values are the input's); `metadata.powderline_provenance` names the run
+- **parameter_dispositions.csv** - One row per refinable value: path, value, esd, disposition (`varied`, `held_by_user`, `held_by_symmetry`, `default_applied`, ...), at_limit
 
 **Note**: Simulation mode does NOT produce `refined_parameters.csv` because no parameters are refined (all `refine_flag: false`). The reported `rwp` is PowderLine's uniform statistic of the calculated pattern against the placeholder data and is meaningless in simulation mode; the result carries `simulation_mode: true`.
 

@@ -92,4 +92,5 @@ The standard gsasii set (`refined_parameters.csv`, `LaB6_unit_cell_report.csv`,
 pattern as its `xrd_data` and the same block plus easydiffraction's required
 `march_random_fract: [0.0, false, 0.0, 1.0]` (`ratio: [0.8, true, 0.1, 5.0]`).
 The cryspy calculator is required: CrysFML ignores preferred orientation
-(EB-97). No easydiffraction output is committed under `examples/`.
+(EB-97). `easydiffraction/output/` is the committed reference of a run of it
+(easydiffraction 0.21.1; refined r 0.5976(14)).

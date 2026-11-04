@@ -101,6 +101,8 @@ Same standardized outputs as `example_DRX_33`:
 - **DRX_33_peak_list_report.csv** / **Li4MgWO6_SG12_peak_list_report.csv** -
   per-phase reflection lists (hkl, d-spacing, 2-theta, intensities).
 - **fit_profile.txt** - observed / calculated / background / difference intensities.
+- **output_recipe.json** - The resolved recipe with the refined values written back (KI-04); `metadata.powderline_provenance` names the run
+- **parameter_dispositions.csv** - One row per refinable value: path, value, esd, disposition (`varied`, `held_by_user`, `held_by_symmetry`, `default_applied`, ...), at_limit
 
 ## Reproduce
 
