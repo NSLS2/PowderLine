@@ -143,7 +143,7 @@ def set_single_peak_background(proj: Any, hist: Any, bkg_single_peaks_dict: dict
         bkg_single_peaks_dict: Dictionary with keys:
             - positions: List of [[2θ, refine], ...] for peak positions
             - intensities: List of [[I, refine], ...] for peak heights
-            - pv_gaussian_sigma_sq: List of [[σ², refine], ...] Gaussian variances, centideg² (A89)
+            - pv_gaussian_sigma_sq: List of [[σ², refine], ...] Gaussian variances, centideg²
             - pv_lorentzian_gamma: List of [[γ, refine], ...] for Lorentzian widths
             All lists must have same length (number of peaks)
         print_info: If True, print peak configuration to stdout
@@ -989,7 +989,7 @@ def set_phase_parameterization(proj: Any, hist: Any, phases_dict: dict, print_in
         # This will call on a few helper functions to set scale, unit cell, peak broadening, atom parameters, etc.
         # Each of these helper functions will take the proj, phase name (rather than phase object), and relevant parameterization dict
 
-        # The phase block itself holds values and refine flags (gsasii 1.0.0, A93)
+        # The phase block itself holds values and refine flags (gsasii 0.1.0, A93)
         param_dict = phase_info
 
         # Keys in param dict are 'scale', 'unit_cell', 'peak_broadening', and 'atoms' for now

@@ -532,7 +532,7 @@ def add_phases_from_dict(proj: Any, hist: Any, phases_dict: dict, print_info: bo
     """
 
     for phase_name, phase_info in phases_dict.items():
-        structure_info = phase_info  # the phase block (gsasii 1.0.0, A93); the name is the dict key (A100)
+        structure_info = phase_info  # the phase block (gsasii 0.1.0, A93); the name is the dict key (A100)
 
         # Prevent duplicate phase names - TODO: handle upstream in schema validation / recipe maker
         if phase_name in [p.name for p in proj.phases()]:

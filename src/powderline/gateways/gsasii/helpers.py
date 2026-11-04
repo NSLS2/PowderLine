@@ -33,7 +33,7 @@ DEFAULT_SPF_GAMMA_MIN = 0.0001 # Minimum gamma value for single peak fitting (ce
 
 def unpack_refinement_parameter(param: list | None, param_name: str = "parameter") -> tuple[Any, Any, Any, Any]:
     """
-    Unpack a refinement parameter: [value, refine_flag] (gsasii 1.0.0; no bounds, so min and
+    Unpack a refinement parameter: [value, refine_flag] (gsasii 0.1.0; no bounds, so min and
     max are returned as None) or the older 4-element form [value, refine_flag, min, max].
 
     This utility reduces boilerplate for the common pattern of unpacking refinement
@@ -59,7 +59,7 @@ def unpack_refinement_parameter(param: list | None, param_name: str = "parameter
     if param is None:
         return (None, None, None, None)
     elif isinstance(param, list):
-        if len(param) == 2:  # gsasii 1.0.0 RefinableParameter (A39, A84)
+        if len(param) == 2:  # gsasii 0.1.0 RefinableParameter (A39, A84)
             return (param[0], param[1], None, None)
         if len(param) != 4:
             raise ValueError(
