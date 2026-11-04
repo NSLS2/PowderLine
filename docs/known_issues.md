@@ -46,8 +46,8 @@ KI-05's open half gets a scoped plan; KI-11 moves from `watch` to
 directory); KI-13 schedules the check command that would retire it; KI-10
 names the one thing its Windows branch still lacks (a live run); KI-14
 records what the in-band file transfer (KI-12) removed; KI-15 (example references that are unphysical
-as posed) and KI-16 (TOPAS execution unverified for 0.2.0, a **blocker for
-the upstream merge**) are registered. No id is closed by this pass.
+as posed) and KI-16 (TOPAS execution unverified for 0.2.0, a blocker for
+the upstream merge until the TOPAS 6 run resolved it) are registered. No id is closed by this pass.
 
 ---
 
@@ -721,7 +721,7 @@ GSAS-II pin move regenerates the references anyway.
 
 ---
 
-## KI-16 — TOPAS execution of 0.2.0 recipes is unverified; only INP generation is exercised `blocker (for the upstream merge) · major`
+## KI-16 — TOPAS execution of 0.2.0 recipes is unverified; only INP generation is exercised `blocker (for the upstream merge) · major` → implemented (0.2.0: verified on TOPAS 6)
 
 **What.** No machine in the 0.2.0 work had TOPAS. The `topas.*` gateway's
 INP/XYE writer is pinned text-for-text to goldens produced on a TOPAS 6
@@ -769,7 +769,16 @@ is stopped. It also found three things, fixed in 0.2.0:
 - a negative TCHZ Lorentzian width ran without complaint (now a
   validation error).
 
-The entry moves to `watch` after the confirming run on the release's code.
+**Resolved (2026-11-04).** On the release's code, on Windows with TOPAS 6, `pixi run test-topas` with
+`tc.exe` declared passed every `topas_exec` test:
+- every golden fixture was reproduced file for file through `powderline.run()`, including a cell-refined
+  LaB6 fixture;
+- the ionic example's La3+/La intensity ratios agree with GSAS-II's;
+- the textured example recovers the March–Dollase r.
+
+The five example TOPAS recipes ran through the CLI, and the GSAS-II and easydiffraction suites passed on the
+same machine. TOPAS execution is verified for TOPAS 6. TOPAS 7 is a separate release, to be added with its
+own goldens and the same tests.
 
 ---
 

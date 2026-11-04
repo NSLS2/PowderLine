@@ -82,11 +82,11 @@ verified byte-for-byte against goldens produced on a TOPAS 6 machine; a run
 without `tc.exe` writes the files and returns `status: generated`. The TOPAS
 halves of ionic scattering types and March–Dollase preferred orientation are
 checked against output TOPAS 6 wrote (La3+/La within 0.07 % of GSAS-II; the
-`PO` correction within 1.4e-7 of the March–Dollase formula). The execution
-suite on 0.2.0's code (`pixi run test-topas` with `tc.exe` declared: the
-`topas_exec` tests, which rerun every golden fixture and the ionic and
-textured examples) is still to be recorded (KI-16). GSAS-II and easydiffraction
-execution are verified by their suites on linux-64 and win-64.
+`PO` correction within 1.4e-7 of the March–Dollase formula). **TOPAS execution
+is verified on TOPAS 6** on 0.2.0's code: `pixi run test-topas` with `tc.exe`
+declared reruns every golden fixture and the ionic and textured examples, and
+passed on Windows (KI-16). GSAS-II and easydiffraction execution are verified
+by their suites on linux-64 and win-64.
 
 ## Reading the matrix
 

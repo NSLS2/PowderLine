@@ -151,10 +151,8 @@ limitations are listed in the [known-issues register](docs/known_issues.md).
 - TOPAS runs only from a declared directory (`--topas-dir` or `topas.dir`);
   without one a run writes the INP and data and stops (`status: generated`).
   `topas.*` recipes state `engine_version: "6"`; TOPAS 7 is not supported.
-<!-- verify: topas session 2 -->
 - TOPAS execution is verified on TOPAS 6: the reference fixtures are reproduced
   byte for byte (KI-16).
-<!-- /verify -->
 - easydiffraction recipes state the calculator (`cryspy` or `crysfml`) and the
   engine's own instrument terms; anisotropic ADPs work with CrysPy (EB-23).
 - Modules moved, without shims: `powderline.topas` → `powderline.gateways.topas`,
