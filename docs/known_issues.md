@@ -703,6 +703,13 @@ vs 15.53 %; atomrefine then fails on the metric tensor; the single-peak fit
 with the background peak's widths and the last peak's γ held feeds back with
 Rwp unchanged within the test's 0.05 pp).
 
+The easydiffraction leg of `example_LaB6_ionic` is in the same position:
+its committed `easydiffraction/output/output_recipe.json` is not valid as
+written, because the fit refines CrysPy's Lorentzian `X` negative, so the
+width goes negative at the top of the window (EB-87). The recipe is
+inherited from the `lab6_cryspy_pv` fixture, whose golden carries the same
+warning.
+
 **Decision.** The references stay as posed: they are the regression
 references and, deliberately, the ill-conditioned teaching cases (the SVD
 warnings, the railed sizes); `example_DRX_33_strainonly` is the physical

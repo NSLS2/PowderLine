@@ -560,8 +560,10 @@ Examples drive schema evolution; see `examples/CONTRIBUTING_EXAMPLES.md`.
 Directory `examples/<case>/` with `input.json` (the `gsasii.*` recipe),
 `DESCRIPTION.md`, `output/` (committed GSAS-II results as regression
 references), and optionally `topas/input.json`, `easydiffraction/input.json`
-with a README each (no TOPAS or easydiffraction output under `examples/`;
-TOPAS 6 goldens live in `tests/data/topas/native/golden/`).
+with a README each. An `easydiffraction/output/` folder holds that engine's
+committed reference results (checked against the easydiffraction goldens);
+TOPAS references live as goldens under `tests/data/topas/native/golden/`
+(they come from a TOPAS machine).
 
 ### Running tests
 
