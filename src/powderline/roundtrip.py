@@ -51,6 +51,11 @@ OUTPUT_RECIPE_FILE = "output_recipe.json"
 DISPOSITIONS_FILE = "parameter_dispositions.csv"
 PROVENANCE_KEY = "powderline_provenance"
 
+
+def engine_of(schema_name: str) -> str:
+    """The engine a ``<engine>.<workflow>`` schema name names (the gateway name: ``gsasii``, ``topas``, ...)."""
+    return str(schema_name).split(".", 1)[0]
+
 _CELL = ("a", "b", "c", "alpha", "beta", "gamma")
 _XYZ = ("x", "y", "z")
 _UIJ = ("U11", "U22", "U33", "U12", "U13", "U23")
@@ -192,13 +197,16 @@ def _multiplicities(model) -> dict:
 
 
 def build_output(model, refined: Mapping[str, tuple], *, not_varied: Iterable[str] = (), at_limit: Iterable[str] = (),
-                 parent_run_id: Optional[str] = None, validator: Optional[Callable] = None) -> OutputBundle:
+                 parent_run_id: Optional[str] = None, validator: Optional[Callable] = None,
+                 engine_version: Optional[str] = None) -> OutputBundle:
     """The output recipe and dispositions of a run.
 
     ``refined`` maps a recipe path to ``(value, esd)`` in recipe units -- what the engine ended with
     for the parameters it varied (a tie group's representative suffices; reported members are checked).
     ``not_varied``: flagged paths the engine did not vary; ``at_limit``: paths that ended on a limit.
     ``validator`` is the gateway's ``validate_recipe`` (default: :func:`powderline.api.validate`).
+    ``engine_version`` is the engine version the run used, as the result's ``engine_details`` states it (TOPAS: the
+    declared version; ``None`` for validate-only); it goes into the provenance block with the engine's name (A191).
     """
     paths = parameter_paths(model)
     by_path = {pp.path: pp for pp in paths}
@@ -252,6 +260,8 @@ def build_output(model, refined: Mapping[str, tuple], *, not_varied: Iterable[st
 
     meta = dump.get("metadata") or {}
     meta[PROVENANCE_KEY] = {"parent_run_id": parent_run_id, "schema_name": dump["schema_name"],
+                            "engine": engine_of(dump["schema_name"]),
+                            "engine_version": None if engine_version is None else str(engine_version),
                             "powderline_version": __version__,
                             "created": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")}
     dump["metadata"] = meta

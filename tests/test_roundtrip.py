@@ -119,6 +119,9 @@ def test_provenance_block_and_untouched_metadata():
     out = roundtrip.build_output(validate(r).recipe, {}, parent_run_id="run-7")
     prov = out.recipe["metadata"]["powderline_provenance"]
     assert prov["parent_run_id"] == "run-7" and prov["schema_name"] == "gsasii.rietveld" and "created" in prov
+    assert prov["engine"] == "gsasii" and prov["engine_version"] is None      # A191: no run, no engine version
+    ran = roundtrip.build_output(validate(r).recipe, {}, parent_run_id="run-8", engine_version="5.7.9")
+    assert ran.recipe["metadata"]["powderline_provenance"]["engine_version"] == "5.7.9"
     assert out.recipe["metadata"]["sample"] == "LaB6 NIST"
     assert out.recipe["payload"]["xrd_data"] == r["payload"]["xrd_data"]
 

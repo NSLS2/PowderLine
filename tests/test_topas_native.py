@@ -10,6 +10,7 @@ import json
 import math
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -18,7 +19,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from powderline.exceptions import EngineExecutionError, EngineVersionError
+from powderline.exceptions import EngineExecutionError, EngineVersionError, ExecutionBackendError
 from powderline.gateways.topas import gateway, native_run, native_writer, peak_list, schema
 from subprocess_utils import run_subprocess_utf8
 from test_topas_schema import P, _rietveld, _spf
@@ -300,7 +301,7 @@ def _fake_topas_runner(results_csv_content, profile_content, peaks_content=None,
     The background run (``<base>_bkg.inp``, A152) writes only its profile:
     ``bkg_profile_content``, else the main profile.
     """
-    def runner(cmd, cwd, capture_output=True):
+    def runner(cmd, cwd, capture_output=True, **kwargs):
         # cmd is [tc, inp_path]
         inp_path = Path(cmd[1])
         base = inp_path.stem
@@ -495,7 +496,7 @@ def test_runner_exit_code_ignored(tmp_path, monkeypatch):
     profile = _make_profile(profile_tth, [100.0] * len(profile_tth), [100.0] * len(profile_tth))
     peaks = _make_peak_list()
 
-    def bad_runner(cmd, cwd, capture_output=True):
+    def bad_runner(cmd, cwd, capture_output=True, **kwargs):
         inp_path = Path(cmd[1])
         base = inp_path.stem
         out_dir = inp_path.parent
@@ -518,7 +519,7 @@ def test_runner_missing_output_error(tmp_path, monkeypatch):
     recipe = _rietveld()
     model = schema.validate_recipe(recipe)
 
-    def no_output_runner(cmd, cwd, capture_output=True):
+    def no_output_runner(cmd, cwd, capture_output=True, **kwargs):
         # Write nothing
         result = MagicMock()
         result.returncode = 0
@@ -527,8 +528,80 @@ def test_runner_missing_output_error(tmp_path, monkeypatch):
     fake_tc = tmp_path / "TOPAS6" / "tc.exe"
     monkeypatch.setattr("powderline.gateways.topas.native_run.discover_tc_exe", lambda *a, **kw: fake_tc)
 
-    with pytest.raises(EngineExecutionError, match="stopped without writing"):
+    with pytest.raises(EngineExecutionError, match="stopped without writing") as info:
         native_run.run_native(model, tmp_path, runner=no_output_runner)
+    # A195: the failure carries a real envelope -- the files kept for diagnosis and the engine details
+    env = info.value.result
+    assert env["status"] == "failed" and env["failure"]["reason"] == "output_missing"
+    assert sorted(Path(f).suffix for f in env["output_files"]) == [".inp", ".xye"]
+    details = env["failure"]["engine_details"]
+    assert details["tc_path"] == str(fake_tc) and details["engine_version"] == "6" and details["exit_code"] == 0
+    assert env["failure"]["console_tail"] is None and "console window" in str(info.value)
+
+
+def test_runner_missing_output_keeps_what_tc_printed(tmp_path, monkeypatch):
+    """A195: when tc.exe prints something, its tail goes into the failure record and the message says so."""
+    model = schema.validate_recipe(_rietveld())
+
+    def chatty_runner(cmd, cwd, capture_output=True, **kwargs):
+        return subprocess.CompletedProcess(cmd, 1, stdout=b"TOPAS-64 Version 6\nAtom La+9 not found\n", stderr=b"")
+
+    fake_tc = tmp_path / "TOPAS6" / "tc.exe"
+    monkeypatch.setattr("powderline.gateways.topas.native_run.discover_tc_exe", lambda *a, **kw: fake_tc)
+    with pytest.raises(EngineExecutionError) as info:
+        native_run.run_native(model, tmp_path, runner=chatty_runner)
+    assert "Atom La+9 not found" in info.value.result["failure"]["console_tail"]
+    assert "console_tail" in str(info.value) and info.value.result["failure"]["engine_details"]["exit_code"] == 1
+
+
+def test_runner_timeout_is_a_backend_timeout_with_the_input_kept(tmp_path, monkeypatch):
+    """A195: tc.exe past its limit -> ExecutionBackendError('timeout'); the INP and data are listed; the limit
+    reaches the runner."""
+    model = schema.validate_recipe(_rietveld())
+    seen = {}
+
+    def hung_runner(cmd, cwd, capture_output=True, **kwargs):
+        seen.update(kwargs)
+        raise subprocess.TimeoutExpired(cmd, kwargs["timeout"])
+
+    fake_tc = tmp_path / "TOPAS6" / "tc.exe"
+    monkeypatch.setattr("powderline.gateways.topas.native_run.discover_tc_exe", lambda *a, **kw: fake_tc)
+    with pytest.raises(ExecutionBackendError, match="did not finish") as info:
+        native_run.run_native(model, tmp_path, runner=hung_runner, timeout=12.5)
+    assert seen == {"timeout": 12.5} and info.value.reason == "timeout"
+    assert sorted(Path(f).suffix for f in info.value.result["output_files"]) == [".inp", ".xye"]
+
+
+def test_runner_without_a_limit_passes_no_timeout(tmp_path, monkeypatch):
+    """timeout=None (0 in the option or config) means no limit: the runner gets no timeout keyword."""
+    model = schema.validate_recipe(_rietveld())
+    seen = []
+
+    def runner(cmd, cwd, capture_output=True, **kwargs):
+        seen.append(kwargs)
+        return subprocess.CompletedProcess(cmd, 0, stdout=b"", stderr=b"")
+
+    fake_tc = tmp_path / "TOPAS6" / "tc.exe"
+    monkeypatch.setattr("powderline.gateways.topas.native_run.discover_tc_exe", lambda *a, **kw: fake_tc)
+    with pytest.raises(EngineExecutionError):
+        native_run.run_native(model, tmp_path, runner=runner, timeout=None)
+    assert seen == [{}]
+
+
+@pytest.mark.parametrize("option, config, expected", [
+    (None, None, 3600.0), (None, 120, 120.0), (30, 120, 30.0), (0, 120, None), (None, 0, None), ("45", None, 45.0)])
+def test_configured_timeout(monkeypatch, option, config, expected):
+    from powderline.gateways.topas import runner as topas_runner
+    monkeypatch.setattr(topas_runner, "_read_topas_config", lambda: {} if config is None else {"timeout": config})
+    assert topas_runner.configured_timeout(option) == expected
+
+
+@pytest.mark.parametrize("bad", [-1, "soon", float("nan"), float("inf")])
+def test_configured_timeout_refuses_a_bad_value(monkeypatch, bad):
+    from powderline.gateways.topas import runner as topas_runner
+    monkeypatch.setattr(topas_runner, "_read_topas_config", lambda: {})
+    with pytest.raises(ValueError, match="TOPAS timeout"):
+        topas_runner.configured_timeout(bad)
 
 
 @pytest.mark.parametrize("age", [-7200, 7200])
@@ -546,7 +619,7 @@ def test_runner_stale_output_error(tmp_path, monkeypatch, age):
         (tmp_path / f).write_text("old", encoding="utf-8")
         os.utime(tmp_path / f, (old_time, old_time))
 
-    def no_write_runner(cmd, cwd, capture_output=True):
+    def no_write_runner(cmd, cwd, capture_output=True, **kwargs):
         # Runner writes nothing (files remain stale)
         result = MagicMock()
         result.returncode = 0
@@ -684,7 +757,7 @@ def _bkg_case(tmp_path, monkeypatch, recipe=None, bkg_profile=None, write_bkg=Tr
                                bkg_profile_content=bkg_profile or _make_profile(xs, [100.0] * len(xs),
                                                                                 [40.0 + i for i in range(len(xs))]))
 
-    def runner(cmd, cwd, capture_output=True):
+    def runner(cmd, cwd, capture_output=True, **kwargs):
         calls.append(Path(cmd[1]).name)
         if Path(cmd[1]).stem.endswith("_bkg") and not write_bkg:
             return MagicMock(returncode=0)

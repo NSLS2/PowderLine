@@ -42,7 +42,9 @@ After ``pixi reinstall powderline`` the same program is available as the
 installed command ``powderline <recipe.json> ...``. Flags: ``--output DIR``
 (default ``output/`` next to the recipe), ``--validate-only``, ``--verbose``;
 for ``gsasii.*`` recipes ``--use-server`` / ``--no-server``; for ``topas.*``
-recipes ``--topas-dir DIR`` / ``--topas-version V``. A flag given for a recipe
+recipes ``--topas-dir DIR`` / ``--topas-version V`` / ``--topas-timeout
+SECONDS`` (each tc.exe run is stopped after this long; default 3600, 0 = no
+limit). A flag given for a recipe
 of another engine exits with an error. Exit status is 0 on success, 1
 otherwise.
 
@@ -187,7 +189,8 @@ message, traceback, the engine's last console lines).
 **Note:** a simulation (nothing refined) writes no ``refined_parameters.csv``
 for ``gsasii.*`` (there is nothing to list), while ``topas.*`` and
 ``easydiffraction.*`` write one with no rows; unit cell reports are generated
-in every case, with an empty ``esd``.
+in every case, and in a simulation every ``esd`` is ``0.0`` (nothing was
+refined, so every value is exact as stated).
 
 Programmatic API
 ----------------

@@ -63,6 +63,27 @@ def _candidate_dirs(topas_dir, cfg: dict) -> list[Path]:
     return []
 
 
+#: Default limit on one tc.exe run, seconds (A195); 0 in an option or the config means no limit.
+DEFAULT_TIMEOUT_S = 3600.0
+
+
+def configured_timeout(topas_timeout=None) -> float | None:
+    """The tc.exe time limit in seconds: the ``topas_timeout`` option, else ``topas.timeout`` in
+    ``.powderline_config.yaml``, else :data:`DEFAULT_TIMEOUT_S`; ``None`` when the value is 0 (no limit).
+
+    Raises ``ValueError`` for a value that is not a number >= 0 (a typo must not silently mean "no limit")."""
+    value = topas_timeout if topas_timeout is not None else _read_topas_config().get("timeout")
+    if value is None:
+        return DEFAULT_TIMEOUT_S
+    try:
+        seconds = float(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"the TOPAS timeout must be a number of seconds (0 = no limit), got {value!r}") from None
+    if not seconds >= 0 or seconds == float("inf"):
+        raise ValueError(f"the TOPAS timeout must be a finite number of seconds >= 0 (0 = no limit), got {value!r}")
+    return None if seconds == 0 else seconds
+
+
 def discover_tc_exe(topas_dir=None, topas_version=None) -> Path | None:
     """Locate ``tc.exe`` in the declared TOPAS directory; ``None`` when none is declared or it has no ``tc``.
 

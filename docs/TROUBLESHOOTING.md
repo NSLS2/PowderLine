@@ -257,7 +257,8 @@ hand; TOPAS cannot be pinned, so a `topas.*` run needs the installed version
 `.powderline_config.yaml`), equal to the recipe's `engine_version`.
 
 **Solution:** `pixi install -e gsasii` restores the pinned GSAS-II; for TOPAS
-pass `--topas-version 6` (and `--topas-dir` if `tc.exe` is not on the path).
+pass `--topas-dir` (the folder holding `tc.exe`) and `--topas-version 6`, or
+set both in `.powderline_config.yaml`; PowderLine never searches for TOPAS.
 `topas.*` 1.0.0 supports TOPAS 6 only.
 
 ---
@@ -339,11 +340,15 @@ keeps the same text under `engine_details["console_tail"]`.
 3. **TOPAS not configured** (PowderLine never guesses where `tc.exe` is, P-35): the INP and `.xye` were written; run them on a
    machine with TOPAS 6, or pass `--topas-dir`. This is `status: "generated"`, not a failure.
 4. **TOPAS wrote no output** (`output_missing`): TOPAS 6 reports nothing through its exit code,
-   so a missing output file is the error; its messages are in its console
-   window and `tc.log`. A file it did write but PowderLine cannot read strictly is `output_malformed`.
+   so a missing output file is the error. Whatever `tc.exe` printed is in
+   `failure.json` (`failure.console_tail`); otherwise its messages are in its
+   console window and `tc.log`. A file it did write but PowderLine cannot read strictly is `output_malformed`.
 5. **The engine did not run** (`Could not run the engine (…)`): `server_unavailable` /
    `server_disabled` / `communication_failed` / `timeout` are the
-   GSAS-II server's cases (see "Server Not Starting" below); `timeout` deliberately does
+   GSAS-II server's cases (see "Server Not Starting" below), and `timeout` is
+   also a `tc.exe` run that outlived `--topas-timeout` / `topas.timeout`
+   (default 3600 s: raise it for a long refinement, or look for a TOPAS dialog
+   waiting for input); `timeout` deliberately does
    **not** fall back in-process, because the job is still running on the server and a
    second run would double the work
 

@@ -60,7 +60,8 @@ Command line
 .. py:module:: powderline.kicker
 
 ``powderline <recipe.json> [--output DIR] [--validate-only] [--verbose]
-[--use-server | --no-server] [--topas-dir DIR] [--topas-version V]`` (the pixi
+[--use-server | --no-server] [--topas-dir DIR] [--topas-version V]
+[--topas-timeout SECONDS]`` (the pixi
 task ``kicker`` runs the same ``main``), and ``powderline --doctor`` (the pixi
 task ``doctor``): what this environment can do — the gateways the registry
 finds, each engine's installed version against its requirement, the GSAS-II
@@ -99,11 +100,17 @@ these are the hooks an out-of-tree engine uses.
 
 .. autofunction:: powderline.registry.check_engine_version
 
-Gateway entry points
---------------------
+Gateway ``run`` functions (the gateway contract)
+------------------------------------------------
 
-Each gateway's ``run`` is what ``powderline.run`` forwards to; its keyword
-options are the engine options ``powderline.run`` accepts for that engine.
+**Run recipes with** :func:`powderline.run` **(or the** ``powderline`` **CLI),
+not with these.** Each gateway's ``run`` is what ``powderline.run`` forwards to
+after validating the recipe and choosing the gateway; they are documented
+for gateway authors, for tests, and because their keyword options are
+exactly the engine options ``powderline.run`` accepts for that engine.
+Calling one directly skips the orchestration ``powderline.run`` provides
+on every engine: PowderLine's own fixed-name outputs are not cleared from
+the output directory first, and a failed run writes no ``failure.json``.
 
 .. autofunction:: powderline.gateways.gsasii.gateway.run
 

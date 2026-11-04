@@ -402,7 +402,8 @@ from a GSAS-II recipe:
   - One CLI for every engine: `powderline <recipe.json>` (installed console
     script) or `pixi run [-e <env>] kicker <recipe.json>`; `topas-kicker` is
     gone, a `topas.*` recipe goes through the same command with
-    `--topas-version 6` (and `--topas-dir` if `tc.exe` is not on the path).
+    `--topas-dir DIR --topas-version 6` (or `topas.dir` / `topas.version`
+    in `.powderline_config.yaml`; PowderLine never searches for `tc.exe`).
     The validate-only report prints the core and engine schema versions
     instead of `Schema version:`.
 

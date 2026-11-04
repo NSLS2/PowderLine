@@ -125,6 +125,7 @@ def fit_report(proj, hist, recipe, engine_rwp, engine_rvals=None) -> dict:
     requested = parameters_requested(recipe)
     details = {
         "engine": "GSAS-II",
+        "engine_version": _engine_version(),
         "rwp": num(engine_rwp),
         "gof": num(rvals.get("GOF")),
         "chi2": num(rvals.get("chisq")),
@@ -164,6 +165,17 @@ def fit_report(proj, hist, recipe, engine_rwp, engine_rvals=None) -> dict:
             "simulation_mode": simulation,
             "engine_details": details, "warnings": warnings,
             "peak_fit": {"parameters": peak_fit_parameters(hist)} if spf else None}
+
+
+def _engine_version():
+    """The GSAS-II runtime version that ran (A191), as the gateway's version check reads it; ``None`` if unreadable.
+
+    Read here, in the process that ran GSAS-II, so a server run reports the server's engine."""
+    try:
+        from powderline.gateways.gsasii.gateway import installed_engine_version
+        return installed_engine_version()
+    except Exception:  # noqa: BLE001 - reporting only; never fail a finished refinement over it
+        return None
 
 
 #: value slots of a GSAS-II constant-wavelength peak row ``[pos, flag, int, flag, sig, flag, gam, flag]``

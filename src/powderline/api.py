@@ -23,7 +23,7 @@ engine (P-06).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Optional
 
 from pydantic import ValidationError
 from pydantic_core import InitErrorDetails, PydanticCustomError
@@ -207,7 +207,7 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
     try:
         return gateway.run(recipe, output_dir, verbose=verbose, validate_only=False, **engine_options)
     except (EngineExecutionError, ExecutionBackendError) as exc:
-        _record_failure(output_dir, exc, _schema_name_of(recipe))
+        _record_failure(output_dir, exc, _schema_name_of(recipe), engine_options)
         raise
 
 
@@ -217,20 +217,20 @@ def _schema_name_of(recipe) -> str:
     return str(getattr(recipe, "schema_name", ""))
 
 
-def _record_failure(output_dir, exc, schema_name: str) -> None:
+def _record_failure(output_dir, exc, schema_name: str, engine_options: Optional[dict] = None) -> None:
     """Write the failed envelope to ``<output_dir>/failure.json`` (re/30) and list it in ``exc.result``.
 
     Only when ``output_dir`` already exists (a backend failure before the gateway created it leaves nothing). The
     record is the envelope as the exception carries it -- or a minimal one built here when a gateway raised without
     one -- plus a ``powderline_provenance`` block in the output recipe's shape, so a directory found later says which
-    recipe and which PowderLine failed.
+    recipe, which engine version and which PowderLine failed (A191).
     """
     import datetime as _dt
     import json
     from pathlib import Path
 
     from powderline import __version__, reports, results as envelopes
-    from powderline.roundtrip import PROVENANCE_KEY
+    from powderline.roundtrip import PROVENANCE_KEY, engine_of
 
     out = Path(output_dir)
     if not out.is_dir():
@@ -241,8 +241,32 @@ def _record_failure(output_dir, exc, schema_name: str) -> None:
     envelope = exc.result
     path = out / reports.FAILURE_FILE
     record = dict(envelope)
-    record[PROVENANCE_KEY] = {"schema_name": schema_name, "powderline_version": __version__,
+    engine = engine_of(schema_name)
+    record[PROVENANCE_KEY] = {"schema_name": schema_name, "engine": engine,
+                              "engine_version": _engine_version_of(engine, envelope, engine_options),
+                              "powderline_version": __version__,
                               "created": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
                               "run_id": envelope.get("run_id")}
     path.write_text(json.dumps(record, indent=2, default=str) + "\n", encoding="utf-8")
     envelope["output_files"] = sorted(set(envelope.get("output_files") or []) | {str(path.resolve())})
+
+
+def _engine_version_of(engine: str, envelope: dict, engine_options: Optional[dict]) -> Optional[str]:
+    """The engine version for a failure record: the envelope's ``engine_details`` when the gateway put it there,
+    else what the gateway module reports (``installed_engine_version``; TOPAS: the declared
+    ``configured_engine_version``), else ``None``. Never raises: the failure being recorded is what matters."""
+    import importlib
+
+    details = (envelope.get("failure") or {}).get("engine_details") or envelope.get("engine_details") or {}
+    if details.get("engine_version") is not None:
+        return str(details["engine_version"])
+    try:
+        module = importlib.import_module(f"powderline.gateways.{engine}.gateway")
+        if hasattr(module, "installed_engine_version"):
+            return str(module.installed_engine_version())
+        if hasattr(module, "configured_engine_version"):
+            version = module.configured_engine_version((engine_options or {}).get("topas_version"))
+            return None if version is None else str(version)
+    except Exception:  # noqa: BLE001 - an out-of-tree gateway, an engine not importable here, a bad config
+        return None
+    return None

@@ -41,7 +41,7 @@ import pandas as pd
 from powderline import reports
 from powderline import results as envelopes
 from powderline import roundtrip
-from powderline.exceptions import EngineExecutionError, StructuredWarning
+from powderline.exceptions import EngineExecutionError, ExecutionBackendError, StructuredWarning
 from powderline.fitstats import compute_fit_statistics
 from powderline.gateways.topas.native_writer import (
     PROFILE_SUFFIX,
@@ -102,22 +102,71 @@ def write_input(model, output_dir, base_name: str | None = None) -> NativeInput:
     return native
 
 
-def run_tc(tc: Path, inp: Path, runner=subprocess.run) -> None:
-    """Run ``tc "<inp>"`` in the TOPAS folder. The exit code is not used (C13)."""
+#: Console text kept from one tc.exe run for a failure record (the end of it, like GSAS-II's tail, KI-05).
+MAX_CONSOLE_CHARS = 64 * 1024
+
+
+def _decoded(data) -> str:
+    """Captured console bytes as text; anything that is not bytes or text (no capture) is nothing."""
+    if isinstance(data, bytes):
+        return data.decode("utf-8", errors="replace")
+    return data if isinstance(data, str) else ""
+
+
+def console_tail(proc) -> str | None:
+    """What one tc.exe run printed (stdout, then stderr), its last :data:`MAX_CONSOLE_CHARS`; ``None`` if nothing."""
+    out, err = _decoded(getattr(proc, "stdout", None)), _decoded(getattr(proc, "stderr", None))
+    text = out + (("\n--- stderr ---\n" + err) if err.strip() else "")
+    if not text.strip():
+        return None
+    return text if len(text) <= MAX_CONSOLE_CHARS else "[... earlier console text dropped ...]\n" + text[-MAX_CONSOLE_CHARS:]
+
+
+def run_tc(tc: Path, inp: Path, runner=subprocess.run, timeout: float | None = None):
+    """Run ``tc "<inp>"`` in the TOPAS folder and return the completed process. The exit code is not used (C13).
+
+    ``timeout`` (seconds; ``None`` = no limit, A195): past it ``tc.exe`` is stopped and the run fails with
+    :class:`ExecutionBackendError` ``timeout`` -- a hung TOPAS (a licence dialog waiting for input, say) must
+    not block forever.
+    """
+    kwargs = {"cwd": str(tc.parent), "capture_output": True}
+    if timeout:
+        kwargs["timeout"] = timeout
     try:
-        runner([str(tc), str(inp)], cwd=str(tc.parent), capture_output=True)
+        return runner([str(tc), str(inp)], **kwargs)
+    except subprocess.TimeoutExpired as exc:  # subprocess.run has already stopped tc.exe
+        raise ExecutionBackendError(
+            f"TOPAS did not finish {inp.name} within {timeout:g} s and was stopped. A long refinement needs a larger "
+            "limit (--topas-timeout SECONDS or topas.timeout in .powderline_config.yaml; 0 = no limit); a TOPAS "
+            "waiting for input (a licence or dongle dialog) also ends this way", reason="timeout") from exc
     except (OSError, subprocess.SubprocessError) as exc:
         raise EngineExecutionError(f"TOPAS could not be started ({tc}): {exc}", reason="engine_crashed") from exc
 
 
+def _failure(kind: str, reason: str, message: str, *, model, native, out: Path, tc: Path, started: float,
+             warnings: list, proc=None) -> dict:
+    """The failed envelope of a run that reached tc.exe (A195): the files kept for diagnosis (the INP, the data,
+    whatever TOPAS wrote), the engine details, and what tc.exe printed."""
+    env = envelopes.failure_envelope(
+        kind, reason, message, run_id=str(uuid.uuid4()), elapsed=time.time() - started, method="topas_native",
+        warnings=warnings, output_files=sorted(str(f) for f in out.glob("*") if f.is_file()),
+        simulation_mode=native.simulation,
+        engine_details={"engine": "TOPAS", "engine_version": model.engine_version, "tc_path": str(tc),
+                        "exit_code": getattr(proc, "returncode", None)})
+    env["failure"]["console_tail"] = console_tail(proc) if proc is not None else None
+    return env
+
+
 def run_native(model, output_dir, *, base_name: str | None = None, topas_dir=None, topas_version=None,
-               engine_version_check=None, runner=subprocess.run, warnings_from=None) -> dict:
+               engine_version_check=None, runner=subprocess.run, warnings_from=None,
+               timeout: float | None = None) -> dict:
     """Generate, run and read back one native recipe; return the standard result dict.
 
     ``warnings_from`` is the model validated from the user's recipe (A115); by
     default ``model`` itself. ``engine_version_check(tc_path)`` is called only
     when TOPAS will actually run (A145); without ``tc.exe`` the run is
-    generate-only.
+    generate-only. ``timeout`` bounds each tc.exe run in seconds (``None`` = no
+    limit; the gateway resolves the option and the config, A195).
     """
     started = time.time()
     out = Path(output_dir)
@@ -143,24 +192,34 @@ def run_native(model, output_dir, *, base_name: str | None = None, topas_dir=Non
         # the output recipe is the resolved input: nothing ran, so every flagged parameter was not varied (re/20a)
         flagged = {pp.path for pp in roundtrip.parameter_paths(model) if pp.refine_flag}
         return roundtrip.attach(env, roundtrip.build_output(model, {}, not_varied=flagged, parent_run_id=env["run_id"],
-                                                            validator=validate_recipe), out)
+                                                            validator=validate_recipe,
+                                                            engine_version=model.engine_version), out)
     if engine_version_check is not None:
         engine_version_check(tc)
     expected = (native.results_file, native.profile_file, *native.phase_files.values())
     for f in expected:  # a file left by an earlier run must never pass for this run's (A154)
         (out / f).unlink(missing_ok=True)
-    run_tc(tc, out / f"{base}.inp", runner=runner)
+    try:
+        proc = run_tc(tc, out / f"{base}.inp", runner=runner, timeout=timeout)
+    except ExecutionBackendError as exc:  # timed out: the record lists the INP and data kept for diagnosis
+        exc.result = _failure("backend", exc.reason, str(exc), model=model, native=native, out=out, tc=tc,
+                              started=started, warnings=validated_warnings)
+        raise
     missing = [f for f in expected if not (out / f).is_file()]
     if missing:
-        raise EngineExecutionError(
-            f"TOPAS stopped without writing its results ({', '.join(missing)} missing in {out}). "
-            "TOPAS reports the reason only in its console window; run the INP in a terminal to see it. The "
-            f"expanded input is in {tc.parent / 'tc.log'}.", reason="output_missing")
-    _run_background(model, native, out, tc, runner)
+        tail = console_tail(proc)
+        where = ("what tc.exe printed is in the failure record (console_tail)" if tail else
+                 "TOPAS reports the reason only in its console window; run the INP in a terminal to see it")
+        message = (f"TOPAS stopped without writing its results ({', '.join(missing)} missing in {out}); {where}. "
+                   f"The expanded input is in {tc.parent / 'tc.log'}.")
+        raise EngineExecutionError(message, reason="output_missing", result=_failure(
+            "engine", "output_missing", message, model=model, native=native, out=out, tc=tc, started=started,
+            warnings=validated_warnings, proc=proc))
+    _run_background(model, native, out, tc, runner, timeout)
     return build_result(model, native, out, validated_warnings, elapsed=time.time() - started, tc_path=str(tc))
 
 
-def _run_background(model, native: NativeInput, out: Path, tc: Path, runner) -> None:
+def _run_background(model, native: NativeInput, out: Path, tc: Path, runner, timeout: float | None = None) -> None:
     """The background run (A152): the background alone at the refined values; its profile is ``y_bkg``.
 
     A stale background profile is removed first, so ``build_result`` reads only
@@ -177,7 +236,7 @@ def _run_background(model, native: NativeInput, out: Path, tc: Path, runner) -> 
         return
     bkg = render_background(model, base, {name: v for name, (v, _) in values.items()})
     (out / f"{bkg_base}.inp").write_text(bkg.inp_text, encoding="utf-8", newline="\n")
-    run_tc(tc, out / f"{bkg_base}.inp", runner=runner)
+    run_tc(tc, out / f"{bkg_base}.inp", runner=runner, timeout=timeout)
 
 
 # --- reading TOPAS's files --------------------------------------------------------------
@@ -365,7 +424,8 @@ def build_result(model, native: NativeInput, out: Path, validated_warnings: list
                                         else pd.DataFrame()),
     }, status="ok", converged=None)  # TOPAS 6 exposes no convergence signal in its files (EB-85)
     return roundtrip.attach(envelope, roundtrip.build_output(model, refined, not_varied=not_varied, at_limit=at_limit,
-                                                             parent_run_id=run_id, validator=validate_recipe), out)
+                                                             parent_run_id=run_id, validator=validate_recipe,
+                                                             engine_version=model.engine_version), out)
 
 
 def validate_only_result(model, validated_warnings: list) -> dict:

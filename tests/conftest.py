@@ -134,8 +134,8 @@ def _install_core_guard():
 
     real_run_tc = native_run.run_tc
 
-    def guarded_run_tc(tc, inp, runner=subprocess.run):
-        return real_run_tc(tc, inp, runner=_refusing_runner if runner is subprocess.run else runner)
+    def guarded_run_tc(tc, inp, runner=subprocess.run, **kwargs):
+        return real_run_tc(tc, inp, runner=_refusing_runner if runner is subprocess.run else runner, **kwargs)
 
     native_run.run_tc = guarded_run_tc
 

@@ -301,7 +301,8 @@ def _frames(result: dict, model=None, output_dir=None) -> dict:
     from powderline.gateways.gsasii import paths
     refined, not_varied, at_limit, problems = paths.refined_by_path(model, envelope)
     bundle = roundtrip.build_output(model, refined, not_varied=not_varied, at_limit=at_limit,
-                                    parent_run_id=envelope.get("run_id"), validator=schema.validate_recipe)
+                                    parent_run_id=envelope.get("run_id"), validator=schema.validate_recipe,
+                                    engine_version=(envelope.get("engine_details") or {}).get("engine_version"))
     if problems:  # an unmapped name or a mode whose refined values GSAS-II does not report: said, not hidden
         bundle.valid = False
         bundle.problems[:0] = problems

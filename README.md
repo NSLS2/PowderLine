@@ -98,7 +98,8 @@ pixi run -e gsasii doctor                                                  # wha
 After `pixi reinstall powderline` the same program is the installed command
 `powderline <recipe.json> …`. Flags: `--output DIR` (default: `output/` next
 to the recipe), `--verbose`, `--validate-only`; gsasii `--use-server` /
-`--no-server`; topas `--topas-dir DIR` / `--topas-version V`. A flag given
+`--no-server`; topas `--topas-dir DIR` / `--topas-version V` /
+`--topas-timeout SECONDS` (default 3600; 0 = no limit). A flag given
 for a recipe of another engine is an error.
 
 **Python API** — load a recipe, run it, get pandas DataFrames back:

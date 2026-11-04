@@ -77,9 +77,15 @@ def check_native_engine_version(model, topas_version=None, *, allow_unsupported:
 
 
 def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = False,
-        topas_dir=None, topas_version=None,
+        topas_dir=None, topas_version=None, topas_timeout=None,
         allow_unsupported_engine_version: bool = False) -> dict:
     """Run a recipe; see :func:`.native_run.run_native` for the result dict.
+
+    ``topas_dir`` / ``topas_version``: the TOPAS installation and its version
+    (else ``topas.dir`` / ``topas.version`` in ``.powderline_config.yaml``).
+    ``topas_timeout``: the limit on each tc.exe run in seconds (else
+    ``topas.timeout``, else 3600; 0 = no limit); past it the run fails with
+    ``ExecutionBackendError`` ``timeout``.
 
     ``allow_unsupported_engine_version`` is the test-only bypass of the engine
     version check (A53); the check is skipped for ``validate_only`` and when
@@ -87,11 +93,14 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
     """
     from powderline.gateways.topas import native_run
 
+    from powderline.gateways.topas.runner import configured_timeout
+
     model = schema.validate_recipe(recipe)  # the model validated from the user's recipe (A115)
     if validate_only:
         return native_run.run_native_validate(model)
+    timeout = configured_timeout(topas_timeout)  # a bad value is refused before anything is written
     return native_run.run_native(
-        model, output_dir, topas_dir=topas_dir, topas_version=topas_version,
+        model, output_dir, topas_dir=topas_dir, topas_version=topas_version, timeout=timeout,
         engine_version_check=lambda _tc: check_native_engine_version(
             model, topas_version, allow_unsupported=allow_unsupported_engine_version))
 

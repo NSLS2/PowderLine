@@ -384,8 +384,13 @@ silent drops (A45); when varied < requested the result warns
 - **TOPAS 6**: `tc.exe` returns the same exit code on success and failure and
   prints its messages only to its console window (EB-60), so **success is
   judged from the expected output files**, removed before the run; a missing
-  file is an `EngineExecutionError` (`output_missing`) pointing to the console
-  and `tc.log`. Without a declared `tc.exe` (P-35) the run is
+  file is an `EngineExecutionError` (`output_missing`) whose failure record
+  lists the INP and data kept, the `tc.exe` path and exit code, and whatever
+  `tc.exe` printed (`console_tail`; otherwise look at its console window and
+  `tc.log`). Each `tc.exe` run is limited by `--topas-timeout` /
+  `topas.timeout` (default 3600 s, 0 = no limit): past it `tc.exe` is stopped
+  and the run fails with `timeout`, so a TOPAS waiting for input cannot hang a
+  run. Without a declared `tc.exe` (P-35) the run is
   `status: "generated"` with the `topas_generate_only` note: the INP and `.xye`
   were written, nothing ran. `converged` is always `null` for TOPAS 6 (no
   convergence signal in its files, EB-85). A

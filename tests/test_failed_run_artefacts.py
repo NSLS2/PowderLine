@@ -80,6 +80,7 @@ def test_a_failed_run_leaves_the_engines_files_and_failure_json(fake, tmp_path):
     prov = record[roundtrip.PROVENANCE_KEY]
     assert prov["schema_name"] == "fake.rietveld" and prov["powderline_version"] == powderline.__version__
     assert prov["run_id"] == "r-1" and prov["created"].endswith("+00:00")
+    assert prov["engine"] == "fake" and prov["engine_version"] is None   # A191: an unknown gateway's version is unknown
     assert str((out / "failure.json").resolve()) in info.value.result["output_files"]   # listed in the envelope too
     assert sorted(Path(f).name for f in info.value.result["output_files"]) == ["dummy.gpx", "dummy.lst", "failure.json"]
 
@@ -151,3 +152,19 @@ def test_the_fixed_output_list_covers_every_core_writer(tmp_path):
     assert sorted(Path(r).name for r in removed) == sorted(n for n in written if n != "keep.me")
     assert [p.name for p in out.iterdir()] == ["keep.me"]
     assert reports.clear_fixed_outputs(tmp_path / "missing") == [] and not (tmp_path / "missing").exists()
+
+
+def test_failure_json_records_the_engine_version_the_gateway_reported(fake, tmp_path):
+    """A191: the failure record's provenance names the engine version from the envelope's engine_details."""
+    out = tmp_path / "out"
+    out.mkdir()
+
+    def run(recipe, output_dir, **kwargs):
+        env = failure_envelope("engine", "diverged", "it ran away", run_id="r-2",
+                               engine_details={"engine": "Fake", "engine_version": "9.1"})
+        raise EngineExecutionError("it ran away", reason="diverged", result=env)
+    fake(run)
+    with pytest.raises(EngineExecutionError):
+        powderline.run(RECIPE, out)
+    prov = json.loads((out / "failure.json").read_text(encoding="utf-8"))[roundtrip.PROVENANCE_KEY]
+    assert prov["engine"] == "fake" and prov["engine_version"] == "9.1"

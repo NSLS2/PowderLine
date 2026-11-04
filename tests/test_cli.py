@@ -128,11 +128,14 @@ def test_engine_options_gsasii_server_flags():
 def test_engine_options_topas_flags():
     opts = kicker.engine_options_from_args(_args(topas_dir=Path("/t"), topas_version="6"), "topas")
     assert opts == {"topas_dir": Path("/t"), "topas_version": "6"}
+    parsed = kicker.build_parser().parse_args([str(LAB6), "--topas-timeout", "0"])   # A195; 0 = no limit
+    assert kicker.engine_options_from_args(parsed, "topas") == {"topas_timeout": 0.0}
 
 
 @pytest.mark.parametrize("flag,gateway", [
     ({"no_server": True}, "topas"), ({"use_server": True}, "easydiffraction"),
     ({"topas_dir": Path("/t")}, "gsasii"), ({"topas_version": "6"}, "gsasii"),
+    ({"topas_timeout": 0.0}, "gsasii"), ({"topas_timeout": 600.0}, "easydiffraction"),
 ])
 def test_engine_options_flag_for_another_engine_is_an_error(flag, gateway):
     with pytest.raises(ValueError, match="applies to"):

@@ -81,13 +81,17 @@ def run_native(model, output_dir, *, validated_warnings: list | None = None) -> 
     out.mkdir(parents=True, exist_ok=True)
     warnings = list(validated_warnings if validated_warnings is not None else collect_warnings(model))
     t0 = time.time()
-    build = build_project(model)
     p = model.payload
     simulation = p.simulation_mode()
-    warnings += _translations(model, build)
-    analysis = build.project.analysis
     fit_info = {}
+    stage = "while building the project"
     try:
+        # the builder's own refusals are EngineExecutionError (re-raised below); anything else easydiffraction
+        # raises while the project is built is an engine failure like one in the fit (A192 Q7)
+        build = build_project(model)
+        warnings += _translations(model, build)
+        analysis = build.project.analysis
+        stage = "during the calculation" if simulation else "during the fit"
         if simulation:
             analysis.calculate()
         else:
@@ -101,8 +105,8 @@ def run_native(model, output_dir, *, validated_warnings: list | None = None) -> 
     except EngineExecutionError:
         raise
     except Exception as exc:  # lmfit / CrysPy / CrysFML: the engine failed (re/12 §6.4)
-        raise EngineExecutionError(f"easydiffraction failed during the {'calculation' if simulation else 'fit'}: "
-                                   f"{type(exc).__name__}: {exc}", reason="engine_crashed") from exc
+        raise EngineExecutionError(f"easydiffraction failed {stage}: {type(exc).__name__}: {exc}",
+                                   reason="engine_crashed") from exc
     if not simulation:
         results = analysis.fit_results
         fit_info = {"success": bool(results.success), "message": str(results.message),
@@ -245,7 +249,8 @@ def build_result(model, build: Build, out: Path, warnings: list, *, elapsed: flo
         "refined_parameters": pd.DataFrame(refined_rows, columns=list(reports.REFINED_PARAMETERS_COLUMNS)),
     }, status="ok", converged=None if simulation else fit_info.get("success"))
     return roundtrip.attach(envelope, roundtrip.build_output(model, refined, not_varied=not_varied, at_limit=at_limit,
-                                                             parent_run_id=run_id, validator=validate_recipe), out)
+                                                             parent_run_id=run_id, validator=validate_recipe,
+                                                             engine_version=engine["engine_version"]), out)
 
 
 def _output_inputs(build: Build, warnings: list, fewer_varied: bool) -> tuple:

@@ -1119,6 +1119,32 @@ def test_lmfit_error_is_engine_crashed(tmp_path, monkeypatch):
     assert e.value.reason == "engine_crashed" and isinstance(e.value.__cause__, ValueError)
 
 
+def test_builder_exception_is_engine_crashed(tmp_path, monkeypatch):
+    """An exception easydiffraction raises while the project is built is engine_crashed too, named as the
+    build stage (A192 Q7: the builder used to run outside the wrapper, so the error escaped raw)."""
+    model = schema.validate_recipe(_load_fixture("lab6_cryspy_pv.json"))
+
+    def boom(m):
+        raise KeyError("space_group")
+    monkeypatch.setattr(native_run, "build_project", boom)
+    with pytest.raises(EngineExecutionError) as e:
+        native_run.run_native(model, tmp_path)
+    assert e.value.reason == "engine_crashed" and isinstance(e.value.__cause__, KeyError)
+    assert "while building the project" in str(e.value)
+
+
+def test_builder_refusal_keeps_its_reason(tmp_path, monkeypatch):
+    """The builder's own refusal (an EngineExecutionError, e.g. unusable_site) passes through unchanged."""
+    model = schema.validate_recipe(_load_fixture("lab6_cryspy_pv.json"))
+
+    def refuse(m):
+        raise EngineExecutionError("easydiffraction reads this site differently", reason="unusable_site")
+    monkeypatch.setattr(native_run, "build_project", refuse)
+    with pytest.raises(EngineExecutionError) as e:
+        native_run.run_native(model, tmp_path)
+    assert e.value.reason == "unusable_site" and e.value.__cause__ is None
+
+
 def test_converged_follows_lmfit_and_is_none_for_simulation(tmp_path):
     fitted = gateway.run(_load_fixture("lab6_cryspy_pv.json"), str(tmp_path / "fit"))
     assert fitted["status"] == "ok" and fitted["converged"] in (True, False)

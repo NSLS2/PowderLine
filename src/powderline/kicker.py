@@ -4,6 +4,7 @@
 
     powderline <recipe.json> [--output DIR] [--validate-only] [--verbose]
                              [--use-server | --no-server] [--topas-dir DIR] [--topas-version V]
+                             [--topas-timeout SECONDS]
     powderline --doctor      (what this environment can do: gateways, engines, server; re/27)
 
 (``pixi run kicker ...`` / ``python src/powderline/kicker.py ...`` run the same
@@ -41,9 +42,10 @@ _FLAG_GATEWAYS = {
     "no_server": "gsasii",
     "topas_dir": "topas",
     "topas_version": "topas",
+    "topas_timeout": "topas",
 }
 _FLAG_NAMES = {"use_server": "--use-server", "no_server": "--no-server",
-               "topas_dir": "--topas-dir", "topas_version": "--topas-version"}
+               "topas_dir": "--topas-dir", "topas_version": "--topas-version", "topas_timeout": "--topas-timeout"}
 
 
 def is_template_file(recipe_dict: dict, input_path: Path) -> tuple[bool, str | None]:
@@ -100,7 +102,8 @@ def engine_options_from_args(args: argparse.Namespace, gateway_name: str) -> dic
 
     ``--no-server`` / ``--use-server`` → gsasii ``execution_mode`` (``'subprocess'``
     / ``'server'``; neither → the gateway's default, ``'auto'``);
-    ``--topas-dir`` / ``--topas-version`` → topas ``topas_dir`` / ``topas_version``.
+    ``--topas-dir`` / ``--topas-version`` / ``--topas-timeout`` → topas ``topas_dir`` /
+    ``topas_version`` / ``topas_timeout``.
 
     Raises:
         ValueError: a flag that belongs to a gateway other than ``gateway_name``;
@@ -108,7 +111,7 @@ def engine_options_from_args(args: argparse.Namespace, gateway_name: str) -> dic
     """
     given = {dest: getattr(args, dest, None) for dest in _FLAG_GATEWAYS}
     for dest, value in given.items():
-        if value and _FLAG_GATEWAYS[dest] != gateway_name:
+        if value is not None and value is not False and _FLAG_GATEWAYS[dest] != gateway_name:  # 0 is given
             raise ValueError(
                 f"{_FLAG_NAMES[dest]} applies to {_FLAG_GATEWAYS[dest]!r} recipes only; this recipe's "
                 f"schema_name names the {gateway_name!r} engine")
@@ -127,6 +130,8 @@ def engine_options_from_args(args: argparse.Namespace, gateway_name: str) -> dic
         options["topas_dir"] = given["topas_dir"]
     if given["topas_version"] is not None:
         options["topas_version"] = given["topas_version"]
+    if given["topas_timeout"] is not None:
+        options["topas_timeout"] = given["topas_timeout"]
     return options
 
 
@@ -143,6 +148,7 @@ Engine flags (accepted only for a recipe of that engine):
             POWDERLINE_NO_SERVER=1 (env): never use a server; the default mode runs in-process
   topas.*   --topas-dir DIR / --topas-version V: the TOPAS installation to run
             (a run needs a declared version: --topas-version or .powderline_config.yaml)
+            --topas-timeout SECONDS: stop tc.exe after this long (default 3600; 0 = no limit)
 
 Examples:
   powderline examples/example_LaB6/input.json                     # engine from schema_name
@@ -168,6 +174,8 @@ Examples:
                             help='gsasii: in-process mode only (skip the server entirely)')
     parser.add_argument("--topas-dir", type=Path, default=None, help="topas: directory containing tc.exe")
     parser.add_argument("--topas-version", default=None, help="topas: the installed TOPAS version to run")
+    parser.add_argument("--topas-timeout", type=float, default=None, metavar="SECONDS",
+                        help="topas: stop tc.exe after this many seconds (default 3600, or topas.timeout; 0 = no limit)")
     return parser
 
 
