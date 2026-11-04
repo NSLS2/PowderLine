@@ -32,6 +32,7 @@ fresh clone to a finished refinement, on Linux or Windows.
    SCHEMA_HISTORY
    policies
    changelog
+   citing
    api
 
 .. toctree::

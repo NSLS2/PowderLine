@@ -81,6 +81,8 @@ own recipe is valid before a full run.
 - Copy an example directory (e.g. `examples/example_LaB6/`) and edit its
   `input.json` — replace the `xrd_data`, structure, and refinement flags with your
   own. `examples/example_template/` holds a blank skeleton per engine.
+- Starting from your own CIF, calibrant and data files? Follow
+  [Building a recipe](input-guidance.md#building-a-recipe).
 - Read [Input guidance](input-guidance.md) for how to fill the data,
   structure and instrument blocks, and [Fields and features](fields.md) for
   every field with its unit.

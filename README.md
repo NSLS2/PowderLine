@@ -82,6 +82,10 @@ The same case as a TOPAS and an easydiffraction recipe sits in
 > `examples/example_template/` holds fill-in-the-blanks skeletons for the
 > three engines, not runnable recipes — copy one to start your own.
 
+**Bringing your own CIF, calibrant and data files?** PowderLine has no
+built-in recipe builder; [Building a recipe](docs/input-guidance.md#building-a-recipe)
+walks through writing one and validating it.
+
 ## 3. Ways to use PowderLine
 
 **Command line** — one command for every engine; the recipe's `schema_name`
@@ -189,6 +193,8 @@ Maintainers keep design records in a separate private repository.
 - **[Engine behaviour notes](docs/engine-behavior.md)** — what each engine
   does, and PowderLine's policy toward it.
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** — common errors and fixes.
+- **[Citing PowderLine](docs/citing.md)** — PowderLine, the engines and the
+  libraries behind them.
 - **[Migration guide](docs/migration-0.1-to-0.2.md)** — from PowderLine 0.1.1
   (unified schema 0.26.0) to 0.2.0 (core + engine schemas 0.1.0).
 - **[Schema History](docs/SCHEMA_HISTORY.md)** and the
@@ -211,6 +217,40 @@ If you use PowderLine in your research, please cite the preprint:
 > [doi:10.48550/arXiv.2608.17009](https://doi.org/10.48550/arXiv.2608.17009)
 
 Machine-readable metadata is in [`CITATION.cff`](CITATION.cff).
+
+### Cite the refinement engine too
+
+PowderLine drives an underlying refinement engine: the one your recipe's
+`schema_name` names. Please cite the engine you used in addition to
+PowderLine.
+
+- **GSAS-II** (`gsasii.*` recipes; GSAS-II 5.7.9 in the `gsasii` environment):
+  > B. H. Toby and R. B. Von Dreele. *GSAS-II: the genesis of a modern
+  > open-source all purpose crystallography software package.* J. Appl. Cryst.
+  > **46**, 544–549 (2013).
+  > [doi:10.1107/S0021889813003531](https://doi.org/10.1107/S0021889813003531)
+
+  PowderLine drives GSAS-II through its scripting interface, so please also cite:
+  > J. H. O'Donnell, R. B. Von Dreele, M. K. Y. Chan, and B. H. Toby. *A
+  > scripting interface for GSAS-II.* J. Appl. Cryst. **51**, 1244–1250 (2018).
+  > [doi:10.1107/S1600576718008075](https://doi.org/10.1107/S1600576718008075)
+- **TOPAS** (`topas.*` recipes; TOPAS 6):
+  > A. A. Coelho. *TOPAS and TOPAS-Academic: an optimization program
+  > integrating computer algebra and crystallographic objects written in C++.*
+  > J. Appl. Cryst. **51**, 210–218 (2018).
+  > [doi:10.1107/S1600576718000183](https://doi.org/10.1107/S1600576718000183)
+- **easydiffraction** (`easydiffraction.*` recipes): the easydiffraction
+  project asks you to cite the specific version you used, through its
+  [Zenodo archive](https://doi.org/10.5281/zenodo.16806521) (all versions).
+  PowderLine's `easydiffraction` environment installs version 0.21.1:
+  > A. Sazonov, E. Lindgren, P. Rozyczko, and M. Seth. *easydiffraction
+  > 0.21.1.* Zenodo (2026).
+  > [doi:10.5281/zenodo.22905049](https://doi.org/10.5281/zenodo.22905049)
+
+  Please also cite the calculator your recipe names in
+  `refinement_controls.calculator`: CrysPy (`cryspy`) or CrysFML (`crysfml`).
+  The references are on the [citing page](docs/citing.md), which also covers
+  gemmi, the library behind PowderLine's space-group checks.
 
 ## License
 

@@ -42,3 +42,111 @@ preferred-citation:
     - type: doi
       value: "10.48550/arXiv.2608.17009"
       description: "arXiv preprint"
+# The refinement engines PowderLine drives and the libraries its results
+# depend on. Please cite the engine you used in addition to PowderLine (see
+# the "Citation" section of README.md and docs/citing.md). Versions are the
+# ones PowderLine 0.2.0 pins or locks.
+references:
+  - type: article
+    title: "GSAS-II: the genesis of a modern open-source all purpose crystallography software package"
+    authors:
+      - family-names: "Toby"
+        given-names: "Brian H."
+      - family-names: "Von Dreele"
+        given-names: "Robert B."
+    journal: "Journal of Applied Crystallography"
+    volume: 46
+    issue: "2"
+    start: 544
+    end: 549
+    year: 2013
+    doi: "10.1107/S0021889813003531"
+    notes: "GSAS-II, the engine of the gsasii.* schemas (GSAS-II 5.7.9)."
+  - type: article
+    title: "A scripting interface for GSAS-II"
+    authors:
+      - family-names: "O'Donnell"
+        given-names: "Jackson H."
+      - family-names: "Von Dreele"
+        given-names: "Robert B."
+      - family-names: "Chan"
+        given-names: "Maria K. Y."
+      - family-names: "Toby"
+        given-names: "Brian H."
+    journal: "Journal of Applied Crystallography"
+    volume: 51
+    issue: "4"
+    start: 1244
+    end: 1250
+    year: 2018
+    doi: "10.1107/S1600576718008075"
+    notes: "GSASIIscriptable, through which PowderLine drives GSAS-II."
+  - type: article
+    title: "TOPAS and TOPAS-Academic: an optimization program integrating computer algebra and crystallographic objects written in C++"
+    authors:
+      - family-names: "Coelho"
+        given-names: "Alan A."
+    journal: "Journal of Applied Crystallography"
+    volume: 51
+    issue: "1"
+    start: 210
+    end: 218
+    year: 2018
+    doi: "10.1107/S1600576718000183"
+    notes: "TOPAS, the engine of the topas.* schemas (TOPAS 6)."
+  - type: software
+    title: "easydiffraction"
+    version: "0.21.1"
+    date-released: "2026-09-22"
+    authors:
+      - family-names: "Sazonov"
+        given-names: "Andrew"
+      - family-names: "Lindgren"
+        given-names: "Eric"
+      - family-names: "Rozyczko"
+        given-names: "Piotr"
+      - family-names: "Seth"
+        given-names: "Mridul"
+    year: 2026
+    doi: "10.5281/zenodo.22905049"
+    repository-code: "https://github.com/easyscience/diffraction-lib"
+    notes: "The engine of the easydiffraction.* schema. The project asks for the version used to be cited; all versions: doi:10.5281/zenodo.16806521."
+  - type: article
+    title: "Local magnetic anisotropy by polarized neutron powder diffraction: Application of magnetically induced preferred crystallite orientation"
+    authors:
+      - family-names: "Kibalin"
+        given-names: "Iurii A."
+      - family-names: "Gukasov"
+        given-names: "Arsen"
+    journal: "Physical Review Research"
+    volume: 1
+    issue: "3"
+    start: "033100"
+    year: 2019
+    doi: "10.1103/PhysRevResearch.1.033100"
+    notes: "CrysPy's preferred citation. CrysPy (0.13.0 in PowderLine's lock file) is easydiffraction's cryspy calculator."
+  - type: software
+    title: "CrysFML2008 (Python package crysfml)"
+    version: "0.8.0"
+    authors:
+      - family-names: "Rodríguez-Carvajal"
+        given-names: "Juan"
+      - family-names: "Gonzalez-Platas"
+        given-names: "Javier"
+      - family-names: "Ayape Katcho"
+        given-names: "Nebil"
+    repository-code: "https://code.ill.fr/scientific-software/CrysFML2008"
+    url: "https://github.com/easyscience/deps-pycrysfml"
+    notes: "The crystallographic Fortran library behind easydiffraction's crysfml calculator; version 0.8.0 of the Python package in PowderLine's lock file."
+  - type: article
+    title: "GEMMI: A library for structural biology"
+    authors:
+      - family-names: "Wojdyr"
+        given-names: "Marcin"
+    journal: "Journal of Open Source Software"
+    volume: 7
+    issue: "73"
+    start: 4200
+    year: 2022
+    doi: "10.21105/joss.04200"
+    notes: "gemmi 0.7.5 supplies the canonical space-group names and symmetry operations every PowderLine recipe is checked against."

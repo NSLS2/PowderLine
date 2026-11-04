@@ -142,6 +142,18 @@ other engines).
 Output files
 ------------
 
+.. note::
+
+   **ESD and standard uncertainty.** PowderLine labels uncertainties ``esd``
+   (estimated standard deviation) to match the terminology of the refinement
+   engines it drives. The quantity reported is what is now called the
+   *standard uncertainty* (s.u.): the IUCr recommends "standard uncertainty"
+   in place of "estimated standard deviation" (Schwarzenbach et al., `Acta
+   Cryst. A 51, 565-569 (1995) <https://doi.org/10.1107/S0108767395002340>`_), in
+   line with `NIST Technical Note 1297
+   <https://www.nist.gov/pml/nist-technical-note-1297>`_ (Taylor & Kuyatt,
+   1994).
+
 Every engine writes the same standardized reports, with fixed filenames, into
 the output directory:
 

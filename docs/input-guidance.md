@@ -7,6 +7,79 @@ behind each. Validate early and often: `powderline <recipe> --validate-only`
 needs no engine, lists **every** problem with its field path, and prints the
 structured warnings (defaults applied, symmetry remarks).
 
+## Building a recipe
+
+PowderLine has no built-in recipe builder ([why](#structures-the-phase-block)),
+so a recipe is written by you or by your own tooling. The usual path:
+
+1. **Choose the engine, then start from an example or a template.** A recipe
+   is written in one engine's terms and is never translated, so the engine
+   comes first ([Recipe schemas](schemas.md)). Copy the example closest to
+   your case (`examples/<case>/input.json` for GSAS-II and, where the case
+   has them, `examples/<case>/topas/` and `examples/<case>/easydiffraction/`
+   for the other engines; each case has a `DESCRIPTION.md`), or the
+   engine's skeleton in `examples/example_template/` (`input.json` for
+   `gsasii.rietveld`, `topas/input.json`, `easydiffraction/input.json`).
+   A single-peak fit
+   starts from `examples/example_LaB6_singlepeakfit/`. Copy into a directory
+   of your own: the CLI refuses to run any recipe whose path contains
+   `template`.
+2. **Put in your data.** Your reader fills `xrd_data` with 2θ in degrees,
+   the intensities and the weights 1/σ², and you choose the fit window
+   ([Diffraction data](#diffraction-data-xrd_data)). PowderLine never
+   repairs data.
+3. **Take the structure from a CIF with your own tooling** (a CIF reader, a
+   script, a notebook) and write the phase block: the space group as
+   gemmi's canonical name, which states the setting
+   ([Space group](#space-group-one-canonical-spelling)); all six cell values
+   ([Unit cell](#unit-cell)); for each atom the neutral `element`,
+   fractional coordinates, `occupancy`, and `Uiso` or all six `Uij` in Å²
+   (a CIF's `B` is 8π²U); ions in `scattering_types`
+   ([Atoms](#atoms)). Check special positions in particular: `0.3333` in a
+   CIF is an error here; write `0.333333` (1/3 to six decimals) or the
+   exact decimal.
+4. **State every tie-group member, with the same flag.** A cubic cell
+   states `a`, `b`, `c` and all three angles; an atom on `(x, x, x)`
+   states x, y and z; a value fixed by symmetry has flag `false` and, where
+   the engine has bounds, no bounds
+   ([Refine flags and the symmetry](#refine-flags-and-the-symmetry)).
+5. **State the instrument from a calibrant.** Refine a standard measured
+   with the same wavelength and geometry (LaB6, Si, CeO2) **with the same
+   engine**, as `examples/example_LaB6` does for GSAS-II, then copy the
+   refined values from its `output_recipe.json` (`payload.instrument`) into
+   your recipe with their flags `false`. The instrument block is the
+   engine's own, in the engine's units, so it is copied within one engine
+   only; for another engine it is converted by hand
+   ([Instruments](#instruments-one-block-per-engine)).
+6. **Choose what to refine and the controls**
+   ([Background and controls](#background-and-controls)). In `gsasii.*` a
+   few blocks have documented defaults (size/strain 10 µm / 0, no
+   background, 5 cycles), each applied with a warning; in `topas.*` and
+   `easydiffraction.*` nothing has a default and a block left out is not
+   modelled.
+7. **Validate, fix, repeat.** Run
+
+   ```bash
+   pixi run kicker my_recipe.json --validate-only
+   ```
+
+   in any environment, including the core-only default one. Every problem
+   is listed with its field path, and most messages name the value to
+   write (`stated b = 4.2, but by symmetry b = a; write b = 4.15682`);
+   unknown keys are errors (`radiaton: Extra inputs are not permitted`).
+   Fix them all and re-run until the recipe validates.
+8. **Read the warnings.** A valid recipe can still carry structured
+   warnings `{code, message, field_path[, level]}`, printed by
+   `--validate-only` and returned by `powderline.validate(recipe).warnings`.
+   Level `warning` means a default was applied or something deserves a look
+   (`gsasii_broadening_default_applied`: state `peak_broadening` to choose);
+   level `info` is a remark, such as `symmetry_value_derived` (a value is
+   held in its exact symmetry-derived form). Passing validation means the
+   recipe is well formed and consistent with its space group, not that it
+   is the model you intended.
+9. **Run it** in the engine's environment (the table in
+   [Recipe schemas](schemas.md#the-five-schemas)).
+
 ## Diffraction data (`xrd_data`)
 
 A recipe carries its pattern inline, as three equal-length arrays:
@@ -78,6 +151,18 @@ PowderLine reads **formatted dictionaries, not CIF files**: there is no CIF
 parser and no recipe builder in the package. Whatever produces the block
 (a script, a notebook, a database export) owns the conversion; PowderLine
 checks the result against the space group and refuses anything ambiguous.
+
+This is deliberate. Recipes are built in many ways: from a GUI, from a
+script, through an interface to a structure database, or with an LLM
+assistant. A built-in builder would make choices that restrict all the
+others: defaults, file formats, which parameters to refine first. A CIF
+reader in particular would have to guess where the CIF is ambiguous: a
+space-group symbol without its origin choice or axes, coordinates rounded
+to four decimals on a special position (`0.3333`). Guessing silently is
+exactly what validation refuses. So PowderLine defines the recipe format
+precisely, checks it strictly, and leaves the conversion to the tool that
+knows where its data came from.
+[Building a recipe](#building-a-recipe) is the workflow.
 
 ### Space group: one canonical spelling
 
@@ -401,10 +486,20 @@ approximated; each is a validation error or simply absent.
   data: gsasii 0.1.0 is `PXC` single-wavelength only; TOPAS recipes state one
   `lam` line; easydiffraction's Kα2 slot exists and reaches the engine, but
   PowderLine has no laboratory-data example or verification behind it yet.
+- **Energy-dispersive data, and data on a Q or d-spacing axis**: `xrd_data`
+  is constant-wavelength data on a 2θ axis in degrees; convert Q or d to 2θ
+  in the reader that builds the block.
+- **Pawley and Le Bail fitting** (whole-pattern fits with free reflection
+  intensities): every phase is a structure. For a structure-free fit use
+  single-peak fitting (`gsasii.spf`, `topas.spf`).
 - **Fundamental-parameters profiles** (TOPAS `fp`): out of scope.
 - **Bragg–Brentano and other 1D-geometry specimen corrections** (TOPAS
   `Specimen_Displacement`, `Absorption`, goniometer radii beyond the axial
   models): later; easydiffraction's displacement/transparency slots exist.
+- **Sample absorption and sample displacement in gsasii 0.1.0**: GSAS-II's
+  sample parameters are not exposed (easydiffraction has `absorption` and
+  displacement slots, topas a `capillary` absorption correction).
+- **Extinction** and **surface roughness** corrections: in no engine schema.
 - **Multi-histogram** refinements and **sequential / iterative strategies**:
   one pattern, one refinement per recipe; chain runs yourself.
 - **Anisotropic size/strain models** (uniaxial, ellipsoidal, Stephens):
@@ -416,6 +511,13 @@ approximated; each is a validation error or simply absent.
   bounds are not exposed; they may come in a later gsasii schema version.
 - **User-defined constraints** between atoms (shared occupancies, tied ADPs
   across sites): not in 0.1.0.
+- **Restraints and rigid bodies** (bond-length or angle restraints, rigid
+  groups): not in any engine schema; only the space-group symmetry ties
+  parameters.
+- **Magnetic structures**: X-ray data only, so no magnetic models.
+- **Choice of minimizer**: each engine uses its own least squares (GSAS-II's
+  with `refinement_cycles`, TOPAS's with `iters`); easydiffraction's
+  `minimizer` must be stated and accepts only `"lmfit (leastsq)"`.
 - **`unsafe_mode`** (relaxing checks such as the occupancy range without
   guaranteeing the recipe's intent): a named future feature, not present.
 - **TOPAS 7**: `topas.*` 0.1.0 is verified against TOPAS 6 and declares TOPAS
