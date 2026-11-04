@@ -529,7 +529,8 @@ import powderline.gateways.easydiffraction
 import powderline.gateways.easydiffraction.gateway
 import powderline.gateways.easydiffraction.native_run
 allowed = {
-    "powderline.gateways.topas": {"schema", "native_writer", "native_run", "peak_list", "runner", "gateway"},
+    "powderline.gateways.topas": {"schema", "native_writer", "native_run", "peak_list", "runner", "gateway",
+                                  "scattering"},
     "powderline.gateways.easydiffraction": {"schema", "native_builder", "native_run", "space_group_support",
                                             "space_group_table", "gateway", "scattering"},
 }

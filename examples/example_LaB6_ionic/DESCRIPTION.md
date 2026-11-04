@@ -43,8 +43,7 @@ The standard gsasii set (`refined_parameters.csv`, `LaB6_unit_cell_report.csv`,
 
 ## Known Issues
 
-None. TOPAS does not accept `scattering_types` in schema 0.1.0 (the TOPAS half
-awaits a TOPAS 6 run), so this example has no topas recipe.
+None.
 
 ## Per-engine recipes
 
@@ -56,3 +55,7 @@ of it (easydiffraction 0.21.1). Like the fixture's own golden, that refinement t
 `broad_lorentz_x` negative, so the Lorentzian FWHM is negative at the top of the
 window (`easydiffraction_negative_width`, EB-87) and its output recipe is not valid
 as written.
+
+`topas/input.json`: the same model as a `topas.rietveld` recipe; TOPAS writes
+the ion as `occ La+3`. On TOPAS 6 the La3+/La intensity ratios agree with
+GSAS-II's within 0.07 % (see `topas/README.md`).

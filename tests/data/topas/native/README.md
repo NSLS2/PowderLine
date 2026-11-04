@@ -7,6 +7,7 @@ the committed examples' data; the starting values are worked out as below.
 | Fixture | What it is |
 |---|---|
 | `lab6_rietveld.json` | LaB6 calibrant: TCHZ instrument refined (Z fixed), Chebyshev + one pv background peak, scale refined, cell and ADPs fixed |
+| `lab6_cell_rietveld.json` | `lab6_rietveld.json` with the cell refined (`a`, `b`, `c` tied, flags true): the TOPAS cell value and ESD for the cross-engine comparison |
 | `lab6_spf.json` | LaB6 single peak fitting: 36 peaks; the LaB6 TCHZ instrument fixed; each peak refines position, intensity and its sample `gauss_fwhm`/`lor_fwhm` |
 | `drx33_rietveld.json` | DRX_33 + Li4MgWO6 (C 1 2/m 1): cells, scales, Chebyshev and isotropic microstrain refined |
 | `ties_simulation.json` | `iters 0`: 1/3 constants, `y = 2x`, `y = x + 1/2`, coupled Uij, `b = a` |
@@ -40,12 +41,23 @@ the committed examples' data; the starting values are worked out as below.
 The generator that wrote these files (with the numbers above) is in the devkit:
 `dossiers/multi-engine/probes/re05_topas/make_native_fixtures.py`.
 
-## TOPAS 6 goldens (`golden/`)
+## TOPAS goldens (`golden/<engine_version>/`)
 
-What TOPAS-64 Version 6 wrote for each fixture (devkit probe packs 3 and 5,
-2026-10-09; base name `<fixture>__snapped`): the INP the writer produced (fit
-limits on data points, A149), `_results.csv`, `_profile.txt`, the reflection
-lists, and the background run (A152: `_bkg.inp`, `_bkg_profile.txt`).
+What TOPAS wrote for each fixture, in the directory of the fixture's
+`engine_version` (TOPAS-64 Version 6 under `golden/6/`; base name
+`<fixture>__snapped`): the INP the writer produced (fit limits on data points,
+A149), `_results.csv`, `_profile.txt`, the reflection lists, and the
+background run (A152: `_bkg.inp`, `_bkg_profile.txt`). The six original
+fixtures come from devkit probe packs 3 and 5 (2026-10-09); `lab6_cell_rietveld`
+from the TOPAS 6 session of 2026-11-04 (written by a PowderLine whose schemas
+were numbered 1.0.0: the fixture's two version strings and line 1 of its two
+INPs were changed to 0.1.0, and the background INP header lost a trailing
+design-record id; nothing else differs; CRLF line ends converted to LF).
 `tests/test_topas_native_golden.py` checks that the writer still emits those
-INPs and builds the result from TOPAS's files. Regenerate them on a TOPAS
-machine whenever the writer's output changes.
+INPs and builds the result from TOPAS's files; on the TOPAS machine
+`tests/test_topas_exec.py` reruns them with `tc.exe`. Regenerate them on a
+TOPAS machine whenever the writer's output changes.
+
+Other TOPAS output used by the tests: `ions/` (La3+ against La,
+`tests/test_topas_scattering.py`) and `po/` (the `PO` macro,
+`tests/test_topas_preferred_orientation.py`); each has a README.

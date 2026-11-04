@@ -1,7 +1,8 @@
 """Native ``topas.*`` fixtures against TOPAS 6 runs (re/05 goldens; A143, A149, A152).
 
-``tests/data/topas/native/golden/`` holds what TOPAS-64 Version 6 wrote for each
-fixture in ``tests/data/topas/native/`` (devkit probe packs 3 and 5, base name
+``tests/data/topas/native/golden/<engine_version>/`` holds what TOPAS wrote for
+each fixture in ``tests/data/topas/native/`` (TOPAS-64 Version 6 under ``6/``;
+the directory is the fixture's ``engine_version``; base name
 ``<fixture>__snapped``): the INP the writer produced, TOPAS's results CSV,
 profile and reflection lists, and the background run (INP and profile).
 Without TOPAS these tests check that the writer still emits exactly those INPs
@@ -22,12 +23,13 @@ from powderline.gateways.topas import native_run, native_writer, schema
 pytestmark = pytest.mark.topas_gen
 
 NATIVE = Path(__file__).parent / "data" / "topas" / "native"
-GOLDEN = NATIVE / "golden"
-FIXTURES = ("drx33_rietveld", "lab6_corrections", "lab6_pv_full_axial", "lab6_rietveld", "lab6_spf",
-            "ties_simulation")
+GOLDENS = NATIVE / "golden"
+FIXTURES = ("drx33_rietveld", "lab6_cell_rietveld", "lab6_corrections", "lab6_pv_full_axial", "lab6_rietveld",
+            "lab6_spf", "ties_simulation")
 #: Warnings each TOPAS 6 run gives (beyond the recipe's own validation warnings).
 RUN_WARNINGS = {
     "drx33_rietveld": set(),
+    "lab6_cell_rietveld": {"topas_parameter_at_limit"},
     "lab6_corrections": set(),
     "lab6_pv_full_axial": {"topas_parameter_at_limit"},
     "lab6_rietveld": {"topas_parameter_at_limit"},
@@ -36,8 +38,17 @@ RUN_WARNINGS = {
 }
 
 
+def _recipe(fixture):
+    return json.loads((NATIVE / f"{fixture}.json").read_text(encoding="utf-8"))
+
+
 def _model(fixture):
-    return schema.validate_recipe(json.loads((NATIVE / f"{fixture}.json").read_text(encoding="utf-8")))
+    return schema.validate_recipe(_recipe(fixture))
+
+
+def golden_dir(fixture):
+    """The fixture's goldens: ``golden/<engine_version>/`` (what that TOPAS version wrote)."""
+    return GOLDENS / _recipe(fixture)["engine_version"]
 
 
 def _base(fixture):
@@ -46,7 +57,7 @@ def _base(fixture):
 
 def _values(fixture):
     """TOPAS's refined values, read with the native runner's strict reader (A154 S1; re/07 B)."""
-    _, values = native_run._read_results(GOLDEN / f"{_base(fixture)}_results.csv")
+    _, values = native_run._read_results(golden_dir(fixture) / f"{_base(fixture)}_results.csv")
     return values
 
 
@@ -54,7 +65,7 @@ def _values(fixture):
 def golden_result(request, tmp_path_factory):
     fixture = request.param
     out = tmp_path_factory.mktemp(fixture)
-    for f in GOLDEN.glob(f"{_base(fixture)}*"):
+    for f in golden_dir(fixture).glob(f"{_base(fixture)}*"):
         if not f.name.endswith(".inp"):
             shutil.copy(f, out / f.name)
     model = _model(fixture)
@@ -66,7 +77,7 @@ def golden_result(request, tmp_path_factory):
 def test_writer_emits_the_inp_topas_ran(fixture):
     model = _model(fixture)
     assert native_writer.render_native(model, _base(fixture)).inp_text == \
-        (GOLDEN / f"{_base(fixture)}.inp").read_text(encoding="utf-8")
+        (golden_dir(fixture) / f"{_base(fixture)}.inp").read_text(encoding="utf-8")
 
 
 @pytest.mark.parametrize("fixture", FIXTURES)
@@ -74,7 +85,7 @@ def test_background_run_inp_is_the_one_topas_ran(fixture):
     """A152: the background INP from the golden refined values is the one TOPAS 6 ran (pack 5)."""
     values = {name: v for name, (v, _) in _values(fixture).items()}
     assert native_writer.render_background(_model(fixture), _base(fixture), values).inp_text == \
-        (GOLDEN / f"{_base(fixture)}_bkg.inp").read_text(encoding="utf-8")
+        (golden_dir(fixture) / f"{_base(fixture)}_bkg.inp").read_text(encoding="utf-8")
 
 
 def test_core_rwp_equals_topas_rwp(golden_result):
@@ -89,7 +100,7 @@ def test_core_rwp_equals_topas_rwp(golden_result):
 def test_background_column_is_topas_background_run(golden_result):
     """A152: y_bkg is the background run's Ycalc; TOPAS's Ycalc never falls below it."""
     fixture, model, r = golden_result
-    bkg = np.loadtxt(GOLDEN / f"{_base(fixture)}_bkg_profile.txt")
+    bkg = np.loadtxt(golden_dir(fixture) / f"{_base(fixture)}_bkg_profile.txt")
     profile = r["fit_profile"]
     np.testing.assert_array_equal(profile["two_theta"].to_numpy(), bkg[:, 0])
     np.testing.assert_array_equal(profile["y_bkg"].to_numpy(), bkg[:, 2])
@@ -129,7 +140,7 @@ def test_drx33_cells(golden_result):
 # --- A130 / A154: any non-finite number TOPAS writes is a divergence (re/05 PR review S1) ---------------
 
 def _golden_copy(tmp_path, fixture="lab6_rietveld"):
-    for f in GOLDEN.glob(f"{_base(fixture)}*"):
+    for f in golden_dir(fixture).glob(f"{_base(fixture)}*"):
         if not f.name.endswith(".inp"):
             shutil.copy(f, tmp_path / f.name)
     model = _model(fixture)
@@ -187,7 +198,7 @@ def test_limit_hit_message_in_recipe_units(tmp_path):
     recipe = json.loads((NATIVE / "lab6_rietveld.json").read_text(encoding="utf-8"))
     recipe["payload"]["phases"]["LaB6"]["atoms"]["La"]["Uiso"][1] = True
     model = schema.validate_recipe(recipe)
-    for f in GOLDEN.glob(f"{_base('lab6_rietveld')}*"):
+    for f in golden_dir("lab6_rietveld").glob(f"{_base('lab6_rietveld')}*"):
         if not f.name.endswith(".inp"):
             shutil.copy(f, tmp_path / f.name)
     with open(tmp_path / f"{_base('lab6_rietveld')}_results.csv", "a", encoding="utf-8") as fh:

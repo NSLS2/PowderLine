@@ -22,7 +22,7 @@ Where each row comes from
   ``--no-run`` the rows are read back from the committed JSON (their own run
   date and versions are kept).
 * **TOPAS 6** — never run here (P-08): the rows are rebuilt from the committed
-  TOPAS 6 goldens (``tests/data/topas/native/golden/``) with the gateway's own
+  TOPAS 6 goldens (``tests/data/topas/native/golden/6/``) with the gateway's own
   result builder, so the statistics are the uniform ones.
 * **easydiffraction** — read from the committed goldens
   (``tests/data/easydiffraction/native/golden/``), which record the versions
@@ -247,10 +247,13 @@ def topas_golden_row(fixture: str) -> dict:
 
     recipe_path = TOPAS_NATIVE / f"{fixture}.json"
     base = f"{fixture}__snapped"
-    files = sorted(TOPAS_GOLDEN.glob(f"{base}*"))
-    if not recipe_path.exists() or not any(f.name == f"{base}_results.csv" for f in files):
-        raise MissingInput(f"TOPAS golden missing: {TOPAS_GOLDEN / (base + '_results.csv')}")
+    if not recipe_path.exists():
+        raise MissingInput(f"TOPAS fixture missing: {recipe_path}")
     recipe = json.loads(recipe_path.read_text(encoding="utf-8"))
+    golden = TOPAS_GOLDEN / recipe["engine_version"]  # goldens by TOPAS version: golden/<engine_version>/
+    files = sorted(golden.glob(f"{base}*"))
+    if not any(f.name == f"{base}_results.csv" for f in files):
+        raise MissingInput(f"TOPAS golden missing: {golden / (base + '_results.csv')}")
     model = schema.validate_recipe(recipe)
     native = native_writer.render_native(model, base)
     with tempfile.TemporaryDirectory() as tmp:
@@ -416,7 +419,7 @@ def render_markdown(data: dict, generated: dict) -> str:
                      "`execution_mode='subprocess'`.")
     if tp:
         lines.append(f"- TOPAS: TOPAS-64 Version {tp[0]['engine_version'].split()[0]} goldens "
-                     "(`tests/data/topas/native/golden/`, TOPAS machine runs of 2026-10-09); **not executed "
+                     "(`tests/data/topas/native/golden/6/`, TOPAS machine runs of 2026-10-09); **not executed "
                      "for this page**: the rows are the gateway's result built from the committed files.")
     if ed:
         v = ed[0].get("versions", {})

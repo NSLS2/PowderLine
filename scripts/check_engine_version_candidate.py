@@ -45,7 +45,7 @@ ENGINES = {
         "env": None,
         "task": "test-topas",
         "spec_file": "src/powderline/gateways/topas/schema.py",
-        "spec_name": "SUPPORTED_ENGINE_VERSIONS",
+        "spec_name": "SUPPORTED_ENGINE_VERSION_SPEC",
         "pin": "none: TOPAS is not installable; the recipe's engine_version (A144) and the installed version "
                "declared in .powderline_config.yaml (A145)",
         "pin_pattern": None,
@@ -122,10 +122,12 @@ def main(argv: list[str] | None = None) -> int:
         ]
     else:
         lines += [
-            f"   - {info['spec_file']}: {info['spec_name']} = \"{spec},=={candidate}\"",
+            f"   - {info['spec_file']}: add \"{candidate}\" to SUPPORTED_ENGINE_VERSIONS (the published "
+            f"{info['spec_name']} is derived from it; several versions need a decision on its form)",
             f"   - .powderline_config.yaml on the TOPAS machine: topas.dir / topas.version = {candidate}",
-            "   - the generation goldens (tests/data/topas/native/golden/) are TOPAS 6 output: a TOPAS 7 run",
-            "     needs the TOPAS 7 machine (A182) and is out of scope until the maintainer says otherwise (A143)",
+            "   - the generation goldens (tests/data/topas/native/golden/<version>/, by the fixture's engine_version)",
+            "     are TOPAS 6 output: a TOPAS 7 run needs the TOPAS 7 machine (A182) and is out of scope until the",
+            "     maintainer says otherwise (A143)",
         ]
     env_flag = f"-e {info['env']} " if info["env"] else ""
     lines += [

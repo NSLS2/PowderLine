@@ -81,8 +81,6 @@ The standard gsasii set (`refined_parameters.csv`, `LaB6_unit_cell_report.csv`,
 - Starting r at exactly 1.0 (GSAS-II aborts) or at 0.9 (non-finite) fails
   with `diverged`, at 1.2 finds the wrong minimum — see above; this is
   GSAS-II's refinement, not a PowderLine bug, and is recorded as EB-99.
-- TOPAS does not accept `preferred_orientation` in schema 0.1.0 (its
-  `PO(...)` half awaits a TOPAS 6 run), so there is no topas recipe.
 - The example is simulated; no measured textured LaB6 exists here.
 
 ## Per-engine recipes
@@ -94,3 +92,9 @@ pattern as its `xrd_data` and the same block plus easydiffraction's required
 The cryspy calculator is required: CrysFML ignores preferred orientation
 (EB-97). `easydiffraction/output/` is the committed reference of a run of it
 (easydiffraction 0.21.1; refined r 0.5976(14)).
+
+`topas/input.json`: the same refinement as a `topas.rietveld` recipe, written
+with TOPAS's March–Dollase `PO(...)` macro. On TOPAS 6 the correction equals
+GSAS-II's per reflection, and a refinement of this pattern recovers r =
+0.5982(14). Its reference comes from the TOPAS machine (see
+`topas/README.md`).

@@ -79,10 +79,13 @@ only): the `topas.*` 0.1.0 recipes state `engine_version: "6"`.
 
 **Verification status (0.2.0).** The `topas.*` gateway's INP and XYE writer is
 verified byte-for-byte against goldens produced on a TOPAS 6 machine; a run
-without `tc.exe` writes the files and returns `status: generated`. TOPAS
-**execution** on 0.2.0's code — the result parser on a fresh TOPAS 6 output,
-the background-only second run, the at-limit warning, the failure contract —
-has not been run since the refactor (KI-16). GSAS-II and easydiffraction
+without `tc.exe` writes the files and returns `status: generated`. The TOPAS
+halves of ionic scattering types and March–Dollase preferred orientation are
+checked against output TOPAS 6 wrote (La3+/La within 0.07 % of GSAS-II; the
+`PO` correction within 1.4e-7 of the March–Dollase formula). The execution
+suite on 0.2.0's code (`pixi run test-topas` with `tc.exe` declared: the
+`topas_exec` tests, which rerun every golden fixture and the ionic and
+textured examples) is still to be recorded (KI-16). GSAS-II and easydiffraction
 execution are verified by their suites on linux-64 and win-64.
 
 ## Reading the matrix

@@ -21,8 +21,8 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "cross_engine_comparison.py"
 RECORD = ROOT / "docs" / "_generated" / "cross_engine_comparison.json"
 GOLDENS = [
-    ROOT / "tests" / "data" / "topas" / "native" / "golden" / "lab6_rietveld__snapped_results.csv",
-    ROOT / "tests" / "data" / "topas" / "native" / "golden" / "drx33_rietveld__snapped_results.csv",
+    ROOT / "tests" / "data" / "topas" / "native" / "golden" / "6" / "lab6_rietveld__snapped_results.csv",
+    ROOT / "tests" / "data" / "topas" / "native" / "golden" / "6" / "drx33_rietveld__snapped_results.csv",
     ROOT / "tests" / "data" / "easydiffraction" / "native" / "golden" / "lab6_crysfml_tch.json",
     ROOT / "tests" / "data" / "easydiffraction" / "native" / "golden" / "lab6_cryspy_pv.json",
     ROOT / "tests" / "data" / "easydiffraction" / "native" / "golden" / "drx33_two_phase_cryspy.json",

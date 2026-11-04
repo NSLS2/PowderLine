@@ -25,6 +25,9 @@ Emission rules:
   (used only with ``continue_after_convergence``) is not written.
 - **Numbers** are written with ``%.10g`` (``fmt``): recipe values beyond 10
   significant digits are rounded in the INP, like the ``.xye``.
+- **Ions and texture:** an atom listed in the phase's ``scattering_types`` gets
+  TOPAS's spelling in ``occ`` (``La3+`` -> ``occ La+3``, :mod:`.scattering`);
+  ``preferred_orientation`` is TOPAS.INC's ``PO`` macro in the ``str``.
 - **Scope (A148):** geometry corrections at the xdd level (every peak);
   Lorentz-polarisation and the instrument peak type in each ``str``; the
   instrument peak type also in each SPF peak.
@@ -46,6 +49,7 @@ from dataclasses import dataclass, field
 from fractions import Fraction
 from typing import Optional
 
+from powderline.gateways.topas.scattering import topas_type
 from powderline.gateways.topas.schema import (
     EIGHT_PI_SQ,
     KEYWORD_LIMITS,
@@ -418,8 +422,11 @@ class _Writer:
         self.lines.append(f"      prm {pfx}_volume = Get(cell_volume); : 0")
         self.out.derived[f"{pfx}_volume"] = ParamInfo(path=f"payload.phases.{name}.unit_cell", category="cell_volume",
                                                       descriptive=f"{name}_volume", refined=False, phase=name)
+        types = phase.scattering_types or {}
         for j, (label, atom) in enumerate(phase.atoms.items(), start=1):
-            self.lines.append("      " + self._site(pfx, j, name, label, phase.space_group, atom))
+            self.lines.append("      " + self._site(pfx, j, name, label, phase.space_group, atom,
+                                                     types.get(label, atom.element)))
+        self._preferred_orientation(pfx, name, phase)
         self.lines.append(f"      {self._peak_type_call()}")
         self._sample_broadening(pfx, name, phase)
         lp = self._lp_call()
@@ -459,7 +466,20 @@ class _Writer:
                 parts.append(f"{kw} = Get({_ANGLE_KEYWORD.get(rep_of[member], rep_of[member])});")
         return "   ".join(parts)
 
-    def _site(self, pfx: str, j: int, name: str, label: str, sg: str, atom) -> str:
+    def _preferred_orientation(self, pfx: str, name: str, phase) -> None:
+        """TOPAS.INC's ``PO(c, v, ang, hkl)`` March-Dollase macro: ``PO(p1_po_r, 0.8 min a max b, , 0 0 1)`` refined,
+        ``PO(!p1_po_r, 0.6, , 0 0 1)`` fixed. ``ang`` only names the computed correction, so it is left empty. Only
+        the stated bounds are written; on a ``null`` side TOPAS keeps its own limit (min 0.0001, max = 2 Val + .5)."""
+        po = phase.preferred_orientation
+        if po is None:
+            return
+        info = ParamInfo(path=f"payload.phases.{name}.preferred_orientation.ratio", category="preferred_orientation",
+                         descriptive=f"{name}_po_ratio", refined=False, phase=name)
+        label, _, value = self.keyword_token(f"{pfx}_po_r", po.ratio, info,
+                                             default=KEYWORD_LIMITS["po_ratio"]).partition(" ")
+        self.lines.append(f"      PO({label}, {value}, , {' '.join(str(int(i)) for i in po.hkl)})")
+
+    def _site(self, pfx: str, j: int, name: str, label: str, sg: str, atom, scattering_type: str) -> str:
         xyz = (atom.x.value, atom.y.value, atom.z.value)
         ties = coupling_groups(sg, xyz)
         exact = analyze_site(sg, xyz).exact
@@ -483,7 +503,7 @@ class _Writer:
                 coords.append(f"{axis} = {affine_text(k, f'{apfx}_{rep}', c)};")
         occ = self._kw(f"{apfx}_occ", atom.occupancy, f"{base}.occupancy", "occupancy", f"{label}_occupancy",
                        default=KEYWORD_LIMITS["occ"], phase=name, atom=label)
-        text = f"site {label} " + " ".join(coords) + f" occ {atom.element} {occ}"
+        text = f"site {label} " + " ".join(coords) + f" occ {topas_type(scattering_type)} {occ}"
         if atom.ADP == "Uiso":
             text += " beq " + self._kw(f"{apfx}_beq", atom.Uiso, f"{base}.Uiso", "atom_adp", f"{label}_Uiso",
                                        default=KEYWORD_LIMITS["beq"], phase=name, atom=label, scale=EIGHT_PI_SQ)

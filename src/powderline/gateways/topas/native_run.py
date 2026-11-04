@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import csv
 import math
+import os
 import re
 import subprocess
 import time
@@ -63,8 +64,9 @@ SPF_COLUMNS = ("position_2theta", "position_2theta_esd", "intensity", "intensity
                "fwhm", "fwhm_esd", "integral_breadth", "integral_breadth_esd")
 SPF_DIAG_COLUMNS = ("peak_index", "position_2theta", "status", "notes")
 SPF_REPORT = "single_peaks_report.csv"
-#: A final value within this relative distance of a fixed limit is a limit hit (A147 Q-L4).
-LIMIT_HIT_RTOL = 1e-6
+#: A final value within this relative distance of a stated or default limit is a limit hit (A147 Q-L4). TOPAS 6
+#: stops a little past a bound, not on it: a March-Dollase r with min 0.7 ended at 0.700012 (1.7e-5 relative).
+LIMIT_HIT_RTOL = 1e-4
 #: Rows of the results CSV that are TOPAS's own fit statistics.
 FIT_STATS = ("r_wp", "r_exp", "gof")
 #: Non-finite numbers as Python or MSVC print them: ``nan``, ``-inf``, ``1.#QNAN``, ``-1.#IND``, ``-nan(ind)``.
@@ -122,18 +124,65 @@ def console_tail(proc) -> str | None:
     return text if len(text) <= MAX_CONSOLE_CHARS else "[... earlier console text dropped ...]\n" + text[-MAX_CONSOLE_CHARS:]
 
 
+def _on_windows() -> bool:
+    return os.name == "nt"
+
+
+def _ansi_encodable(text: str) -> bool:
+    """Whether ``text`` survives the Windows ANSI code page exactly (``mbcs``, strict: no best-fit mapping)."""
+    try:
+        text.encode("mbcs", "strict")
+    except UnicodeError:
+        return False
+    return True
+
+
+def _short_path(path: str) -> str | None:
+    """The Windows 8.3 short form of an existing ``path`` (``GetShortPathNameW``); ``None`` when there is none."""
+    import ctypes
+    from ctypes import wintypes
+
+    get = ctypes.windll.kernel32.GetShortPathNameW
+    get.argtypes = (wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD)
+    get.restype = wintypes.DWORD
+    size = get(path, None, 0)
+    if not size:
+        return None
+    buf = ctypes.create_unicode_buffer(size)
+    return buf.value if get(path, buf, size) else None
+
+
+def tc_input_path(inp: Path) -> str:
+    """The INP path as tc.exe gets it. TOPAS reads its command line in the ANSI code page: a folder outside it
+    (Greek, say, on a Western-European Windows) makes TOPAS write nothing, while its 8.3 short path works
+    (measured on TOPAS 6). So on Windows a path the ANSI code page cannot hold is passed in its short form; if the
+    volume has no short name for it, the run is refused before tc.exe starts (``ExecutionBackendError``
+    ``backend_error``)."""
+    text = str(inp)
+    if not _on_windows() or _ansi_encodable(text):
+        return text
+    short = _short_path(text)
+    if short and _ansi_encodable(short):
+        return short
+    raise ExecutionBackendError(
+        f"TOPAS cannot open {inp.name} in the folder {inp.parent}: TOPAS reads file paths in the Windows ANSI code "
+        "page, which cannot hold this folder's name, and the volume gives it no 8.3 short name. Write the output "
+        "to a folder whose path is plain ASCII (--output DIR)", reason="backend_error")
+
+
 def run_tc(tc: Path, inp: Path, runner=subprocess.run, timeout: float | None = None):
     """Run ``tc "<inp>"`` in the TOPAS folder and return the completed process. The exit code is not used (C13).
 
     ``timeout`` (seconds; ``None`` = no limit, A195): past it ``tc.exe`` is stopped and the run fails with
     :class:`ExecutionBackendError` ``timeout`` -- a hung TOPAS (a licence dialog waiting for input, say) must
-    not block forever.
+    not block forever. The INP path is passed as :func:`tc_input_path` gives it.
     """
     kwargs = {"cwd": str(tc.parent), "capture_output": True}
     if timeout:
         kwargs["timeout"] = timeout
+    inp_arg = tc_input_path(inp)
     try:
-        return runner([str(tc), str(inp)], **kwargs)
+        return runner([str(tc), inp_arg], **kwargs)
     except subprocess.TimeoutExpired as exc:  # subprocess.run has already stopped tc.exe
         raise ExecutionBackendError(
             f"TOPAS did not finish {inp.name} within {timeout:g} s and was stopped. A long refinement needs a larger "
@@ -201,7 +250,7 @@ def run_native(model, output_dir, *, base_name: str | None = None, topas_dir=Non
         (out / f).unlink(missing_ok=True)
     try:
         proc = run_tc(tc, out / f"{base}.inp", runner=runner, timeout=timeout)
-    except ExecutionBackendError as exc:  # timed out: the record lists the INP and data kept for diagnosis
+    except ExecutionBackendError as exc:  # timed out or refused: the record lists the INP and data kept
         exc.result = _failure("backend", exc.reason, str(exc), model=model, native=native, out=out, tc=tc,
                               started=started, warnings=validated_warnings)
         raise
@@ -350,7 +399,8 @@ def build_result(model, native: NativeInput, out: Path, validated_warnings: list
             message=(f"the recipe requests {requested} independently refined parameter(s) but TOPAS varied "
                      f"{varied}: a flagged parameter that does not affect the pattern is not refined (C22)"),
             field_path=None))
-    warnings += _limit_hits(native, values)
+    data_x = _weighted_points(p.xrd_data)
+    warnings += _limit_hits(native, values, data_x)
 
     refined_rows = _refined_rows(model, native, values)
     unit_cells, peak_lists = {}, {}
@@ -365,7 +415,8 @@ def build_result(model, native: NativeInput, out: Path, validated_warnings: list
                              "intensities are zero): its scale is 0, or TOPAS discarded a calculation that was "
                              "not finite (TOPAS does not report that, C23)"),
                     field_path=f"payload.phases.{name}", level="info"))
-    spf_rows, spf_diag = _spf_rows(model, native, values) if not isinstance(model, TopasRietveldRecipe) else ([], [])
+    spf_rows, spf_diag = (_spf_rows(model, native, values, data_x) if not isinstance(model, TopasRietveldRecipe)
+                          else ([], []))
 
     wavelength = _final(native, values, "lam_lo", p.instrument.radiation.lo.value)
     bkg, bkg_warning = _background_column(model, native, out, profile[:, 0])
@@ -447,7 +498,34 @@ def _final(native: NativeInput, values: dict, name: str, fallback: float) -> flo
     return values[name][0] if name in values else fallback
 
 
-def _limit_hits(native: NativeInput, values: dict) -> list:
+def _weighted_points(xrd) -> np.ndarray:
+    """The 2theta of the data points TOPAS fits (the ``.xye`` keeps only the weighted ones)."""
+    tth = np.asarray(xrd.tth, dtype=float)
+    return tth[np.asarray(xrd.Itth_weights, dtype=float) > 0]
+
+
+def _at_limit(v: float, lim: float, side: str, source: str, data_x) -> bool:
+    """Whether a final value ``v`` is at (or past) a fixed limit.
+
+    A stated or TOPAS default limit: within :data:`LIMIT_HIT_RTOL` of it, either side (TOPAS stops a little past
+    a bound). The fit window's edge (``source == "window"``, an SPF peak position): on or beyond the edge, or
+    closer to it than the nearest data point, i.e. no data point lies strictly between the value and the edge
+    (TOPAS 6 stopped an ``xo`` 1e-5 degree inside ``start_X``).
+    """
+    beyond = (v < lim) if side == "min" else (v > lim)
+    if source == "window":
+        if beyond or v == lim:
+            return True
+        lo, hi = (lim, v) if side == "min" else (v, lim)
+        x = np.asarray(data_x if data_x is not None else (), dtype=float)
+        return not bool(((x > lo) & (x < hi)).any())
+    tol = LIMIT_HIT_RTOL * abs(lim) if lim != 0 else 1e-12
+    return abs(v - lim) <= tol
+
+
+def _limit_hits(native: NativeInput, values: dict, data_x=None) -> list:
+    """``topas_parameter_at_limit`` for every refined parameter that ended at a fixed limit (:func:`_at_limit`);
+    ``data_x`` are the fitted data points (the window-edge rule)."""
     found = []
     for name, info in native.params.items():
         if not info.refined or name not in values:
@@ -456,14 +534,12 @@ def _limit_hits(native: NativeInput, values: dict) -> list:
         for side, lim, source in zip(("min", "max"), info.limits, info.limit_source):
             if lim is None:
                 continue
-            tol = LIMIT_HIT_RTOL * abs(lim) if lim != 0 else 1e-12
-            beyond = (v < lim) if side == "min" else (v > lim)  # only a window edge can be crossed (A154 N7)
-            if abs(v - lim) <= tol or (source == "window" and beyond):
+            if _at_limit(v, lim, side, source, data_x):
                 topas = f", TOPAS value {lim:g}" if info.scale != 1.0 else ""  # e.g. Uiso written as beq
                 if source == "window":
                     message = (f"{info.descriptive} ended at or beyond the fit window's {side} edge {lim:g} "
-                               f"({'start_X' if side == 'min' else 'finish_X'}; final value {v:g}): the peak "
-                               "is not fitted against the data it left")
+                               f"({'start_X' if side == 'min' else 'finish_X'}; final value {v:g}, no data point "
+                               "between them): the peak is not fitted against the data it left")
                 else:
                     whose = "the recipe's stated bound" if source == "stated" else "TOPAS's default limit"
                     message = (f"{info.descriptive} ended at its {side} limit {lim / info.scale:g} ({whose}{topas}): "
@@ -533,7 +609,7 @@ def _cell_rows(model, i: int, name: str, values: dict) -> list[dict]:
                                   volume=None if vol is None else vol[0], volume_esd=None if vol is None else vol[1])
 
 
-def _spf_rows(model, native: NativeInput, values: dict) -> tuple[list[dict], list[dict]]:
+def _spf_rows(model, native: NativeInput, values: dict, data_x=None) -> tuple[list[dict], list[dict]]:
     rows, diag = [], []
     for i, peak in enumerate(model.payload.single_peaks, start=1):
         row = {}
@@ -549,7 +625,8 @@ def _spf_rows(model, native: NativeInput, values: dict) -> tuple[list[dict], lis
             else:
                 row[col], row[f"{col}_esd"] = None, None
         rows.append(row)
-        hits = [w for w in _limit_hits(native, values) if w["field_path"].startswith(f"payload.single_peaks.{i - 1}.")]
+        hits = [w for w in _limit_hits(native, values, data_x)
+                if w["field_path"].startswith(f"payload.single_peaks.{i - 1}.")]
         if hits:
             diag.append({"peak_index": i - 1, "position_2theta": row["position_2theta"], "status": "at_limit",
                          "notes": "; ".join(w["message"] for w in hits)})

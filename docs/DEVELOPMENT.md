@@ -286,8 +286,10 @@ Worked example — March–Dollase preferred orientation:
    carries the shape and the engine-independent rules (`hkl` not all zero,
    `ratio > 0`); each engine's phase model adds `preferred_orientation` in
    its own parameter shape (gsasii `[value, flag]`, easydiffraction bounded
-   plus the required `march_random_fract`); topas declares the field and
-   refuses it until its half is verified on a TOPAS machine.
+   plus the required `march_random_fract`, topas bounded); topas declared the
+   field and refused it until its half was verified on a TOPAS 6 machine
+   (the `PO` macro against the Dollase formula, then the writer and the
+   read-back of r).
 3. **The gateway reads the model.** gsasii: an additive frozen setter and its
    call, two signed-off frozen-code edits with proofs (the project-dict diff shows only
    `Pref.Ori.`), and the refined name `p:h:MD` in `paths.py`;
@@ -562,8 +564,8 @@ Directory `examples/<case>/` with `input.json` (the `gsasii.*` recipe),
 references), and optionally `topas/input.json`, `easydiffraction/input.json`
 with a README each. An `easydiffraction/output/` folder holds that engine's
 committed reference results (checked against the easydiffraction goldens);
-TOPAS references live as goldens under `tests/data/topas/native/golden/`
-(they come from a TOPAS machine).
+TOPAS references live as goldens under `tests/data/topas/native/golden/<version>/`
+(they come from a TOPAS machine; the directory is the fixture's `engine_version`).
 
 ### Running tests
 
@@ -580,7 +582,9 @@ pixi run test
 pixi run -e gsasii test-gsasii
 pixi run -e easydiffraction test-easydiffraction
 
-# TOPAS: generation everywhere; topas_exec needs tc.exe (none exists yet)
+# TOPAS: generation everywhere; the topas_exec tests run tc.exe on the TOPAS
+# machine when POWDERLINE_TOPAS_DIR and POWDERLINE_TOPAS_VERSION are set
+# (PowerShell: $env:POWDERLINE_TOPAS_DIR='C:\TOPAS6'; $env:POWDERLINE_TOPAS_VERSION='6')
 pixi run test-topas
 
 # Everything, in the dev env -- the pre-merge gauntlet
@@ -694,8 +698,7 @@ maintainer.
 
 ## Future roadmap
 
-- The TOPAS halves of ionic scattering types and March–Dollase
-  preferred orientation on a TOPAS 6 machine; a later minor gsasii
+- A later minor gsasii
   schema version with bounds (clamp-freeze-refit); TOPAS 7 after a
   compatibility run on a TOPAS 7 machine; `unsafe_mode` for deliberately
   relaxed checks; a recipe builder / CIF importer upstream of the schemas;

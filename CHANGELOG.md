@@ -77,11 +77,9 @@ limitations are listed in the [known-issues register](docs/known_issues.md).
   engine's ion table ([input guidance](docs/input-guidance.md); EB-94–EB-96).
 - March–Dollase `preferred_orientation` (`hkl`, `ratio`) in the gsasii and
   easydiffraction (`cryspy`) phase blocks (EB-97, EB-98).
-<!-- verify: topas -->
 - TOPAS accepts ionic `scattering_types` (TOPAS 6's table, 113 ions, written as
   `La+3` in `occ`) and March–Dollase `preferred_orientation` (the `PO` macro;
   TOPAS's default lower limit on r, 0.0001).
-<!-- /verify -->
 - `powderline --doctor` (`pixi run doctor`): gateways found, engine versions
   against their pins and the GSAS-II server's state; non-zero exit on a stale
   install (KI-13).
@@ -136,11 +134,9 @@ limitations are listed in the [known-issues register](docs/known_issues.md).
 - Refine flags and values must match the symmetry: a tie group is stated whole
   with one flag, a symmetry-fixed parameter is not refined, and a stated
   multiplicity must equal the derived one.
-<!-- verify: topas -->
 - A `topas.*` recipe whose TCHZ Lorentzian width X·tanθ + Y/cosθ is negative
   anywhere in the fit window is a validation error (TOPAS computes it silently
   or fails).
-<!-- /verify -->
 - A `gsasii.*` refinement that GSAS-II aborted (no step lowered χ²) raises a
   `diverged` failure instead of returning its rejected pattern (EB-99).
 - A failed run leaves only the engine's own files and `failure.json`: a gsasii
@@ -155,7 +151,7 @@ limitations are listed in the [known-issues register](docs/known_issues.md).
 - TOPAS runs only from a declared directory (`--topas-dir` or `topas.dir`);
   without one a run writes the INP and data and stops (`status: generated`).
   `topas.*` recipes state `engine_version: "6"`; TOPAS 7 is not supported.
-<!-- verify: topas -->
+<!-- verify: topas session 2 -->
 - TOPAS execution is verified on TOPAS 6: the reference fixtures are reproduced
   byte for byte (KI-16).
 <!-- /verify -->
@@ -217,12 +213,10 @@ limitations are listed in the [known-issues register](docs/known_issues.md).
   `EngineExecutionError(reason="engine_crashed")`, like one in the fit.
 - A TOPAS `output_missing` failure carries its envelope: the files kept,
   `tc_path`, the exit code and any console text.
-<!-- verify: topas -->
 - A TOPAS output folder outside the Windows ANSI code page is run through its
   8.3 short path, or refused with a clear message before `tc.exe` starts.
 - The TOPAS at-limit warning tolerates TOPAS stopping just past a bound or a fit
   window edge.
-<!-- /verify -->
 - A timed-out GSAS-II server request is a `timeout` failure and no longer falls
   back in-process into the same directory; a bad port, a busy port or a Windows
   sharing violation is reported instead of crashing.

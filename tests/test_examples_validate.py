@@ -23,15 +23,15 @@ def test_shipped_recipe_validates_engine_free(recipe_path, tmp_path):
     assert not (tmp_path / "out").exists()  # validate-only writes nothing (P-14)
 
 
-def test_the_nineteen_shipped_recipes_are_all_covered():
+def test_the_twenty_one_shipped_recipes_are_all_covered():
     """Guard against a new example dir without a recipe, or a recipe this test cannot see.
 
     11 gsasii examples (incl. the temperature series' first step, re/22, the ionic LaB6, re/28, and the textured
-    LaB6, re/29) + 8 per-engine recipes (LaB6 and DRX_33 topas/easydiffraction, singlepeakfit topas, the
-    temperature series', the ionic and the textured LaB6's easydiffraction legs); the template's recipes are
-    blanks and are excluded.
+    LaB6, re/29) + 10 per-engine recipes (LaB6 and DRX_33 topas/easydiffraction, singlepeakfit topas, the
+    temperature series', the ionic and the textured LaB6's easydiffraction and topas legs); the template's recipes
+    are blanks and are excluded.
     """
-    assert len(RECIPES) == 19, [str(p.relative_to(REPO)) for p in RECIPES]
+    assert len(RECIPES) == 21, [str(p.relative_to(REPO)) for p in RECIPES]
 
 
 def _getting_started_recipe() -> dict:

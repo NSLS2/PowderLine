@@ -96,7 +96,8 @@ imported lazily from `run()`):
   installed version declared): `native_writer.py` (model → INP + `.xye`;
   limits on data points; `= p/q;` constants), `native_run.py` (run `tc.exe`,
   strict file reads, the background-only second run, result), `peak_list.py`,
-  `runner.py`. No Python engine: generate-only
+  `runner.py`, `scattering.py` (TOPAS 6's ion table, `La3+` → `occ La+3`).
+  No Python engine: generate-only
   without `tc.exe`.
 - `easydiffraction/` (`==0.21.1`, env `easydiffraction`, Python ≥ 3.12):
   `native_builder.py`, `native_run.py`, `space_group_table.py`,
@@ -168,8 +169,9 @@ compares the server's source-tree hash with its own and refuses a stale one).
   compared within tolerance (`docs/regression-tolerance.md`;
   `tests/subprocess_utils.py` `refined_params_match` / `unit_cell_match`) and
   peak lists by row count. TOPAS and easydiffraction goldens live under
-  `tests/data/{topas,easydiffraction}/native/golden/`; TOPAS is never run by
-  the suite (goldens from the TOPAS machine).
+  `tests/data/{topas,easydiffraction}/native/golden/` (TOPAS's by version,
+  `golden/6/`); TOPAS runs only in the `topas_exec` tests on the TOPAS machine
+  (goldens from the TOPAS machine).
 - The schema layer of every gateway, `powderline.api` and `powderline.kicker`
   import no engine — enforced by subprocess tests that block the engine
   imports. Keep it that way: engine imports live inside `run()`-time code.

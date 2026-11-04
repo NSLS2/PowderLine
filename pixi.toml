@@ -32,8 +32,9 @@ preview = ["pixi-build"]
 #                                              installs the core guard (tests/conftest.py)
 #   pixi run -e gsasii test-gsasii             GSAS-II suite incl. the slow regressions
 #   pixi run -e easydiffraction test-easydiffraction
-#   pixi run test-topas                        topas_gen + topas_exec; topas_exec needs
-#                                              tc.exe (the TOPAS machine), none exists yet
+#   pixi run test-topas                        topas_gen + topas_exec; topas_exec runs tc.exe
+#                                              (the TOPAS machine: set POWDERLINE_TOPAS_DIR and
+#                                              POWDERLINE_TOPAS_VERSION), else it skips
 #   pixi run test-all                          every marker, in `dev` (the pre-merge gauntlet)
 # Each takes extra pytest arguments: `pixi run test -x -k schema`.
 # ---------------------------------------------------------------------------
@@ -50,8 +51,9 @@ update-code-hash = "python scripts/update_code_hash.py"
 # (the core guard makes an engine import fail). TOPAS input generation needs
 # only gemmi, so it belongs here and runs on every CI push.
 test = { cmd = 'pytest -m "core or topas_gen"', env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
-# The TOPAS suite: generation everywhere; topas_exec tests (none yet) skip with
-# a reason where tc.exe is absent and run only on the TOPAS Windows machine.
+# The TOPAS suite: generation everywhere; the topas_exec tests (tests/test_topas_exec.py) skip
+# with a reason unless POWDERLINE_TOPAS_DIR and POWDERLINE_TOPAS_VERSION name the TOPAS
+# installation, so they run only on the TOPAS Windows machine. The core guard is off here.
 test-topas = { cmd = 'pytest -m "topas_gen or topas_exec"', env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
 fields-check = { cmd = "python scripts/gen_schema_field_tables.py --check", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
 

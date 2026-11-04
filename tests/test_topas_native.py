@@ -888,7 +888,7 @@ def test_gateway_check_native_engine_version_matches():
     model = schema.validate_recipe(_rietveld())
     gateway.check_native_engine_version(model, topas_version="6")
 
-    # Also "6.0" should work
+    # the declared installed version is compared as a version: "6.0" is TOPAS 6
     gateway.check_native_engine_version(model, topas_version="6.0")
 
 
@@ -1048,7 +1048,7 @@ def test_parse_peak_list_skips_garbage_rows():
 
 def test_parse_peak_list_golden_row():
     """The first LaB6 reflection TOPAS 6 wrote (golden ``_p1_peaks.txt``): F_calc^2 and F_obs^2 as derived."""
-    golden = Path(__file__).parent / "data" / "topas" / "native" / "golden" / "lab6_rietveld__snapped_p1_peaks.txt"
+    golden = Path(__file__).parent / "data" / "topas" / "native" / "golden" / "6" / "lab6_rietveld__snapped_p1_peaks.txt"
     row = peak_list.parse_peak_list(golden.read_text(encoding="utf-8"), "LaB6")[0]
     assert (row["h"], row["k"], row["l"], row["multiplicity"]) == (1, 0, 0, 6)
     assert row["d_spacing"] == pytest.approx(4.15682)
@@ -1394,3 +1394,107 @@ def test_generated_result_carries_the_resolved_input(tmp_path, monkeypatch):
     again = schema.validate_recipe(result["output_recipe"])
     from powderline.gateways.topas import native_writer
     assert native_writer.render_native(again, "x").inp_text == native_writer.render_native(model, "x").inp_text
+
+
+# --- at-limit reporting against what TOPAS 6 does (it stops a little past a bound) ------------------------------
+
+NATIVE_DATA = Path(__file__).parent / "data" / "topas" / "native"
+
+
+def test_window_edge_hit_when_no_data_point_lies_between():
+    """TOPAS 6 stopped an SPF xo 9.8e-6 degree inside start_X (session of 2026-11-04: final 2.30122525888,
+    start_X 2.301215468 on the LaB6 data with fit_range [2.3, 15]): no data point lies between, so it is a hit."""
+    recipe = json.loads((NATIVE_DATA / "lab6_spf.json").read_text(encoding="utf-8"))
+    recipe["payload"]["fit_range"] = [2.3, 15.0]
+    recipe["payload"]["single_peaks"][0]["xo"] = P(2.302, True)
+    model = schema.validate_recipe(recipe)
+    native = native_writer.render_native(model, "edge_lo")
+    assert "start_X 2.301215468" in native.inp_text
+    assert native.params["spf1_xo"].limit_source[0] == "window"
+    data_x = native_run._weighted_points(model.payload.xrd_data)
+    (hit,) = native_run._limit_hits(native, {"spf1_xo": (2.30122525888, 0.0037)}, data_x)
+    assert hit["field_path"] == "payload.single_peaks.0.xo" and "min edge 2.30122 (start_X" in hit["message"]
+    # one data step inside is a fitted position, not a hit
+    inside = float(data_x[data_x > 2.302][0]) + 1e-4
+    assert not native_run._limit_hits(native, {"spf1_xo": (inside, 0.0037)}, data_x)
+
+
+@pytest.mark.parametrize("final, hit", [(0.700012, True), (0.70005, True), (0.69995, True), (0.7002, False)])
+def test_stated_bound_hit_within_1e4_relative(final, hit):
+    """TOPAS 6 ended a March-Dollase r with min 0.7 at 0.700012 (1.7e-5 relative): a hit within 1e-4 relative."""
+    recipe = json.loads((Path(__file__).resolve().parents[1] / "examples" / "example_LaB6" / "topas" / "input.json")
+                        .read_text(encoding="utf-8"))
+    recipe["payload"]["phases"]["LaB6"]["preferred_orientation"] = {"model": "march_dollase", "hkl": [0, 0, 1],
+                                                                    "ratio": [0.8, True, 0.7, 1.5]}
+    native = native_writer.render_native(schema.validate_recipe(recipe), "x")
+    hits = native_run._limit_hits(native, {"p1_po_r": (final, 0.001)})
+    assert bool(hits) is hit
+    if hit:
+        assert "min limit 0.7 (the recipe's stated bound)" in hits[0]["message"]
+
+
+# --- a non-ANSI output folder on Windows (TOPAS reads paths in the ANSI code page) ------------------------------
+
+
+def _windows(monkeypatch, encodable, short):
+    monkeypatch.setattr(native_run, "_on_windows", lambda: True)
+    monkeypatch.setattr(native_run, "_ansi_encodable", encodable)
+    calls = []
+
+    def fake_short(path):
+        calls.append(path)
+        return short(path) if callable(short) else short
+    monkeypatch.setattr(native_run, "_short_path", fake_short)
+    return calls
+
+
+def test_tc_input_path_off_windows_is_the_path():
+    assert native_run.tc_input_path(Path("out") / "x.inp") == str(Path("out") / "x.inp")
+
+
+def test_tc_input_path_ansi_path_is_passed_as_is(monkeypatch):
+    calls = _windows(monkeypatch, lambda s: True, None)
+    assert native_run.tc_input_path(Path("C:/data/Müller/x.inp")) == str(Path("C:/data/Müller/x.inp"))
+    assert calls == []
+
+
+def test_tc_input_path_non_ansi_path_uses_the_short_name(monkeypatch):
+    calls = _windows(monkeypatch, lambda s: s.isascii(), "C:/data/E8A2~1/x.inp")
+    assert native_run.tc_input_path(Path("C:/data/Ελληνικά/x.inp")) == "C:/data/E8A2~1/x.inp"
+    assert calls == [str(Path("C:/data/Ελληνικά/x.inp"))]
+
+
+@pytest.mark.parametrize("short", [None, "C:/data/Ελληνικά/x.inp"])  # no 8.3 name / short name still not ANSI
+def test_tc_input_path_without_a_usable_short_name_is_refused(monkeypatch, short):
+    _windows(monkeypatch, lambda s: s.isascii(), short)
+    with pytest.raises(ExecutionBackendError) as e:
+        native_run.tc_input_path(Path("C:/data/Ελληνικά/x.inp"))
+    assert e.value.reason == "backend_error"
+    assert "Ελληνικά" in str(e.value) and "ASCII" in str(e.value)
+
+
+def test_non_ansi_folder_is_refused_before_tc_runs(tmp_path, monkeypatch):
+    """The refusal comes before tc.exe starts, with the INP and data kept and listed in the failure record."""
+    _windows(monkeypatch, lambda s: False, None)
+    model = schema.validate_recipe(_rietveld())
+    monkeypatch.setattr("powderline.gateways.topas.native_run.discover_tc_exe",
+                        lambda *a, **kw: tmp_path / "TOPAS6" / "tc.exe")
+    ran = []
+    with pytest.raises(ExecutionBackendError) as e:
+        native_run.run_native(model, tmp_path / "out", runner=lambda *a, **k: ran.append(a))
+    assert ran == [] and e.value.reason == "backend_error"
+    env = e.value.result
+    assert env["failure"]["reason"] == "backend_error"
+    assert {Path(f).suffix for f in env["output_files"]} == {".inp", ".xye"}
+
+
+def test_non_ansi_folder_runs_tc_with_the_short_path(tmp_path, monkeypatch):
+    _windows(monkeypatch, lambda s: s.startswith("SHORT"), lambda p: "SHORT~1\\" + Path(p).name)
+    seen = []
+
+    def runner(cmd, **kw):
+        seen.append(cmd)
+        raise subprocess.TimeoutExpired(cmd, 1)  # stop there: only the command line matters
+    with pytest.raises(ExecutionBackendError):
+        native_run.run_tc(tmp_path / "tc.exe", tmp_path / "x.inp", runner=runner, timeout=1)
+    assert seen == [[str(tmp_path / "tc.exe"), "SHORT~1\\x.inp"]]

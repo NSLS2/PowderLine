@@ -330,8 +330,8 @@ was removed with the unified schema).
 
 - **Workflows**: `topas.rietveld` (`phases`) and `topas.spf` (`single_peaks`).
 - **TOPAS version**: required `engine_version`, the TOPAS major version the
-  recipe is written for; 0.1.0 supports `"6"` only (declared,
-  `supported_engine_versions == "==6"`). A run needs the installed version
+  recipe is written for; 0.1.0 supports `"6"` only, as written (the set
+  `("6",)`; declared `supported_engine_versions == "==6"`). A run needs the installed version
   declared (`topas_version` or `.powderline_config.yaml` `topas.version`) and
   equal to it; `tc.exe` carries no version PowderLine could read.
 - **No defaults**: a block left out means the feature is not modelled; every
@@ -349,10 +349,11 @@ was removed with the unified schema).
   or `Full_Axial_Model`, `capillary` with a `parallel` or `divergent` beam and
   a diameter > 0);
   `broadening` `{peak_type, parameters}` with `TCHZ_Peak_Type`, `PV_Peak_Type`
-  or `PVII_Peak_Type` (TOPAS's TCHZ U..Z are not GSAS-II's; a **fixed**
-  peak-type term is not checked, so fixed terms that make a width negative in
-  the window, e.g. TCHZ X < 0 with Y = 0, validate, while TOPAS 6 stops on a
-  negative FWHM: not yet verified for the peak types, documented only). Geometry
+  or `PVII_Peak_Type` (TOPAS's TCHZ U..Z are not GSAS-II's; with
+  `TCHZ_Peak_Type` the Lorentzian width X·tanθ + Y/cosθ at the starting
+  values must be ≥ 0 at every data point of the fit window, X and Y refined or
+  fixed, since TOPAS 6 computes with a negative width silently or writes no
+  results). Geometry
   corrections act on every peak, background and SPF peaks included;
   Lorentz-polarisation sits in each phase (Bragg peaks only); the peak type in
   each phase and each SPF peak.
@@ -381,7 +382,9 @@ was removed with the unified schema).
   background column comes from a second, background-only TOPAS run at the
   refined values (TOPAS 6 cannot output the background of the fit). Warnings:
   `topas_adp_converted`, `topas_parameter_at_limit` (naming the stated bound
-  or TOPAS's default), `topas_parameters_not_varied`,
+  or TOPAS's default; within 1e-4 relative, since TOPAS stops a little past a
+  bound; an SPF peak position at the window's edge when no data point lies
+  between them), `topas_parameters_not_varied`,
   `topas_phase_contributes_nothing` (informative: a phase absent from the
   sample legitimately contributes nothing), `topas_background_not_calculated`.
   Success is judged from the output files the INP asks for, removed before
@@ -389,10 +392,19 @@ was removed with the unified schema).
   non-finite number in them (`nan`, `1.#QNAN`, `-nan(ind)`, …) is a divergence
   error, while an undetermined ESD is left empty.
 
-**Ionic scattering types and preferred orientation:**
-`scattering_types` and `preferred_orientation` are declared and **refused**
-in 0.1.0 (the TOPAS halves — `occ Fe+3` and ATMSCAT's coverage; the
-`PO(...)` macro — await a TOPAS 6 run).
+**Ionic scattering types and preferred orientation** (accepted in 0.1.0,
+verified on TOPAS 6):
+
+- `scattering_types` `{<atom label>: "La3+"}` in the CIF spelling, as in the
+  other engine schemas: only ions in TOPAS 6's `ATMSCAT.CPP` (113: GSAS-II
+  5.7.9's table without `T1-`); written to the site's `occ` in TOPAS's
+  spelling (`occ La+3`). An ion TOPAS has no form factor for is an error
+  naming the forms it has.
+- `preferred_orientation` `{model: "march_dollase", hkl, ratio}` with `ratio`
+  `[r, flag, min, max]`: TOPAS.INC's `PO` macro in the phase's `str`; only the
+  stated bounds are written, and a `null` side keeps TOPAS's limit (min
+  0.0001, max 2r + 0.5). The refined r and its ESD are read back into
+  `refined_parameters`, the output recipe and `parameter_dispositions`.
 
 ## easydiffraction engine schema
 

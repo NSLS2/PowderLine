@@ -358,8 +358,8 @@ from a GSAS-II recipe:
   spelling (`{"Fe": "Fe3+"}`). 0.1.1 passed GSAS-II's own
   spelling (`Fe+3`) through unchecked; the converter turns such an element
   into the neutral symbol plus the `scattering_types` entry and notes it. Each
-  engine refuses an ion it has no form factor for; TOPAS accepts none in
-  schema 0.1.0 (its half awaits a TOPAS run).
+  engine refuses an ion it has no form factor for (TOPAS: the ions in TOPAS
+  6's `ATMSCAT.CPP`, written to `occ` as `Fe+3`).
 - **`refinement_algorithm`** is gone (0.1.1 accepted and ignored it); the
   `null`-valued `broadening`, `corrections` and phase `parameterization`
   blocks that crashed 0.1.1 at run time have no equivalent.

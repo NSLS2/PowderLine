@@ -102,14 +102,17 @@ def test_easydiffraction_crysfml_refuses_preferred_orientation():
     assert any("crysfml calculator ignores preferred orientation" in msg for _, msg in _errors(exc))
 
 
-# --- topas (B1) ---
+# --- topas ---
 
-def test_topas_refuses_preferred_orientation_in_1_0_0():
-    # the block is typed (MarchDollase, bounded) so a malformed one is told what it is; a well-formed one is refused
-    r = _lab6("topas"); r["payload"]["phases"]["LaB6"]["preferred_orientation"] = {k: v for k, v in PO_ED.items() if k != "march_random_fract"}
-    with pytest.raises(ValidationError) as exc:
+def test_topas_accepts_preferred_orientation():
+    # the block is core's MarchDollase with TOPAS's bounded parameter (no easydiffraction extras)
+    po = {k: v for k, v in PO_ED.items() if k != "march_random_fract"}
+    r = _lab6("topas"); r["payload"]["phases"]["LaB6"]["preferred_orientation"] = po
+    dumped = topas_schema.validate_recipe(r).model_dump(mode="json")["payload"]["phases"]["LaB6"]
+    assert dumped["preferred_orientation"] == po
+    r["payload"]["phases"]["LaB6"]["preferred_orientation"] = PO_ED
+    with pytest.raises(ValidationError):  # easydiffraction's march_random_fract is not a TOPAS field
         topas_schema.validate_recipe(r)
-    assert any("not yet available for TOPAS" in msg and "PO(...)" in msg for _, msg in _errors(exc))
     assert "preferred_orientation" not in topas_schema.validate_recipe(_lab6("topas")).model_dump(mode="json")["payload"]["phases"]["LaB6"]
 
 

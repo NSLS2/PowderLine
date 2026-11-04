@@ -12,7 +12,7 @@ record below.**
 |---|---|---|---|
 | GSAS-II | `pixi.toml` `[feature.gsasii.dependencies] GSAS-II = { git = ..., rev = <commit> }` -- the pixi-build source revision | `src/powderline/gateways/gsasii/gateway.py` `ENGINE_VERSION_SPEC` (`GSASII.__version__`) | `pixi run -e gsasii test-gsasii` |
 | easydiffraction | `pixi.toml` `[feature.easydiffraction.pypi-dependencies] easydiffraction = "==x.y.z"` | `src/powderline/gateways/easydiffraction/gateway.py` `ENGINE_VERSION_SPEC` | `pixi run -e easydiffraction test-easydiffraction` |
-| TOPAS | not installable: the recipe declares `engine_version`, the installed version is declared in `.powderline_config.yaml` | `src/powderline/gateways/topas/schema.py` `SUPPORTED_ENGINE_VERSIONS` | `pixi run test-topas` on the TOPAS machine (`topas_exec`) |
+| TOPAS | not installable: the recipe declares `engine_version`, the installed version is declared in `.powderline_config.yaml` | `src/powderline/gateways/topas/schema.py` `SUPPORTED_ENGINE_VERSIONS` (the published `==6` is derived from it) | `pixi run test-topas` on the TOPAS machine (`topas_exec`) |
 
 `tests/test_gateways.py` asserts the manifest pins lie inside the specs;
 `tests/test_gateways_installed_engines.py` asserts the installed engine does.
@@ -69,7 +69,10 @@ pixi run python scripts/check_engine_version_candidate.py --engine topas --versi
   reproductions for easydiffraction: an upstream fix may
   retire a PowderLine workaround. `tests/test_easydiffraction_space_groups.py`
   skips until `space_group_table.py` is regenerated for the installed version.
-- **TOPAS.** Nothing to install; `SUPPORTED_ENGINE_VERSIONS` is `==6`. Widening
+- **TOPAS.** Nothing to install; `SUPPORTED_ENGINE_VERSIONS` is `("6",)`
+  (published as `==6`), and the goldens live under
+  `tests/data/topas/native/golden/<version>/`, chosen by each fixture's
+  `engine_version`. Widening
   to TOPAS 7 needs the TOPAS 7 machine for the `topas_exec` run and the
   TOPAS 7 convergence follow-up; it is post-refactor unless the
   maintainer says otherwise. The generation suite (`topas_gen`) runs

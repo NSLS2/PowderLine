@@ -26,9 +26,14 @@ TOPAS rules checked here:
 - widths are positive (a negative FWHM stops TOPAS, C24); wavelength and
   crystallite size are positive (A126); ``la``, ``lh``, ``lg`` and the capillary
   diameter are positive (a line with no area or width, or a capillary of no
-  diameter, does not exist: A111(a)). Fixed instrument peak-type terms are not
-  checked (a fixed TCHZ X < 0 can make the Lorentzian width negative; whether
-  TOPAS stops there is unverified; documented, A155);
+  diameter, does not exist: A111(a));
+- with ``TCHZ_Peak_Type`` the Lorentzian width X tan(theta) + Y / cos(theta) at
+  the starting values is >= 0 at every data point of the fit window, refined or
+  fixed: TOPAS computes with a negative width silently, or writes no results
+  (measured on TOPAS 6);
+- ``scattering_types``: ions in TOPAS 6's ``ATMSCAT.CPP``, CIF spelling
+  (:mod:`.scattering`); ``preferred_orientation``: the ``PO`` macro, whose
+  ratio has TOPAS's default minimum 0.0001 where no bound is stated;
 - peak positions lie inside the fit window (A126);
 - ``geometry`` holds exactly the radii the axial model reads (C26);
 - mutually exclusive corrections; ``LP_Factor_Synchrotron`` never refines
@@ -42,13 +47,12 @@ import math
 from typing import Annotated, Any, ClassVar, Literal, Mapping, Optional, Union
 
 import gemmi
-from packaging.specifiers import InvalidSpecifier, SpecifierSet
-from packaging.version import InvalidVersion, Version
 from pydantic import Field, StrictStr, field_validator, model_serializer, model_validator
 from pydantic_core import InitErrorDetails
 
 from powderline.compat import schema_declarations
 from powderline.exceptions import StructuredWarning
+from powderline.gateways.topas.scattering import ENGINE_LABEL as SCATTERING_ENGINE_LABEL, TOPAS_IONS
 from powderline.schema_core import (
     UNIT_ANGSTROM,
     UNIT_ARBITRARY,
@@ -76,6 +80,7 @@ from powderline.schema_core import (
     raise_problems,
     recipe_validator,
     refined_flag_problems,
+    scattering_type_problems,
     unique_phase_names,
     unit_schema,
 )
@@ -87,15 +92,29 @@ P = BoundedRefinableParameter
 ENGINE_SCHEMA_VERSION = "0.1.0"
 SUPPORTED_ENGINE_SCHEMAS = "==0.1.0"
 REQUIRES_CORE_SCHEMA = "==0.1.0"
-#: TOPAS major versions a ``topas.*`` 0.1.0 recipe may state (A143, A144); widened explicitly, never by range.
-SUPPORTED_ENGINE_VERSIONS = "==6"
+#: TOPAS major versions a ``topas.*`` 0.1.0 recipe may state (A143, A144): the membership check. Widened
+#: explicitly, one version at a time (with that version's goldens, ``tests/data/topas/native/golden/<version>/``).
+SUPPORTED_ENGINE_VERSIONS: tuple[str, ...] = ("6",)
+
+
+def _version_spec(versions: tuple[str, ...]) -> str:
+    """The published specifier for :data:`SUPPORTED_ENGINE_VERSIONS` (``"==6"``). A specifier set cannot state
+    "6 or 7" (its clauses are joined by *and*), so a second version needs a decision on the published form."""
+    if len(versions) != 1:
+        raise NotImplementedError("publishing several TOPAS versions as one specifier is not decided")
+    return f"=={versions[0]}"
+
+
+#: The published form of :data:`SUPPORTED_ENGINE_VERSIONS` (``supported_engine_versions``, the gateway's
+#: ``engine_version_spec``), derived from it.
+SUPPORTED_ENGINE_VERSION_SPEC = _version_spec(SUPPORTED_ENGINE_VERSIONS)
 
 #: The gateway's schema declarations (``capabilities()`` keys, A65) plus the TOPAS versions (A144).
 DECLARATIONS = schema_declarations(
     engine_schema_version=ENGINE_SCHEMA_VERSION,
     supported_engine_schemas=SUPPORTED_ENGINE_SCHEMAS,
     requires_core_schema=REQUIRES_CORE_SCHEMA,
-    supported_engine_versions=SUPPORTED_ENGINE_VERSIONS,
+    supported_engine_versions=SUPPORTED_ENGINE_VERSION_SPEC,
 )
 
 SCHEMA_NAMES = ("topas.rietveld", "topas.spf")
@@ -166,6 +185,8 @@ KEYWORD_LIMITS = {
     "h2": (1e-6, None), "spv_h1": (1e-6, None), "spv_h2": (1e-6, None), "pv_lor": (0.0, 1.0),
     "spv_l1": (0.0, 1.0), "spv_l2": (0.0, 1.0), "m1": (0.75, 30.0), "m2": (0.75, 30.0),
     "axial": (1e-4, None),
+    # TOPAS.INC's PO macro (March-Dollase r): min 0.0001, max = 2 Val + .5, a dynamic maximum a start never exceeds
+    "po_ratio": (1e-4, None),
 }
 
 # --- space group (A105; C16, EB-11, EB-43) ------------------------------------
@@ -618,12 +639,13 @@ class TopasPhase(Phase[BoundedRefinableParameter]):
                                                       description="Left out: no sample broadening")
     scattering_types: Optional[dict[str, str]] = Field(
         default=None, json_schema_extra=absent_not_null_schema(),
-        description="Ionic scattering types: not yet available for TOPAS (a validation error until the TOPAS "
-                    "path has been verified on a TOPAS machine)")
+        description="Ionic X-ray scattering types by atom label, CIF spelling ('La3+', 'O2-'), written to TOPAS's "
+                    "occ as 'La+3'; an atom left out scatters as the neutral element; only ions in TOPAS 6's "
+                    "ATMSCAT.CPP")
     preferred_orientation: Optional[MarchDollase[BoundedRefinableParameter]] = Field(
         default=None, json_schema_extra=absent_not_null_schema(),
-        description="March-Dollase preferred orientation: not yet available for TOPAS (a validation error until "
-                    "the PO(...) macro path has been verified on a TOPAS machine)")
+        description="March-Dollase preferred orientation (TOPAS PO macro: one axis, ratio r > 0; an open bound is "
+                    "TOPAS's own limit, min 0.0001 or max 2 r + 0.5); left out: none")
 
     _topas_not_null = field_validator("peak_broadening", "scattering_types", "preferred_orientation",
                                       mode="before")(absent_not_null)
@@ -640,21 +662,11 @@ class TopasPhase(Phase[BoundedRefinableParameter]):
         return data
 
     @model_validator(mode="after")
-    def _topas_no_ions(self) -> "TopasPhase":
-        if self.scattering_types is not None:
-            raise_problems(type(self).__name__, [custom_error(
-                "topas_ions_unavailable",
-                "ionic scattering types are not yet available for TOPAS: TOPAS spells them 'Fe+3' in occ and "
-                "reports an unknown ion only on its console, and that path has not yet been verified on a TOPAS "
-                "machine; use the neutral elements, or a gsasii / easydiffraction (cryspy) recipe",
-                ("scattering_types",), self.scattering_types)])
-        if self.preferred_orientation is not None:
-            raise_problems(type(self).__name__, [custom_error(
-                "topas_po_unavailable",
-                "preferred orientation is not yet available for TOPAS: the PO(...) March-Dollase macro, its bounds "
-                "and the read-back of the refined r have not yet been verified on a TOPAS machine; leave "
-                "preferred_orientation out, or use a gsasii / easydiffraction (cryspy) recipe",
-                ("preferred_orientation",), self.preferred_orientation.model_dump())])
+    def _topas_scattering_types(self) -> "TopasPhase":
+        if self.scattering_types:
+            raise_problems(type(self).__name__,
+                           scattering_type_problems(self.scattering_types, self.atoms, TOPAS_IONS,
+                                                    SCATTERING_ENGINE_LABEL))
         return self
 
     @field_validator("space_group")
@@ -678,6 +690,9 @@ class TopasPhase(Phase[BoundedRefinableParameter]):
             if atom.Uiso is not None:
                 problems += limit_problems(atom.Uiso, lo / EIGHT_PI_SQ, hi / EIGHT_PI_SQ, ("atoms", label, "Uiso"),
                                            f"Uiso (TOPAS beq = 8 pi^2 Uiso, limits {lo:g}..{hi:g})")
+        if self.preferred_orientation is not None:  # TOPAS.INC PO: min 0.0001, max = 2 Val + .5 (never below the start)
+            problems += limit_problems(self.preferred_orientation.ratio, *KEYWORD_LIMITS["po_ratio"],
+                                       ("preferred_orientation", "ratio"), "ratio (TOPAS PO)")
         raise_problems(type(self).__name__, problems)
         return self
 
@@ -750,6 +765,7 @@ class _Payload(CoreModel):
             problems += self._outside_window([p.xo for p in self.background.peaks],
                                              lambda i: ("background", "peaks", i, "xo"), "background peak")
         problems += self._zero_error_envelope()
+        problems += self._lorentzian_width_problems()
         problems += self._workflow_problems()
         if self.refinement_controls.iters == 0:  # simulation: nothing refined
             problems += refined_flag_problems(self, "iters is 0 (a simulation), so nothing may be refined; "
@@ -770,6 +786,31 @@ class _Payload(CoreModel):
         return limit_problems(c.Zero_Error.th2_offset, -100 * lo_step, 100 * hi_step,
                               ("instrument", "corrections", "Zero_Error", "th2_offset"),
                               "th2_offset (TOPAS ZE: within 100 data steps)")
+
+    def _lorentzian_width_problems(self) -> list[InitErrorDetails]:
+        """TCHZ: the Lorentzian width X tan(theta) + Y / cos(theta) at the starting values must not be negative at
+        any data point of the fit window, refined or fixed. TOPAS computes with a negative width silently (a
+        fixed X = -0.01 changes the profile without a message) or writes no results (X = -0.1), measured on
+        TOPAS 6; anything TOPAS would silently alter or refuse is a validation error."""
+        b = self.instrument.broadening
+        if b.peak_type != "TCHZ_Peak_Type" or not {"X", "Y"} <= set(b.parameters):
+            return []
+        x, y = b.parameters["X"].value, b.parameters["Y"].value
+        lo, hi = self.window()
+        tth = [t for t in self.xrd_data.tth if lo <= t <= hi]
+        if not tth:
+            return []
+        widths = [(x * math.tan(math.radians(t / 2)) + y / math.cos(math.radians(t / 2)), t) for t in tth]
+        worst, at = min(widths)
+        if worst >= 0:
+            return []
+        return [custom_error(
+            "topas_negative_lorentzian_width",
+            "the TCHZ Lorentzian width X tan(theta) + Y / cos(theta) is negative in the fit window: X = {x}, Y = {y} "
+            "give {width} at 2theta = {at} (its most negative point); TOPAS computes with a negative width "
+            "silently, or writes no results, so state X and Y with X tan(theta) + Y / cos(theta) >= 0 over the window",
+            ("instrument", "broadening", "parameters"), {"X": x, "Y": y}, x=str(x), y=str(y), width=f"{worst:.6g}",
+            at=f"{at:g}")]
 
     def _workflow_problems(self) -> list[InitErrorDetails]:
         return []
@@ -809,15 +850,10 @@ class SpfPayload(_Payload):
 
 
 def check_engine_version(engine_version: str) -> None:
-    """``ValueError`` unless ``engine_version`` is in :data:`SUPPORTED_ENGINE_VERSIONS` (A144)."""
-    try:
-        version = Version(engine_version)
-        supported = SpecifierSet(SUPPORTED_ENGINE_VERSIONS)
-    except (InvalidVersion, InvalidSpecifier) as exc:
-        raise ValueError(f"engine_version {engine_version!r} is not a version: {exc}") from exc
-    if version not in supported:
+    """``ValueError`` unless ``engine_version`` is one of :data:`SUPPORTED_ENGINE_VERSIONS` (A144), as written."""
+    if engine_version not in SUPPORTED_ENGINE_VERSIONS:
         raise ValueError(f"engine_version {engine_version!r}: topas engine schema {ENGINE_SCHEMA_VERSION} supports "
-                         f"TOPAS {SUPPORTED_ENGINE_VERSIONS}")
+                         f"TOPAS {', '.join(repr(v) for v in SUPPORTED_ENGINE_VERSIONS)}")
 
 
 class _TopasRecipe(EngineRecipe):

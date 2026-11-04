@@ -32,7 +32,7 @@ the pin change.
   executed for this page**: PowderLine's maintainers do not have a TOPAS
   licence on the machine that builds the docs, so the TOPAS rows are the
   gateway's result rebuilt from the committed TOPAS 6 output files
-  (`tests/data/topas/native/golden/`).
+  (`tests/data/topas/native/golden/6/`).
 
 ## The numbers
 

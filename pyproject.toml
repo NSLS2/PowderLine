@@ -99,7 +99,7 @@ markers = [
     "core: imports no engine and runs no engine subprocess; the no-plugin suite of the default env",
     "gsasii: imports GSAS-II or runs `pixi run kicker` / a GSAS-II refinement; needs the gsasii env",
     "topas_gen: TOPAS input generation, goldens, schema -- engine-free (gemmi only); runs in the default env",
-    "topas_exec: executes tc.exe -- the TOPAS Windows machine only; skips with a reason when tc.exe is absent (no test today)",
+    "topas_exec: executes tc.exe -- the TOPAS Windows machine only; skips with a reason unless POWDERLINE_TOPAS_DIR and POWDERLINE_TOPAS_VERSION are set",
     "easydiffraction: imports easydiffraction/cryspy/CrysFML; needs the easydiffraction env",
     "slow: a full refinement runs (kicker subprocess, execution_mode='subprocess', the GSAS-II server, the easydiffraction goldens)",
 ]

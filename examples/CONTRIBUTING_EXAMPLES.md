@@ -148,8 +148,8 @@ my_refinement_name/
 `topas/` and `easydiffraction/` subdirectories with a short README saying how
 they were derived. An easydiffraction recipe's results are committed in
 `easydiffraction/output/` beside it (the same fixed filenames, no `dummy.*`);
-no TOPAS output is committed under `examples/` yet (the TOPAS 6 goldens live in
-`tests/data/topas/native/golden/`).
+no TOPAS output is committed under `examples/` (the TOPAS goldens live in
+`tests/data/topas/native/golden/<version>/`, produced on a TOPAS machine).
 
 **`output/`**: After running the refinement, the GSAS-II output files go here. **These output files should be committed to the repository** (except `dummy.gpx`, which is gitignored) - they are the regression references, compared within the tolerances of `docs/regression-tolerance.md`; they move only as a recorded deliberate change.
 

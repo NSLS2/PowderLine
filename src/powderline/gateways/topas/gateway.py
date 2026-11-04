@@ -26,8 +26,9 @@ from powderline.registry import Gateway, check_engine_version
 
 NAME = "topas"
 #: The TOPAS versions the native recipes are written for (A143, A144): the
-#: same declaration the schema makes (``supported_engine_versions``).
-ENGINE_VERSION_SPEC = schema.SUPPORTED_ENGINE_VERSIONS
+#: same declaration the schema makes (``supported_engine_versions``, derived
+#: from ``schema.SUPPORTED_ENGINE_VERSIONS``).
+ENGINE_VERSION_SPEC = schema.SUPPORTED_ENGINE_VERSION_SPEC
 #: Workflows served (the native schemas).
 WORKFLOWS = tuple(schema.SCHEMA_NAMES)
 
@@ -61,7 +62,7 @@ def check_native_engine_version(model, topas_version=None, *, allow_unsupported:
     if allow_unsupported:
         return
     declared = configured_engine_version(topas_version)
-    supported = schema.SUPPORTED_ENGINE_VERSIONS
+    supported = schema.SUPPORTED_ENGINE_VERSION_SPEC
     if declared is None:
         raise EngineVersionError(
             gateway=NAME, engine="TOPAS", installed="undeclared", supported=supported,

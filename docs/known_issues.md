@@ -725,7 +725,7 @@ GSAS-II pin move regenerates the references anyway.
 
 **What.** No machine in the 0.2.0 work had TOPAS. The `topas.*` gateway's
 INP/XYE writer is pinned text-for-text to goldens produced on a TOPAS 6
-machine before the refactor (`tests/data/topas/native/golden/`,
+machine before the refactor (`tests/data/topas/native/golden/6/`,
 `test_topas_native_golden.py`, which also runs the current result parser on
 the committed TOPAS output), and on a machine without `tc.exe` a run writes
 the files and returns `status: generated`. Everything that needs a real run
@@ -759,11 +759,15 @@ runner on six fixtures. Every file each run produced matched its golden byte
 for byte: INP, background INP, results, profiles and reflection lists. The
 same session checked the version checks, generate-only, the command line,
 the config file, `powderline --doctor`, and the failure route when `tc.exe`
-is stopped. It also found three things now being addressed:
-- a peak position that stops just inside the fit window's edge is not
-  always reported;
-- an output folder outside the Windows ANSI code page makes TOPAS fail;
-- a fixed negative Lorentzian `X` runs without complaint.
+is stopped. It also found three things, fixed in 0.2.0:
+- a peak position that stops just inside the fit window's edge was not
+  always reported (the at-limit check now allows for TOPAS stopping just
+  past a limit);
+- an output folder outside the Windows ANSI code page made TOPAS fail
+  (`tc.exe` now gets the folder's 8.3 short path, or the run is refused
+  with a clear message);
+- a negative TCHZ Lorentzian width ran without complaint (now a
+  validation error).
 
 The entry moves to `watch` after the confirming run on the release's code.
 

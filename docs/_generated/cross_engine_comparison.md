@@ -57,6 +57,6 @@ Fit window and points: 3767 points (every engine scores the same points).
 ### Versions and dates
 
 - GSAS-II 5.7.9: run 2026-10-13 (PowderLine 0.1.1, Python 3.13.15); `execution_mode='subprocess'`.
-- TOPAS: TOPAS-64 Version 6 goldens (`tests/data/topas/native/golden/`, TOPAS machine runs of 2026-10-09); **not executed for this page**: the rows are the gateway's result built from the committed files.
+- TOPAS: TOPAS-64 Version 6 goldens (`tests/data/topas/native/golden/6/`, TOPAS machine runs of 2026-10-09); **not executed for this page**: the rows are the gateway's result built from the committed files.
 - easydiffraction goldens (`tests/data/easydiffraction/native/golden/`, runs of 2026-10-09): easydiffraction 0.21.1, cryspy 0.13.0, crysfml 0.8.0, lmfit 1.3.4, numpy 2.4.6, scipy 1.18.0.
 - Table generated 2026-10-13 by `scripts/cross_engine_comparison.py` at commit `47805d0` in `--no-run` mode (GSAS-II rows from the committed JSON record).

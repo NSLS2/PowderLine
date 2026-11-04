@@ -125,13 +125,12 @@ def test_easydiffraction_refuses_an_ion_cryspy_lacks():
     assert any("easydiffraction 0.21.1 (CrysPy) has no X-ray form factor for 'O2-'; it has O1- for O" in msg for _, msg in _errors(exc))
 
 
-# --- topas (B1) ---
+# --- topas ---
 
-def test_topas_refuses_ions_in_1_0_0_naming_the_topas_item():
+def test_topas_accepts_an_ion_topas_has_and_keeps_it_in_the_dump():
     r = _lab6("topas"); r["payload"]["phases"]["LaB6"]["scattering_types"] = {"La": "La3+"}
-    with pytest.raises(ValidationError) as exc:
-        topas_schema.validate_recipe(r)
-    errs = _errors(exc)
-    assert any("not yet available for TOPAS" in msg and "verified on a TOPAS machine" in msg for _, msg in errs), errs
+    model = topas_schema.validate_recipe(r)
+    assert model.payload.phases["LaB6"].scattering_types == {"La": "La3+"}
+    assert model.model_dump(mode="json")["payload"]["phases"]["LaB6"]["scattering_types"] == {"La": "La3+"}
     plain = topas_schema.validate_recipe(_lab6("topas")).model_dump(mode="json")
     assert "scattering_types" not in plain["payload"]["phases"]["LaB6"]

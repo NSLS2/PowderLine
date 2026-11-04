@@ -178,16 +178,23 @@ later gsasii schema version with a clamp-freeze-refit scheme.
 **TOPAS keywords carry default limits** (`scale` ≥ 1e-11, `beq` in [−10, 20],
 cell lengths ≥ 1.5 Å, lattice ±0.5 % per iteration, …) and the TOPAS.INC
 macros add their own to refined parameters (TCHZ U–Z in [−1, 2], X, Y in
-[1e-4, 2], CS in [0.3, 10000] nm, Strain in [1e-4, 5], …); a user `min`/`max`
+[1e-4, 2], CS in [0.3, 10000] nm, Strain in [1e-4, 5], the March–Dollase
+`PO` ratio min 1e-4 and max 2r + 0.5, …); a user `min`/`max`
 overrides the default on that side, and a start outside a limit is moved
 onto it silently (EB-58). The `_LIMIT_MIN/MAX` markers TOPAS 6 writes are
 mislabelled or spurious (EB-62). *Policy:* a stated bound replaces
 TOPAS's limit on that side; a `null` side keeps TOPAS's default limit, and a
 **refined start outside a fixed default limit on a `null` side is a
-validation error** (state a bound to override TOPAS, or start inside). After
-a run every refined parameter within 1e-6 (relative) of a limit acting on it
-gets `topas_parameter_at_limit`, judged from the final values and the limits
-the writer knows, not from TOPAS's markers.
+validation error** (state a bound to override TOPAS, or start inside).
+**TOPAS 6 stops a little past a bound, not on it**: a `PO` ratio with min 0.7
+ended at 0.700012 (1.7e-5 relative), and an SPF peak position stopped 1e-5°
+inside `start_X` (TOPAS holds `xo` at the fit window's edge). After a run every
+refined parameter within 1e-4 (relative) of a stated bound or TOPAS default
+limit gets `topas_parameter_at_limit`, and an SPF peak position counts as at
+the window's edge when no data point lies between it and the edge (or it is
+on or beyond the edge); judged from the final values and the limits the
+writer knows, not from TOPAS's markers. At a limit of 0 the tolerance is 1e-12
+absolute.
 
 **easydiffraction gives an unbounded side its physical limit** when a fit
 starts (cell lengths 0–30 Å, angles 0–180°, occupancy 0–1, `adp_iso` and
@@ -290,10 +297,32 @@ within 1e-6 of the starting value).
   and documents that the four input terms are not sizes/strains.
 - **`lam` with `lg` alone crashes TOPAS 6** (EB-64): `lh` is required, `lg`
   only with it.
-- **Fixed peak-type terms that make a width negative** inside the window
-  (TCHZ X < 0 with Y = 0) validate; TOPAS 6 stops on a negative convolution
-  FWHM, but whether the peak-type macros do is *unverified* (EB-69). Refined
-  widths are validated ≥ 0.
+- **A negative TCHZ Lorentzian width is computed silently**: with a fixed
+  X < 0 (Y = 0) TOPAS 6 neither takes |X| nor clamps it at 0; X = −0.01 runs
+  and gives a profile unlike X = 0 or X = +0.01, X = −0.1 writes no results
+  (measured on TOPAS 6; a negative convolution FWHM stops TOPAS, EB-69).
+  *Policy:* with `TCHZ_Peak_Type`, X·tanθ + Y/cosθ at the recipe's starting
+  values must be ≥ 0 at every data point of the fit window, X and Y refined or
+  fixed; otherwise a validation error names X, Y and the 2θ where the width is
+  most negative. Refined widths are validated ≥ 0.
+- **Ions are spelled `La+3` in `occ`** and taken from TOPAS's `ATMSCAT.CPP`:
+  TOPAS 6's file has 113 ions, GSAS-II 5.7.9's table without `T1-`. TOPAS
+  rejects the CIF spelling `La3+`, a sign-only `Na+` and an unknown symbol by
+  stopping without results (no neutral fallback). *Policy:* the recipe states
+  ions in the CIF spelling in `scattering_types`; an ion outside the shipped
+  table is a validation error, and the writer puts TOPAS's spelling into
+  `occ`. For LaB6 the per-reflection La3+/La intensity ratios agree with
+  GSAS-II's within 0.07 %. `ATMSCAT.CPP` is user-editable; PowderLine checks
+  against the file as shipped with TOPAS 6.
+- **March–Dollase is TOPAS.INC's `PO` macro**: `PO(c, r, , h k l)` is GSAS-II's
+  March–Dollase correction, averaged over the axis's equivalents with the same
+  r convention (agreement 1.4e-7 along 001, 111 and 110), and refined from 0.8
+  on the textured example it recovers r = 0.5982(14) (programmed 0.6). Its
+  default limits are min 0.0001 and max 2r + 0.5 (the max follows the value,
+  so a start never exceeds it). *Policy:* the writer emits
+  `PO(p1_po_r, r[ min a][ max b], , h k l)` (`!p1_po_r` when fixed) with only
+  the stated bounds; a refined start below 0.0001 with no stated min is an
+  error.
 - **Numbers are written to the INP to 10 significant digits** (`%.10g`), as
   in the `.xye`.
 
@@ -561,10 +590,21 @@ simulated peak heights changed at the 0.2.0 re-baseline.
   the refined values and uses its calculated pattern as `y_bkg`, every
   convolution included; if that run writes nothing the result stays a
   success with an empty `y_bkg` and `topas_background_not_calculated`.
-- TOPAS is never executed by PowderLine's own test suite or docs build; the
-  committed TOPAS 6 goldens (`tests/data/topas/native/golden/`) are what the
-  TOPAS machine wrote, and the comparison page rebuilds its TOPAS rows from
-  them.
+- **TOPAS reads file paths in the Windows ANSI code page.** A folder whose
+  name the code page cannot hold (Greek on a Western-European Windows) makes
+  TOPAS 6 write nothing, also when it is the working directory; a Latin-1 name
+  and spaces work, and so does the folder's 8.3 short path. *Policy:* on
+  Windows an INP path the ANSI code page cannot encode is passed to `tc.exe`
+  as its short path; if the volume has none (8.3 names disabled), the run is
+  refused before `tc.exe` starts (`ExecutionBackendError`, reason
+  `backend_error`) with a message to use an ASCII output folder. A non-ASCII
+  base name is still replaced by `topas` (`topas_base_name_sanitized`).
+- TOPAS is never executed by PowderLine's default test suite or docs build;
+  the committed goldens (`tests/data/topas/native/golden/<version>/`, TOPAS 6
+  under `6/`) are what the TOPAS machine wrote, and the comparison page
+  rebuilds its TOPAS rows from them. On the TOPAS machine `pixi run test-topas`
+  with `POWDERLINE_TOPAS_DIR` and `POWDERLINE_TOPAS_VERSION` set runs
+  `tc.exe` against those goldens (`topas_exec`).
 
 ## Warnings you may see
 

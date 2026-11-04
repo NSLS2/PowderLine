@@ -85,9 +85,12 @@ at least one phase (`space_group`, `unit_cell`, `atoms`, `scale`), and
 simulation). Nothing has a default: `fit_range`, `background`,
 `instrument.corrections`, `instrument.geometry` and the phases'
 `peak_broadening` are optional, and a block left out is **not modelled**.
-`scattering_types` (ionic types) and `preferred_orientation` (March–Dollase)
-are declared and **refused** in topas 0.1.0: their TOPAS halves (`occ Fe+3`,
-the `PO(...)` macro) await a TOPAS 6 run.
+`scattering_types` (ionic types, CIF spelling, written to TOPAS's `occ` as
+`La+3`; only ions in TOPAS 6's `ATMSCAT.CPP`) and `preferred_orientation`
+(March–Dollase, TOPAS's `PO` macro; a `null` bound keeps TOPAS's limit, min
+0.0001, max 2r + 0.5) are optional phase fields. With `TCHZ_Peak_Type` the
+Lorentzian width X·tanθ + Y/cosθ must not be negative anywhere in the fit
+window at the starting values.
 
 ### `topas.spf`
 

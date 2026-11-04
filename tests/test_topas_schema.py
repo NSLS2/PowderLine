@@ -431,3 +431,63 @@ def test_limit_message_prints_an_allowed_value():
     assert float(_limit_text(hi, "max")) <= hi and float(_limit_text(-10 / (8 * 3.141592653589793 ** 2), "min")) >= \
         -10 / (8 * 3.141592653589793 ** 2)
     assert _limit_text(2.0, "max") == "2" and _limit_text(1e-4, "min") == "0.0001"
+
+
+# --- TCHZ Lorentzian width (TOPAS computes a negative width silently, or writes no results) ---------------
+
+
+def _tchz(r, x, y, refined=False):
+    params = r["payload"]["instrument"]["broadening"]["parameters"]
+    lo = -1.0 if refined else None  # a stated min replaces TOPAS's default minimum 0.0001 on a refined X / Y
+    params["X"], params["Y"] = P(x, refined, lo), P(y, refined, lo)
+    return r
+
+
+@pytest.mark.parametrize("build", [_rietveld, _spf])
+@pytest.mark.parametrize("refined", [False, True])
+def test_negative_lorentzian_width_in_the_window_is_refused(build, refined):
+    """X tan(theta) + Y / cos(theta) < 0 somewhere in the window, X and Y fixed or refined: an error naming both
+    values and the 2theta where the width is most negative."""
+    r = _tchz(build(), -0.01, 0.0001, refined)
+    with pytest.raises(ValidationError) as exc:
+        validate_recipe(r)
+    (err,) = [e for e in exc.value.errors() if e["type"] == "topas_negative_lorentzian_width"]
+    assert err["loc"] == ("payload", "instrument", "broadening", "parameters")
+    lo, hi = validate_recipe(build()).payload.window()
+    assert "X = -0.01, Y = 0.0001" in err["msg"] and f"2theta = {hi:g}" in err["msg"]
+    assert "X tan(theta) + Y / cos(theta) >= 0 over the window" in err["msg"]
+
+
+def test_lorentzian_width_is_checked_over_the_window_only():
+    """X = -0.0001, Y = 0.0005: the width crosses zero near 2theta = 157 degrees, far outside every window here; a
+    zero width is allowed."""
+    validate_recipe(_tchz(_rietveld(), -0.0001, 0.0005))
+    validate_recipe(_tchz(_rietveld(), 0.0, 0.0))
+    # Y < 0 with X > 0: most negative at the window's low end
+    with pytest.raises(ValidationError) as exc:
+        validate_recipe(_tchz(_rietveld(), 0.01, -0.0005))
+    lo, hi = validate_recipe(_rietveld()).payload.window()
+    (err,) = [e for e in exc.value.errors() if e["type"] == "topas_negative_lorentzian_width"]
+    assert f"2theta = {lo:g}" in err["msg"]
+
+
+def test_lorentzian_width_rule_is_tchz_only():
+    r = _rietveld()
+    r["payload"]["instrument"]["broadening"] = {
+        "peak_type": "PV_Peak_Type",
+        "parameters": {k: P(v) for k, v in dict(ha=0.01, hb=0.0, hc=0.01, lora=0.5, lorb=-0.1, lorc=0.0).items()}}
+    validate_recipe(r)
+
+
+# --- engine_version: an explicit set -----------------------------------------------------------------------
+
+
+def test_supported_engine_versions_is_an_explicit_tuple():
+    from powderline.gateways.topas import gateway, schema
+
+    assert schema.SUPPORTED_ENGINE_VERSIONS == ("6",)
+    assert schema.SUPPORTED_ENGINE_VERSION_SPEC == "==6" == gateway.ENGINE_VERSION_SPEC
+    assert schema.DECLARATIONS["supported_engine_versions"] == "==6"
+    r = _rietveld()
+    r["engine_version"] = "6.0"  # a recipe states the version as listed, not an equivalent spelling
+    _fails(r, ("engine_version",))

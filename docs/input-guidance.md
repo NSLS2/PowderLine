@@ -142,8 +142,9 @@ true]}`; `hkl` integers not all zero, `ratio` > 0 in the engine's parameter
 shape; 1 is random, < 1 platy, > 1 needle, in GSAS-II's convention averaged
 over the axis's symmetry equivalents). easydiffraction's block also requires
 `march_random_fract` (`[f, flag, min, max]`, 0 ≤ f ≤ 1) and needs the cryspy
-calculator; topas 0.1.0 refuses both fields (their TOPAS halves await a TOPAS
-machine). Start `ratio` on the expected side of 1, not at exactly 1.0: in a cubic phase
+calculator. In topas the ratio is TOPAS's `PO` macro, `[r, flag, min, max]`; a
+`null` bound leaves TOPAS's own limit on that side (min 0.0001, max 2r + 0.5),
+and a refined start below 0.0001 with no stated min is an error. Start `ratio` on the expected side of 1, not at exactly 1.0: in a cubic phase
 the averaged correction is stationary at r = 1 and GSAS-II aborts the
 refinement (EB-99, `example_LaB6_textured`).
 
@@ -300,7 +301,7 @@ An atom left out of `scattering_types` scatters as its neutral element.
 | Engine's own spelling | `La+3` | `La3+` | none (charges stripped) | `La+3` |
 | Ions with a form factor | 114 | 111 | none | 113 (`ATMSCAT.CPP`) |
 | What the engine does with a wrong or unknown ion, silently | reads `La3+` as **hydrogen** (EB-94) | uses the **neutral** atom, log warning only (EB-95) | uses the **neutral** atom for every ion (EB-96) | stops without results; the reason appears only in its console window |
-| What PowderLine does | writes GSAS-II's spelling into the atom record; refuses an ion GSAS-II has no form factor for | passes the CIF spelling through; refuses an ion CrysPy has no form factor for | refuses `scattering_types` (use the cryspy calculator) | refuses `scattering_types` for now: TOPAS's table and spelling are verified, the writer support is not yet released |
+| What PowderLine does | writes GSAS-II's spelling into the atom record; refuses an ion GSAS-II has no form factor for | passes the CIF spelling through; refuses an ion CrysPy has no form factor for | refuses `scattering_types` (use the cryspy calculator) | writes TOPAS's spelling into the site's `occ` (`occ La+3 …`); refuses an ion TOPAS has no form factor for |
 
 Verification: for LaB6 with `La3+`, the per-reflection intensity ratios
 ion/neutral agree between GSAS-II and CrysPy within 1 %, and (measured
@@ -309,10 +310,12 @@ directly on TOPAS 6) between GSAS-II and TOPAS within 0.07 %.
 Edge cases:
 
 - **Coverage differs between engines.** `O2-`, `D1-` and `T1-` exist in
-  GSAS-II's table but not CrysPy's. TOPAS has every GSAS-II ion except
-  `T1-`. An oxide stated with `O2-` therefore validates for `gsasii.*`
-  but **not for easydiffraction** (CrysPy has only `O1-`), and the
-  error names the forms it does have.
+  GSAS-II's table but not CrysPy's. TOPAS's table is the `ATMSCAT.CPP`
+  shipped with TOPAS 6: every GSAS-II ion except `T1-` (113 ions). An oxide
+  stated with `O2-` therefore validates for `gsasii.*` and `topas.*` but
+  **not for easydiffraction** (CrysPy has only `O1-`), and the error names
+  the forms it does have. `ATMSCAT.CPP` is a text file a user can edit;
+  PowderLine checks against the file as shipped.
 - `T1-` cannot be stated at all, because gemmi has no element `T`.
 - **Some atoms have no ion in any engine.** LaB6 is `La3+` with neutral
   `B`, because no engine has a boron ion.
@@ -505,8 +508,7 @@ approximated; each is a validation error or simply absent.
 - **Anisotropic size/strain models** (uniaxial, ellipsoidal, Stephens):
   gsasii and topas accept `isotropic` only.
 - **Preferred orientation beyond March–Dollase** (spherical harmonics, a
-  second axis) and **March–Dollase in topas 0.1.0** (declared, refused).
-- **Charged scattering types in topas 0.1.0** (declared, refused).
+  second axis).
 - **Parameter bounds in gsasii recipes**: GSAS-II clamps after the fit, so
   bounds are not exposed; they may come in a later gsasii schema version.
 - **User-defined constraints** between atoms (shared occupancies, tied ADPs
