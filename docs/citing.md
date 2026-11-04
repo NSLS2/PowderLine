@@ -65,6 +65,12 @@ the pattern (`refinement_controls.calculator`); please cite it as well.
   [code.ill.fr/scientific-software/CrysFML2008](https://code.ill.fr/scientific-software/CrysFML2008);
   Python package:
   [github.com/easyscience/deps-pycrysfml](https://github.com/easyscience/deps-pycrysfml).
+  The library is cited in the literature as:
+
+  > J. Rodríguez-Carvajal & J. González-Platas, "Crystallographic Fortran 90
+  > Modules Library (CrysFML): a simple toolbox for crystallographic
+  > computing programs", *IUCr Commission on Crystallographic Computing
+  > Newsletter* **1**, 50–58 (2003).
 
 ## Space-group symmetry: gemmi
 

@@ -16,7 +16,8 @@ authors:
     affiliation: "Brookhaven National Laboratory"
 license: BSD-3-Clause
 repository-code: "https://github.com/NSLS2/PowderLine"
-version: 0.1.2
+version: 0.2.0
+date-released: "2026-11-04"
 identifiers:
   - type: doi
     value: "10.48550/arXiv.2608.17009"
@@ -125,6 +126,20 @@ references:
     year: 2019
     doi: "10.1103/PhysRevResearch.1.033100"
     notes: "CrysPy's preferred citation. CrysPy (0.13.0 in PowderLine's lock file) is easydiffraction's cryspy calculator."
+  - type: article
+    title: "Crystallographic Fortran 90 Modules Library (CrysFML): a simple toolbox for crystallographic computing programs"
+    authors:
+      - family-names: "Rodríguez-Carvajal"
+        given-names: "Juan"
+      - family-names: "González-Platas"
+        given-names: "Javier"
+    journal: "IUCr Commission on Crystallographic Computing Newsletter"
+    issue: "1"
+    start: 50
+    end: 58
+    year: 2003
+    url: "https://www.iucr.org/resources/commissions/computing/newsletters/1/crysfml"
+    notes: "The publication by which the CrysFML library is cited in the literature (CrysFML2008 is its Fortran 2008 successor). Cite it with the entry below when the recipe names the crysfml calculator."
   - type: software
     title: "CrysFML2008 (Python package crysfml)"
     version: "0.8.0"

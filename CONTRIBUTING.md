@@ -72,3 +72,16 @@ the pre-commit guard so they never reach `main`.
 - `examples/**/output/` is tracked on purpose (regression references) — don't
   regenerate it casually.
 - Questions and bug reports: open a GitHub issue.
+
+## Changelog
+
+[CHANGELOG.md](CHANGELOG.md) follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+- Every user-visible change adds a bullet under `## [Unreleased]`, in the
+  right section: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed` or
+  `Security`. Internal work (tests, CI, refactoring that changes nothing a
+  user sees) gets no bullet.
+- A bullet is one to three lines, written for users, and links the
+  documentation page, `KI-NN` / `EB-NN` id or pull request where useful.
+- No internal ids: no branch names, private design-record or review ids, and
+  no names of people in decisions.
