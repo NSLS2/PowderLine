@@ -61,6 +61,12 @@ that calculator computes, or the other calculator.
 
 ## Special positions and site symmetry
 
+How to state atoms on and near special positions, with a disordered atom as the
+example and a per-engine comparison, is in
+[input guidance, "Atoms near a special position"](input-guidance.md#atoms-near-a-special-position-disorder);
+the ionic-type comparison is in
+["Scattering types by engine"](input-guidance.md#scattering-types-by-engine).
+
 - **Core decides special positions, not the engine.** An atom within 5e-6
   (fractional) of a special position is on it; 5e-6 to 2e-3 off is an error;
   derived values are held exactly in the validated model, so the engines'

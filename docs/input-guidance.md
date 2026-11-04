@@ -121,17 +121,11 @@ derives it).
 - **`element`**: the bare symbol, spelled exactly (`"Fe"`, not `"FE"`), and
   always the **neutral** atom — so the phase block means the same thing for
   every engine and moves between recipes.
-- **Ionic scattering types** are stated in the engine's phase block, beside
-  `scale`: `"scattering_types": {"La": "La3+", "O": "O2-"}` — the atom label,
-  then the ion in the CIF spelling (element, charge 1–8, sign; `"La+3"` is an
-  error naming `"La3+"`). An atom left out scatters as its neutral element,
-  which is normal where no ion exists (neither engine has a boron ion: LaB6
-  is `La3+` with neutral `B`). Each engine refuses an ion it has no form
-  factor for, naming the forms it has: GSAS-II 5.7.9 has 114 ions, CrysPy
-  111 (no `O2-`, only `O1-`), CrysFML computes neutral atoms only (use the
-  cryspy calculator), and **TOPAS does not accept `scattering_types` in
-  schema 0.1.0** (its half awaits a TOPAS run). PowderLine spells the ion
-  the engine's way itself; GSAS-II would read `"La3+"` as hydrogen (EB-94).
+- **Ionic scattering types** are stated per atom label in the engine's
+  phase block, in the CIF spelling: `"scattering_types": {"La": "La3+"}`;
+  an atom left out scatters as its neutral element. What each engine
+  does with them, and the edge cases, are in
+  [Scattering types by engine](#scattering-types-by-engine).
 - **Coordinates** are fractional JSON numbers. On a special position the
   values fixed or tied by symmetry follow one rule (the full table with
   worked examples is in
@@ -202,6 +196,122 @@ characters and then skips their settings, easydiffraction accepts no other
 atom label, TOPAS writes names into its input file, and phase names become
 report file names (case-insensitive on Windows and macOS). So `"2H-MoS2"`
 is written as `MoS2_2H`.
+
+### Scattering types by engine
+
+`element` is always the neutral atom, so a phase block means the same thing
+for every engine. An ion is stated per atom label in the engine's phase
+block:
+
+```json
+"scattering_types": {"La": "La3+"}
+```
+
+Ions are always written in the CIF spelling (`La3+`), whatever the engine.
+An atom left out of `scattering_types` scatters as its neutral element.
+
+| | GSAS-II 5.7.9 (`gsasii.*`) | easydiffraction 0.21.1, CrysPy (`calculator: "cryspy"`) | easydiffraction 0.21.1, CrysFML (`calculator: "crysfml"`) | TOPAS 6 (`topas.*`) |
+|---|---|---|---|---|
+| Engine's own spelling | `La+3` | `La3+` | none (charges stripped) | `La+3` |
+| Ions with a form factor | 114 | 111 | none | 113 (`ATMSCAT.CPP`) |
+| What the engine does with a wrong or unknown ion, silently | reads `La3+` as **hydrogen** (EB-94) | uses the **neutral** atom, log warning only (EB-95) | uses the **neutral** atom for every ion (EB-96) | stops without results; the reason appears only in its console window |
+| What PowderLine does | writes GSAS-II's spelling into the atom record; refuses an ion GSAS-II has no form factor for | passes the CIF spelling through; refuses an ion CrysPy has no form factor for | refuses `scattering_types` (use the cryspy calculator) | refuses `scattering_types` for now: TOPAS's table and spelling are verified, the writer support is not yet released |
+
+Verification: for LaB6 with `La3+`, the per-reflection intensity ratios
+ion/neutral agree between GSAS-II and CrysPy within 1 %, and (measured
+directly on TOPAS 6) between GSAS-II and TOPAS within 0.07 %.
+
+Edge cases:
+
+- **Coverage differs between engines.** `O2-`, `D1-` and `T1-` exist in
+  GSAS-II's table but not CrysPy's. TOPAS has every GSAS-II ion except
+  `T1-`. An oxide stated with `O2-` therefore validates for `gsasii.*`
+  but **not for easydiffraction** (CrysPy has only `O1-`), and the
+  error names the forms it does have.
+- `T1-` cannot be stated at all, because gemmi has no element `T`.
+- **Some atoms have no ion in any engine.** LaB6 is `La3+` with neutral
+  `B`, because no engine has a boron ion.
+- **Ions are per atom label.** Mixed valence on different sites is stated per
+  site. A mixed site (two species at one position) is two atoms, each with
+  its own label and type.
+- **Spelling rules:**
+  - a charge of 1–8 with an explicit sign;
+  - `Fe+3` is an error that names `Fe3+`;
+  - `Na+` (no number) is an error: write `Na1+`;
+  - `element` must be the ion's element.
+- **Moving a phase between engines** (`recipes.with_block`): the whole
+  phase is copied, engine fields included. The target engine's schema then
+  validates it, so an ion that engine has no form factor for is an error
+  there. Engine fields written in another engine's form (gsasii
+  `[value, flag]` against `[value, flag, min, max]`) must be rewritten for
+  the target.
+- **TOPAS's table can be changed by the user.** `ATMSCAT.CPP` sits in the
+  TOPAS folder and can be edited; PowderLine's TOPAS table will be the
+  shipped TOPAS 6 file.
+
+### Atoms near a special position (disorder)
+
+A common model for disorder is an atom displaced slightly from a special
+position: a cation rattling off a 4a site, or an anion split over several
+positions around a mirror. The atom is placed a little off the special
+position, and its symmetry images then form the split site. Whether an
+engine reads such an atom as **on** the special position or **off** it
+depends on its own tolerance, and the engines do not agree. PowderLine
+decides this once, in core, the same way for every engine. Anything an
+engine would do silently becomes either a reported value or an error.
+
+How far the atom is from the special position is measured as `d`: the
+largest fractional-coordinate distance between the atom and one of its own
+symmetry images. Fractional units make `d` independent of the cell, which
+is itself refined. In ångström, `d` is roughly `d × a`. With a = 4 Å,
+2e-3 is 0.008 Å; with a = 10 Å it is 0.02 Å; with a = 20 Å it is 0.04 Å.
+
+| Stated position | GSAS-II 5.7.9 would… | easydiffraction / CrysPy would… | TOPAS 6 would… | PowderLine does |
+|---|---|---|---|---|
+| **exactly on** it (`0.5`, `0.25`; 1/3 needs 6 decimals, below) | read it as special | read it as special | read it as special (only an exact value or an equation) | special position; fixed coordinates cannot be refined (a refine flag on one is an error) |
+| **within 5e-6** (`0.333333` for 1/3) | read it as special (its tolerance is 2e-5 + 1e-5·\|x\|) | read it as special and **move the coordinate** to its Wyckoff value | read it as a **general** position: `k` atoms almost on top of each other | holds the exact value, reports `symmetry_value_derived` (level `info`, stated and held values), and gives every engine the exact value (TOPAS as the equation `= 1/3;`) |
+| **5e-6 to 2e-3** (`0.3333`, `0.33`, or an atom 0.001 off) | special up to about 2e-5, then general, with the multiplicity changing in between | special or general depending on how the decimals rationalise | general | **error** naming the atom, the special position it is near and the fix: state the position exactly, or move the atom at least 2e-3 off it |
+| **2e-3 or more** | general | general | general | general position, used as stated; nothing is moved |
+
+So every recipe PowderLine accepts is read the same way by all three
+engines.
+
+The 2e-3 band is wider than any engine's own tolerance on purpose. An atom
+whose own symmetry image is closer than 2e-3 is not a resolvable separate
+site in powder data. Accepting it would leave the result depending on which
+engine read it.
+
+**During a refinement** no engine moves a refined coordinate back onto a
+special position:
+- GSAS-II never snaps;
+- easydiffraction detects Wyckoff positions only when the structure is built
+  (EB-47);
+- TOPAS compares exactly.
+
+A disordered atom that refines towards its special position stays a general
+position with near-coincident images. If it ends inside the 2e-3 band, the
+**output recipe is marked not valid**: `output_recipe_valid: false`, and the
+`output_recipe_not_valid` warning names the coordinate. A chained next step
+then stops there instead of running on an ambiguous position (KI-18). Re-state the
+atom on the special position (an ordered model), or restart it further off.
+
+**Writing a split site:**
+
+1. **Place the atom at least 2e-3 off** the special position in fractional
+   units. Work it out from the displacement you expect: 0.1 Å in a 10 Å cell
+   is 0.01.
+2. **Divide the occupancy by `k`**: the number of symmetry images that
+   coincide on the special position. `k` is the general multiplicity divided
+   by the special one. Example: a 4a site of Fm-3m displaced along x
+   becomes 24e, so k = 6. PowderLine does not check this (KI-17); a split
+   atom left at full occupancy counts `k` atoms.
+3. **For a mixed site, state each species as its own atom.** Atoms at the
+   same coordinates are independent: each has its own values and flags, and
+   PowderLine never ties them. One species can then move off the shared site
+   while the other stays.
+4. **Refine with care.** Coordinates, occupancy and displacement parameters
+   of a split atom are strongly correlated; check the ESDs and the
+   parameter-disposition report.
 
 ## Instruments (one block per engine)
 

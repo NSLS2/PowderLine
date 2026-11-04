@@ -746,3 +746,63 @@ equivalence record (INP bytes must match).
 
 **Revisit.** The first session on a machine with `tc.exe`; before the
 upstream PR in any case.
+
+**Update (2026-11-04).** A first session on a TOPAS 6 machine ran the native
+runner on six fixtures. Every file each run produced matched its golden byte
+for byte: INP, background INP, results, profiles and reflection lists. The
+same session checked the version checks, generate-only, the command line,
+the config file, `powderline --doctor`, and the failure route when `tc.exe`
+is stopped. It also found three things now being addressed:
+- a peak position that stops just inside the fit window's edge is not
+  always reported;
+- an output folder outside the Windows ANSI code page makes TOPAS fail;
+- a fixed negative Lorentzian `X` runs without complaint.
+
+The entry moves to `watch` after the confirming run on the release's code.
+
+---
+
+## KI-17 — A split atom's occupancy is not checked against its coinciding images `accepted · minor`
+
+**What.** An atom placed off a special position to model disorder (a split
+site) has `k` symmetry images where the ordered atom had one, `k` being the
+general multiplicity divided by the special one. Unless its occupancy is
+divided by `k`, the site holds `k` atoms. PowderLine validates the position
+(it must be at least 2e-3 off the special position) but not the occupancy,
+because a full occupancy is also a legitimate model: a genuinely general
+site.
+
+**Evidence.** `schema_core` derives the multiplicity of every site and
+checks a stated `Multiplicity`. Nothing relates `occupancy` to the special
+position the atom is near. The guidance is in
+[input guidance, "Atoms near a special position"](input-guidance.md#atoms-near-a-special-position-disorder).
+
+**Decision.** Documented, not checked: there is no rule that tells a split
+site from a general one.
+
+**Revisit.** If users report split sites refined at full occupancy, consider
+an informative note when an atom lies within, say, 0.05 of a special
+position at occupancy 1.
+
+---
+
+## KI-18 — A coordinate that refines into the ambiguous band near a special position is reported only through the output recipe `accepted · minor`
+
+**What.** Validation refuses an atom stated 5e-6 to 2e-3 (fractional) from
+a special position. During a refinement, though, no engine moves a refined
+coordinate back onto one: GSAS-II never snaps, easydiffraction detects
+Wyckoff positions only when the structure is built (EB-47), and TOPAS
+compares exactly. So a split atom can refine into that band. The result is
+still returned. Its output recipe fails validation
+(`output_recipe_valid: false`), and the warning `output_recipe_not_valid`
+names the coordinate, so a chained next step stops there.
+
+**Evidence.** `powderline.roundtrip` re-validates every output recipe;
+[input guidance, "Atoms near a special position"](input-guidance.md#atoms-near-a-special-position-disorder).
+
+**Decision.** The run is not failed: its numbers are what the engine
+computed, and the warning says what to do (state the atom on the special
+position, or restart it further off).
+
+**Revisit.** If a dedicated warning naming the special position proves
+clearer than the generic output-recipe one.
