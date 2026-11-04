@@ -67,7 +67,8 @@ def test_po_sits_in_the_str_after_the_sites_and_nothing_else_changes():
 
 
 def test_po_ratio_limits_are_recorded():
-    """TOPAS.INC's PO macro: min 0.0001 by default, max = 2 Val + .5 (dynamic: no fixed maximum to report)."""
+    """TOPAS.INC's PO macro: min 0.0001 by default; max twice the current r plus 0.5, recomputed as r changes, so there
+    is no fixed maximum to report."""
     _, native = _po_line(_lab6([0.8, True, None, None]))
     info = native.params["p1_po_r"]
     assert info.path == "payload.phases.LaB6.preferred_orientation.ratio" and info.refined

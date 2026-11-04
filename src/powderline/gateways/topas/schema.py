@@ -27,9 +27,10 @@ TOPAS rules checked here:
   crystallite size are positive (A126); ``la``, ``lh``, ``lg`` and the capillary
   diameter are positive (a line with no area or width, or a capillary of no
   diameter, does not exist: A111(a));
-- with ``TCHZ_Peak_Type`` the Lorentzian width X tan(theta) + Y / cos(theta) at
-  the starting values is >= 0 at every data point of the fit window, refined or
-  fixed: TOPAS computes with a negative width silently, or writes no results
+- with ``TCHZ_Peak_Type`` the total (Thompson-Cox-Hastings) peak width at the
+  starting values is positive at every data point of the fit window, refined or
+  fixed: where it is not, TOPAS 6 writes no results; a negative Lorentzian part
+  X tan(theta) + Y / cos(theta) is allowed while the total stays positive
   (measured on TOPAS 6);
 - ``scattering_types``: ions in TOPAS 6's ``ATMSCAT.CPP``, CIF spelling
   (:mod:`.scattering`); ``preferred_orientation``: the ``PO`` macro, whose
@@ -187,7 +188,8 @@ KEYWORD_LIMITS = {
     "h2": (1e-6, None), "spv_h1": (1e-6, None), "spv_h2": (1e-6, None), "pv_lor": (0.0, 1.0),
     "spv_l1": (0.0, 1.0), "spv_l2": (0.0, 1.0), "m1": (0.75, 30.0), "m2": (0.75, 30.0),
     "axial": (1e-4, None),
-    # TOPAS.INC's PO macro (March-Dollase r): min 0.0001, max = 2 Val + .5, a dynamic maximum a start never exceeds
+    # TOPAS.INC's PO macro (March-Dollase r): default min 0.0001; default max twice the current r plus 0.5, recomputed
+    # as r changes, so a starting value never exceeds it (no fixed maximum to check or report)
     "po_ratio": (1e-4, None),
 }
 
@@ -647,7 +649,7 @@ class TopasPhase(Phase[BoundedRefinableParameter]):
     preferred_orientation: Optional[MarchDollase[BoundedRefinableParameter]] = Field(
         default=None, json_schema_extra=absent_not_null_schema(),
         description="March-Dollase preferred orientation (TOPAS PO macro: one axis, ratio r > 0; an open bound is "
-                    "TOPAS's own limit, min 0.0001 or max 2 r + 0.5); left out: none")
+                    "TOPAS's own limit: min 0.0001, max 2 x (current r) + 0.5, which follows r); left out: none")
 
     _topas_not_null = field_validator("peak_broadening", "scattering_types", "preferred_orientation",
                                       mode="before")(absent_not_null)
@@ -692,7 +694,7 @@ class TopasPhase(Phase[BoundedRefinableParameter]):
             if atom.Uiso is not None:
                 problems += limit_problems(atom.Uiso, lo / EIGHT_PI_SQ, hi / EIGHT_PI_SQ, ("atoms", label, "Uiso"),
                                            f"Uiso (TOPAS beq = 8 pi^2 Uiso, limits {lo:g}..{hi:g})")
-        if self.preferred_orientation is not None:  # TOPAS.INC PO: min 0.0001, max = 2 Val + .5 (never below the start)
+        if self.preferred_orientation is not None:  # TOPAS PO: default min 0.0001; max 2 x current r + 0.5
             problems += limit_problems(self.preferred_orientation.ratio, *KEYWORD_LIMITS["po_ratio"],
                                        ("preferred_orientation", "ratio"), "ratio (TOPAS PO)")
         raise_problems(type(self).__name__, problems)
@@ -737,6 +739,22 @@ class RefinementControls(CoreModel):
     chi2_convergence_criteria: CoreFloat = Field(gt=0, description="TOPAS 'chi2_convergence_criteria'")
     x_calculation_step: CoreFloat = Field(gt=0, json_schema_extra=unit_schema(UNIT_DEG_2THETA),
                                           description="TOPAS 'x_calculation_step' (required for .xye data)")
+
+
+def _tchz_lorentzian(prm: Mapping[str, float], tth: float) -> float:
+    """TCHZ's Lorentzian width ``X tan(theta) + Y / cos(theta)`` at ``tth`` (degrees 2theta)."""
+    th = math.radians(tth / 2)
+    return prm["X"] * math.tan(th) + prm["Y"] / math.cos(th)
+
+
+def _tchz_width_poly(prm: Mapping[str, float], tth: float) -> float:
+    """The Thompson-Cox-Hastings polynomial whose fifth root is TCHZ's FWHM at ``tth`` (Thompson, Cox & Hastings
+    1987, J. Appl. Cryst. 20, 79); its sign is the question (``_Payload._lorentzian_width_problems``)."""
+    th = math.radians(tth / 2)
+    t, c = math.tan(th), math.cos(th)
+    g = math.sqrt(abs(prm["U"] * t * t + prm["V"] * t + prm["W"] + prm["Z"] / (c * c)))
+    l = _tchz_lorentzian(prm, tth)  # noqa: E741
+    return g**5 + 2.69269 * g**4 * l + 2.42843 * g**3 * l**2 + 4.47163 * g**2 * l**3 + 0.07842 * g * l**4 + l**5
 
 
 class _Payload(CoreModel):
@@ -790,29 +808,37 @@ class _Payload(CoreModel):
                               "th2_offset (TOPAS ZE: within 100 data steps)")
 
     def _lorentzian_width_problems(self) -> list[InitErrorDetails]:
-        """TCHZ: the Lorentzian width X tan(theta) + Y / cos(theta) at the starting values must not be negative at
-        any data point of the fit window, refined or fixed. TOPAS computes with a negative width silently (a
-        fixed X = -0.01 changes the profile without a message) or writes no results (X = -0.1), measured on
-        TOPAS 6; anything TOPAS would silently alter or refuse is a validation error."""
+        """TCHZ: the total peak width must be positive at every data point of the fit window, at the starting
+        values, X..Z refined or fixed (A197, narrowing A155 Q2).
+
+        ``TCHZ_Peak_Type`` is a pseudo-Voigt whose FWHM is the Thompson-Cox-Hastings combination
+        ``(G^5 + 2.69269 G^4 L + 2.42843 G^3 L^2 + 4.47163 G^2 L^3 + 0.07842 G L^4 + L^5)^(1/5)`` of the Gaussian
+        width ``G = sqrt|U tan^2 + V tan + W + Z / cos^2|`` and the Lorentzian width ``L = X tan + Y / cos``
+        (theta). A negative ``L`` alone is what TOPAS computes with, as written: with a positive total width
+        TOPAS 6 runs and the profile is its pseudo-Voigt (fixed X = -0.01, Y = 0: it ran). Where the polynomial is
+        not positive the width does not exist and TOPAS 6 writes no results (X = -0.1, Y = 0, the polynomial
+        reaching -3e-9 in that window: no results), so that is the validation error.
+        """
         b = self.instrument.broadening
         if b.peak_type != "TCHZ_Peak_Type" or not {"X", "Y"} <= set(b.parameters):
             return []
-        x, y = b.parameters["X"].value, b.parameters["Y"].value
+        prm = {k: (b.parameters[k].value if k in b.parameters else 0.0) for k in ("U", "V", "W", "Z", "X", "Y")}
         lo, hi = self.window()
         tth = [t for t in self.xrd_data.tth if lo <= t <= hi]
         if not tth:
             return []
-        widths = [(x * math.tan(math.radians(t / 2)) + y / math.cos(math.radians(t / 2)), t) for t in tth]
-        worst, at = min(widths)
-        if worst >= 0:
+        worst, at = min((_tchz_width_poly(prm, t), t) for t in tth)
+        if worst > 0:
             return []
         return [custom_error(
-            "topas_negative_lorentzian_width",
-            "the TCHZ Lorentzian width X tan(theta) + Y / cos(theta) is negative in the fit window: X = {x}, Y = {y} "
-            "give {width} at 2theta = {at} (its most negative point); TOPAS computes with a negative width "
-            "silently, or writes no results, so state X and Y with X tan(theta) + Y / cos(theta) >= 0 over the window",
-            ("instrument", "broadening", "parameters"), {"X": x, "Y": y}, x=str(x), y=str(y), width=f"{worst:.6g}",
-            at=f"{at:g}")]
+            "topas_tchz_width_not_positive",
+            "the TCHZ peak width is not positive in the fit window: with X = {x}, Y = {y} (and the recipe's U, V, "
+            "W, Z) the Thompson-Cox-Hastings width has no positive value at 2theta = {at} (G^5 + 2.69269 G^4 L + "
+            "... + L^5 = {poly}, Lorentzian part L = X tan(theta) + Y / cos(theta) = {lor}), and TOPAS writes no "
+            "results there; a negative Lorentzian part is allowed only while the total width stays positive over "
+            "the window",
+            ("instrument", "broadening", "parameters"), {"X": prm["X"], "Y": prm["Y"]}, x=str(prm["X"]),
+            y=str(prm["Y"]), at=f"{at:g}", poly=f"{worst:.6g}", lor=f"{_tchz_lorentzian(prm, at):.6g}")]
 
     def _workflow_problems(self) -> list[InitErrorDetails]:
         return []

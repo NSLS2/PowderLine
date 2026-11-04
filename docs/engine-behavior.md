@@ -297,14 +297,21 @@ within 1e-6 of the starting value).
   and documents that the four input terms are not sizes/strains.
 - **`lam` with `lg` alone crashes TOPAS 6** (EB-64): `lh` is required, `lg`
   only with it.
-- **A negative TCHZ Lorentzian width is computed silently**: with a fixed
-  X < 0 (Y = 0) TOPAS 6 neither takes |X| nor clamps it at 0; X = −0.01 runs
-  and gives a profile unlike X = 0 or X = +0.01, X = −0.1 writes no results
-  (measured on TOPAS 6; a negative convolution FWHM stops TOPAS, EB-69).
-  *Policy:* with `TCHZ_Peak_Type`, X·tanθ + Y/cosθ at the recipe's starting
-  values must be ≥ 0 at every data point of the fit window, X and Y refined or
-  fixed; otherwise a validation error names X, Y and the 2θ where the width is
-  most negative. Refined widths are validated ≥ 0.
+- **A negative TCHZ Lorentzian part is computed as written**: `TCHZ_Peak_Type`
+  is a pseudo-Voigt whose FWHM is the Thompson–Cox–Hastings combination
+  (G⁵ + 2.69269 G⁴L + 2.42843 G³L² + 4.47163 G²L³ + 0.07842 GL⁴ + L⁵)^1/5 of
+  the Gaussian width G and the Lorentzian width L = X·tanθ + Y/cosθ. With a
+  fixed X < 0 (Y = 0) TOPAS 6 neither takes |X| nor clamps it at 0: X = −0.01
+  runs and gives a profile unlike X = 0 or X = +0.01 (the total width stays
+  positive); X = −0.1 makes the polynomial negative at the top of the window
+  and TOPAS writes no results (measured on TOPAS 6; a negative convolution
+  FWHM stops TOPAS, EB-69). *Policy:* PowderLine honours what TOPAS computes:
+  a negative Lorentzian part passes while the total width is positive. With
+  `TCHZ_Peak_Type`, the total width at the recipe's starting values must be
+  positive at every data point of the fit window, X..Z refined or fixed;
+  otherwise a validation error (`topas_tchz_width_not_positive`) names X, Y
+  and the 2θ where the width is not positive. An output recipe whose refined
+  values break the rule is not valid.
 - **Ions are spelled `La+3` in `occ`** and taken from TOPAS's `ATMSCAT.CPP`:
   TOPAS 6's file has 113 ions, GSAS-II 5.7.9's table without `T1-`. TOPAS
   rejects the CIF spelling `La3+`, a sign-only `Na+` and an unknown symbol by
@@ -588,8 +595,10 @@ simulated peak heights changed at the 0.2.0 re-baseline.
 - TOPAS 6 cannot output the fit's background (`Get(bkg)` is 0; `phase_out_X`
   is TOPAS 7 only, EB-61): PowderLine runs a second, background-only INP at
   the refined values and uses its calculated pattern as `y_bkg`, every
-  convolution included; if that run writes nothing the result stays a
-  success with an empty `y_bkg` and `topas_background_not_calculated`.
+  convolution included; if that run writes nothing, or is stopped at the
+  time limit (`topas_timeout`), the result stays a success with an empty
+  `y_bkg` and `topas_background_not_calculated`: the fit's values,
+  statistics and output recipe do not depend on it.
 - **TOPAS reads file paths in the Windows ANSI code page.** A folder whose
   name the code page cannot hold (Greek on a Western-European Windows) makes
   TOPAS 6 write nothing, also when it is the working directory; a Latin-1 name
@@ -626,7 +635,7 @@ simulated peak heights changed at the 0.2.0 re-baseline.
 | `topas_parameters_not_varied` | topas | warning | TOPAS varied fewer parameters than requested |
 | `topas_phase_contributes_nothing` | topas | info | a phase's calculated intensities are all zero (its scale is 0, or TOPAS discarded a non-finite calculation) |
 | `topas_base_name_sanitized` | topas | warning | the recipe's base name is not ASCII-safe for TOPAS; files are written as `topas.*` |
-| `topas_background_not_calculated` | topas | warning | the background-only run wrote nothing; `y_bkg` empty |
+| `topas_background_not_calculated` | topas | warning | the background-only run wrote nothing or was stopped at the time limit; `y_bkg` empty |
 | `topas_generate_only` | topas | info | no `tc.exe` declared: the INP and `.xye` were written, the engine did not run (`status: "generated"`) |
 | `easydiffraction_parameter_at_limit` | easydiffraction | warning | a refined value ended at a bound or physical limit |
 | `easydiffraction_parameters_not_varied` | easydiffraction | warning | lmfit varied fewer parameters than requested |

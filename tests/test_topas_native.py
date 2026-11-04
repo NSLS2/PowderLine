@@ -788,6 +788,37 @@ def test_runner_background_run_missing_leaves_the_column_empty(tmp_path, monkeyp
     assert [w["field_path"] for w in hits] == ["payload.background"]
 
 
+def test_runner_background_run_timeout_keeps_the_fit(tmp_path, monkeypatch):
+    """A197: the background run stopped at the time limit does not fail the run: the fit stands, its partial
+    profile is not read, y_bkg is empty and the warning says the background run was stopped."""
+    model = schema.validate_recipe(_rietveld())
+    refined = {"p1_cell_a": (4.1580, 0.0002), "bkg_bkg0__": (10.5, 0.1), "p1_volume": (71.85, 0.01)}
+    results_csv = _make_results_csv(refined, {"r_wp": 8.5, "r_exp": 5.2, "gof": 1.6,
+                                              "number_independent_parameters": 2})
+    lo, hi = model.payload.window()
+    xs = [t for t in model.payload.xrd_data.tth if lo <= t <= hi]
+    inner = _fake_topas_runner(results_csv, _make_profile(xs, [100.0] * len(xs), [100.0] * len(xs)),
+                               {"LaB6": _make_peak_list()})
+    calls = []
+
+    def runner(cmd, cwd, capture_output=True, **kwargs):
+        calls.append((Path(cmd[1]).name, kwargs.get("timeout")))
+        if Path(cmd[1]).stem.endswith("_bkg"):
+            (tmp_path / "run_bkg_profile.txt").write_text("1 2 3\n", encoding="utf-8")  # stopped mid-write
+            raise subprocess.TimeoutExpired(cmd, kwargs["timeout"])
+        return inner(cmd, cwd, capture_output)
+
+    monkeypatch.setattr("powderline.gateways.topas.native_run.discover_tc_exe",
+                        lambda *a, **kw: tmp_path / "TOPAS6" / "tc.exe")
+    result = native_run.run_native(model, tmp_path, base_name="run", runner=runner, timeout=30)
+    assert calls == [("run.inp", 30), ("run_bkg.inp", 30)]
+    assert result["status"] == "ok" and result["output_recipe_valid"]
+    assert not (tmp_path / "run_bkg_profile.txt").exists()
+    assert result["fit_profile"]["y_bkg"].isna().all()
+    hits = [w for w in result["warnings"] if w["code"] == "topas_background_not_calculated"]
+    assert len(hits) == 1 and "did not finish within 30 s" in hits[0]["message"]
+
+
 def test_runner_no_background_modelled_is_zero_and_no_second_run(tmp_path, monkeypatch):
     recipe = _rietveld()
     recipe["payload"].pop("background")
@@ -887,9 +918,16 @@ def test_gateway_check_native_engine_version_matches():
     """Declared version 6 -> passes."""
     model = schema.validate_recipe(_rietveld())
     gateway.check_native_engine_version(model, topas_version="6")
+    gateway.check_native_engine_version(model, topas_version=6)  # a YAML ``version: 6`` is an integer
 
-    # the declared installed version is compared as a version: "6.0" is TOPAS 6
-    gateway.check_native_engine_version(model, topas_version="6.0")
+
+@pytest.mark.parametrize("declared", ["6.0", 6.0, "06", "6.1"])
+def test_gateway_check_native_engine_version_is_the_release_number_as_written(declared):
+    """A197 (A190, A196): the declared version is one of SUPPORTED_ENGINE_VERSIONS as written, like a recipe's:
+    "6.0" is refused with the spelling to use, not read as TOPAS 6."""
+    model = schema.validate_recipe(_rietveld())
+    with pytest.raises(EngineVersionError, match=r"not '6\.0'"):
+        gateway.check_native_engine_version(model, topas_version=declared)
 
 
 def test_gateway_check_native_engine_version_allow_unsupported():

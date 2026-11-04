@@ -350,10 +350,10 @@ was removed with the unified schema).
   a diameter > 0);
   `broadening` `{peak_type, parameters}` with `TCHZ_Peak_Type`, `PV_Peak_Type`
   or `PVII_Peak_Type` (TOPAS's TCHZ U..Z are not GSAS-II's; with
-  `TCHZ_Peak_Type` the Lorentzian width X·tanθ + Y/cosθ at the starting
-  values must be ≥ 0 at every data point of the fit window, X and Y refined or
-  fixed, since TOPAS 6 computes with a negative width silently or writes no
-  results). Geometry
+  `TCHZ_Peak_Type` the total (Thompson–Cox–Hastings) peak width at the
+  starting values must be positive at every data point of the fit window,
+  refined or fixed, since TOPAS 6 writes no results where it is not; a
+  negative Lorentzian part X·tanθ + Y/cosθ is allowed while it is). Geometry
   corrections act on every peak, background and SPF peaks included;
   Lorentz-polarisation sits in each phase (Bragg peaks only); the peak type in
   each phase and each SPF peak.

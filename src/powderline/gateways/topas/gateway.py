@@ -18,11 +18,9 @@ error.
 
 from __future__ import annotations
 
-from packaging.version import Version
-
 from powderline.exceptions import EngineVersionError
 from powderline.gateways.topas import schema
-from powderline.registry import Gateway, check_engine_version
+from powderline.registry import Gateway
 
 NAME = "topas"
 #: The TOPAS versions the native recipes are written for (A143, A144): the
@@ -58,7 +56,12 @@ def configured_engine_version(topas_version=None):
 
 
 def check_native_engine_version(model, topas_version=None, *, allow_unsupported: bool = False) -> None:
-    """A145: the declared installed TOPAS version must exist and equal the recipe's ``engine_version``."""
+    """A145: the declared installed TOPAS version must exist and equal the recipe's ``engine_version``.
+
+    Both are TOPAS release numbers as written (A190, A196): the declared version must be one of
+    ``schema.SUPPORTED_ENGINE_VERSIONS`` exactly (``"6"``; ``"6.0"`` is refused, as in a recipe), so the membership
+    check is the explicit tuple, not a PEP 440 comparison. A YAML ``version: 6`` (an integer) reads as ``"6"``.
+    """
     if allow_unsupported:
         return
     declared = configured_engine_version(topas_version)
@@ -69,10 +72,17 @@ def check_native_engine_version(model, topas_version=None, *, allow_unsupported:
             message=(f"the TOPAS version to run is not declared: PowderLine cannot read it from tc.exe, so set "
                      f"topas_version (run argument) or topas.version in .powderline_config.yaml; this recipe is "
                      f"written for TOPAS {model.engine_version}"))
-    check_engine_version(gateway=NAME, engine="TOPAS", installed=declared, spec=supported)
-    if Version(str(declared)) != Version(model.engine_version):
+    declared = str(declared)
+    if declared not in schema.SUPPORTED_ENGINE_VERSIONS:
+        written = ", ".join(repr(v) for v in schema.SUPPORTED_ENGINE_VERSIONS)
         raise EngineVersionError(
-            gateway=NAME, engine="TOPAS", installed=str(declared), supported=f"=={model.engine_version}",
+            gateway=NAME, engine="TOPAS", installed=declared, supported=supported,
+            message=(f"TOPAS {declared!r} is declared as installed, but the topas gateway supports TOPAS {written}, "
+                     f"written as the release number (e.g. '6', not '6.0'); set topas_version (run argument) or "
+                     f"topas.version in .powderline_config.yaml to one of these"))
+    if declared != model.engine_version:
+        raise EngineVersionError(
+            gateway=NAME, engine="TOPAS", installed=declared, supported=f"=={model.engine_version}",
             message=(f"the recipe is written for TOPAS {model.engine_version} (engine_version), but TOPAS "
                      f"{declared} is declared as installed"))
 
@@ -89,7 +99,7 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
     ``ExecutionBackendError`` ``timeout``.
 
     ``allow_unsupported_engine_version`` is the test-only bypass of the engine
-    version check (A53); the check is skipped for ``validate_only`` and when
+    version check; the check is skipped for ``validate_only`` and when
     no ``tc.exe`` is found (generate-only).
     """
     from powderline.gateways.topas import native_run

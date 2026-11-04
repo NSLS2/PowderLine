@@ -433,7 +433,7 @@ def test_limit_message_prints_an_allowed_value():
     assert _limit_text(2.0, "max") == "2" and _limit_text(1e-4, "min") == "0.0001"
 
 
-# --- TCHZ Lorentzian width (TOPAS computes a negative width silently, or writes no results) ---------------
+# --- TCHZ total width (TOPAS writes no results where it is not positive; a negative Lorentzian part runs) ----
 
 
 def _tchz(r, x, y, refined=False):
@@ -445,29 +445,38 @@ def _tchz(r, x, y, refined=False):
 
 @pytest.mark.parametrize("build", [_rietveld, _spf])
 @pytest.mark.parametrize("refined", [False, True])
-def test_negative_lorentzian_width_in_the_window_is_refused(build, refined):
-    """X tan(theta) + Y / cos(theta) < 0 somewhere in the window, X and Y fixed or refined: an error naming both
-    values and the 2theta where the width is most negative."""
-    r = _tchz(build(), -0.01, 0.0001, refined)
+def test_tchz_width_not_positive_in_the_window_is_refused(build, refined):
+    """A197: X = -0.1, Y = 0 (as on TOPAS 6, where it wrote no results): the Thompson-Cox-Hastings polynomial is
+    negative at the window's high end, X and Y fixed or refined: an error naming both values and the 2theta."""
+    r = _tchz(build(), -0.1, 0.0, refined)
     with pytest.raises(ValidationError) as exc:
         validate_recipe(r)
-    (err,) = [e for e in exc.value.errors() if e["type"] == "topas_negative_lorentzian_width"]
+    (err,) = [e for e in exc.value.errors() if e["type"] == "topas_tchz_width_not_positive"]
     assert err["loc"] == ("payload", "instrument", "broadening", "parameters")
     lo, hi = validate_recipe(build()).payload.window()
-    assert "X = -0.01, Y = 0.0001" in err["msg"] and f"2theta = {hi:g}" in err["msg"]
-    assert "X tan(theta) + Y / cos(theta) >= 0 over the window" in err["msg"]
+    assert "X = -0.1, Y = 0.0" in err["msg"] and f"2theta = {hi:g}" in err["msg"]
+    assert "a negative Lorentzian part is allowed only while the total width stays positive" in err["msg"]
 
 
-def test_lorentzian_width_is_checked_over_the_window_only():
-    """X = -0.0001, Y = 0.0005: the width crosses zero near 2theta = 157 degrees, far outside every window here; a
-    zero width is allowed."""
-    validate_recipe(_tchz(_rietveld(), -0.0001, 0.0005))
+@pytest.mark.parametrize("build", [_rietveld, _spf])
+@pytest.mark.parametrize("x, y", [(-0.01, 0.0001), (-0.05, 0.0), (0.01, -0.0005)])
+def test_negative_lorentzian_part_with_a_positive_total_width_is_allowed(build, x, y):
+    """A197: TOPAS 6 computes a pseudo-Voigt with a negative Lorentzian part as written (fixed X = -0.01 ran), so a
+    negative X tan(theta) + Y / cos(theta) passes while the total width stays positive over the window."""
+    validate_recipe(_tchz(build(), x, y))
+
+
+def test_tchz_width_is_checked_over_the_window_only():
+    """X = -0.1, Y = 0: the total width is positive below 2theta ~ 7.9 and not above it, so a window that ends at
+    6 passes; X = 0, Y = -0.01 is not positive anywhere and is reported at the window's low end (its minimum)."""
     validate_recipe(_tchz(_rietveld(), 0.0, 0.0))
-    # Y < 0 with X > 0: most negative at the window's low end
+    r = _tchz(_rietveld(), -0.1, 0.0)
+    r["payload"]["fit_range"] = [2.0, 6.0]
+    validate_recipe(r)
     with pytest.raises(ValidationError) as exc:
-        validate_recipe(_tchz(_rietveld(), 0.01, -0.0005))
+        validate_recipe(_tchz(_rietveld(), 0.0, -0.01))
     lo, hi = validate_recipe(_rietveld()).payload.window()
-    (err,) = [e for e in exc.value.errors() if e["type"] == "topas_negative_lorentzian_width"]
+    (err,) = [e for e in exc.value.errors() if e["type"] == "topas_tchz_width_not_positive"]
     assert f"2theta = {lo:g}" in err["msg"]
 
 

@@ -469,7 +469,8 @@ class _Writer:
     def _preferred_orientation(self, pfx: str, name: str, phase) -> None:
         """TOPAS.INC's ``PO(c, v, ang, hkl)`` March-Dollase macro: ``PO(p1_po_r, 0.8 min a max b, , 0 0 1)`` refined,
         ``PO(!p1_po_r, 0.6, , 0 0 1)`` fixed. ``ang`` only names the computed correction, so it is left empty. Only
-        the stated bounds are written; on a ``null`` side TOPAS keeps its own limit (min 0.0001, max = 2 Val + .5)."""
+        the stated bounds are written; on a ``null`` side TOPAS keeps its own limit: min 0.0001; max twice
+        the current r plus 0.5, recomputed as r changes."""
         po = phase.preferred_orientation
         if po is None:
             return

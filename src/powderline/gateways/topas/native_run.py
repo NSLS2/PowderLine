@@ -264,16 +264,23 @@ def run_native(model, output_dir, *, base_name: str | None = None, topas_dir=Non
         raise EngineExecutionError(message, reason="output_missing", result=_failure(
             "engine", "output_missing", message, model=model, native=native, out=out, tc=tc, started=started,
             warnings=validated_warnings, proc=proc))
-    _run_background(model, native, out, tc, runner, timeout)
-    return build_result(model, native, out, validated_warnings, elapsed=time.time() - started, tc_path=str(tc))
+    background_note = _run_background(model, native, out, tc, runner, timeout)
+    return build_result(model, native, out, validated_warnings, elapsed=time.time() - started, tc_path=str(tc),
+                        background_note=background_note)
 
 
-def _run_background(model, native: NativeInput, out: Path, tc: Path, runner, timeout: float | None = None) -> None:
+def _run_background(model, native: NativeInput, out: Path, tc: Path, runner,
+                    timeout: float | None = None) -> str | None:
     """The background run (A152): the background alone at the refined values; its profile is ``y_bkg``.
 
     A stale background profile is removed first, so ``build_result`` reads only
     this run's. Skipped when nothing models a background or the fit diverged
     (``build_result`` then reports the divergence).
+
+    Returns why the background run gave no values, or ``None``. The run only evaluates the background at the fit's
+    refined values, so a background run stopped at the time limit does not fail the run (A197): its profile, if
+    any, is removed and the column is left empty with ``topas_background_not_calculated``, as for a background
+    run that writes nothing (A155 Q1).
     """
     base = native.profile_file[: -len(PROFILE_SUFFIX)]
     bkg_base = background_base(base)
@@ -285,7 +292,15 @@ def _run_background(model, native: NativeInput, out: Path, tc: Path, runner, tim
         return
     bkg = render_background(model, base, {name: v for name, (v, _) in values.items()})
     (out / f"{bkg_base}.inp").write_text(bkg.inp_text, encoding="utf-8", newline="\n")
-    run_tc(tc, out / f"{bkg_base}.inp", runner=runner, timeout=timeout)
+    try:
+        run_tc(tc, out / f"{bkg_base}.inp", runner=runner, timeout=timeout)
+    except ExecutionBackendError as exc:
+        if exc.reason != "timeout":
+            raise
+        (out / f"{bkg_base}{PROFILE_SUFFIX}").unlink(missing_ok=True)  # a run stopped mid-write is not read
+        return (f"TOPAS's background run did not finish within {timeout:g} s and was stopped; the fit itself "
+                "completed and does not depend on it")
+    return None
 
 
 # --- reading TOPAS's files --------------------------------------------------------------
@@ -356,7 +371,7 @@ def _diverged(what: str) -> EngineExecutionError:
 
 
 def build_result(model, native: NativeInput, out: Path, validated_warnings: list, *, elapsed: float,
-                 tc_path: str | None = None) -> dict:
+                 tc_path: str | None = None, background_note: str | None = None) -> dict:
     """The result dict from the files TOPAS wrote (tested without TOPAS from recorded files).
 
     ``tc_path`` is the executable that ran (``engine_details.tc_path``, P-35); ``None`` when the
@@ -419,7 +434,7 @@ def build_result(model, native: NativeInput, out: Path, validated_warnings: list
                           else ([], []))
 
     wavelength = _final(native, values, "lam_lo", p.instrument.radiation.lo.value)
-    bkg, bkg_warning = _background_column(model, native, out, profile[:, 0])
+    bkg, bkg_warning = _background_column(model, native, out, profile[:, 0], background_note)
     if bkg_warning is not None:
         warnings.append(bkg_warning)
     profile_rows = []
@@ -636,11 +651,12 @@ def _spf_rows(model, native: NativeInput, values: dict, data_x=None) -> tuple[li
 # --- background column (A152; C17, C34) ---------------------------------------------------
 
 
-def _background_column(model, native: NativeInput, out: Path, x: np.ndarray):
+def _background_column(model, native: NativeInput, out: Path, x: np.ndarray, note: str | None = None):
     """``y_bkg`` at the profile's X: the background run's Ycalc (A152); 0 when no background is modelled.
 
     Returns ``(column, warning)``; without the background run's profile the
-    column is empty (NaN) and the warning says so.
+    column is empty (NaN) and the warning says so (``note``: why the background
+    run gave nothing, when known).
     """
     if not has_background(model):
         return np.zeros_like(x), None
@@ -656,8 +672,8 @@ def _background_column(model, native: NativeInput, out: Path, x: np.ndarray):
         return column, None
     return column, StructuredWarning(
         code="topas_background_not_calculated",
-        message=(f"the background column is empty where TOPAS's background run ({path.name}) gave no value: "
-                 "TOPAS 6 cannot report the background of the fit itself"),
+        message=(f"the background column is empty where TOPAS's background run ({path.name}) gave no value"
+                 + (f" ({note})" if note else "") + ": TOPAS 6 cannot report the background of the fit itself"),
         field_path="payload.background")
 
 

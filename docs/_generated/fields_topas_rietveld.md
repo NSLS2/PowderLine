@@ -74,7 +74,7 @@
 | `payload.phases.<phase>.peak_broadening.strain_broadening.Strain_G` | engine | `[value, flag, min, max]` | `degree 2theta` | no |  |
 | `payload.phases.<phase>.scattering_types` | engine | object keyed by name |  | no | Ionic X-ray scattering types by atom label, CIF spelling ('La3+', 'O2-'), written to TOPAS's occ as 'La+3'; an atom left out scatters as the neutral element; only ions in TOPAS 6's ATMSCAT.CPP |
 | `payload.phases.<phase>.scattering_types.<name>` | engine | string |  | yes |  |
-| `payload.phases.<phase>.preferred_orientation` | engine | block |  | no | March-Dollase preferred orientation (TOPAS PO macro: one axis, ratio r > 0; an open bound is TOPAS's own limit, min 0.0001 or max 2 r + 0.5); left out: none |
+| `payload.phases.<phase>.preferred_orientation` | engine | block |  | no | March-Dollase preferred orientation (TOPAS PO macro: one axis, ratio r > 0; an open bound is TOPAS's own limit: min 0.0001, max 2 x (current r) + 0.5, which follows r); left out: none |
 | `payload.phases.<phase>.preferred_orientation.model` | engine | `"march_dollase"` |  | yes | The only model in 0.1.0 |
 | `payload.phases.<phase>.preferred_orientation.hkl` | engine | list of 3 |  | yes | Texture axis as Miller indices, not all zero |
 | `payload.phases.<phase>.preferred_orientation.ratio` | engine | `[value, flag, min, max]` |  | yes | March coefficient r: 1 = random, < 1 platy, > 1 needle; > 0 |

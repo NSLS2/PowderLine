@@ -86,8 +86,11 @@ limitations are listed in the [known-issues register](docs/known_issues.md).
 - A failed run writes its failure envelope to `failure.json` in the output
   directory, and a failed `gsasii.*` run carries GSAS-II's console tail (KI-05).
 - TOPAS time limit: `--topas-timeout SECONDS`, config `topas.timeout` or the
-  `topas_timeout` option (default 3600 s, 0 = none); past it `tc.exe` is
-  stopped and the run raises `ExecutionBackendError(reason="timeout")`.
+  `topas_timeout` option (default 3600 s per `tc.exe` run, 0 = none); past it
+  `tc.exe` is stopped and the run raises `ExecutionBackendError(reason="timeout")`.
+  The second run that only evaluates the background (`y_bkg`) does not fail a
+  finished fit: stopped at the limit, it leaves the column empty with
+  `topas_background_not_calculated`.
 - `scripts/convert_recipe_026.py`, the 0.26.0 → `gsasii.*` converter.
 - Examples: per-engine recipes under `examples/<case>/{topas,easydiffraction}/`,
   `example_LaB6_temperature_series` (sequential refinement), `example_LaB6_ionic`
@@ -134,9 +137,10 @@ limitations are listed in the [known-issues register](docs/known_issues.md).
 - Refine flags and values must match the symmetry: a tie group is stated whole
   with one flag, a symmetry-fixed parameter is not refined, and a stated
   multiplicity must equal the derived one.
-- A `topas.*` recipe whose TCHZ Lorentzian width X·tanθ + Y/cosθ is negative
-  anywhere in the fit window is a validation error (TOPAS computes it silently
-  or fails).
+- A `topas.*` recipe whose total TCHZ peak width is not positive somewhere in
+  the fit window is a validation error (TOPAS writes no results there); a
+  negative Lorentzian part X·tanθ + Y/cosθ with a positive total width runs as
+  written.
 - A `gsasii.*` refinement that GSAS-II aborted (no step lowered χ²) raises a
   `diverged` failure instead of returning its rejected pattern (EB-99).
 - A failed run leaves only the engine's own files and `failure.json`: a gsasii
@@ -150,7 +154,8 @@ limitations are listed in the [known-issues register](docs/known_issues.md).
   detected and refused.
 - TOPAS runs only from a declared directory (`--topas-dir` or `topas.dir`);
   without one a run writes the INP and data and stops (`status: generated`).
-  `topas.*` recipes state `engine_version: "6"`; TOPAS 7 is not supported.
+  `topas.*` recipes state `engine_version: "6"` and the installed version is
+  declared the same way (`"6"`, not `"6.0"`); TOPAS 7 is not supported.
 - TOPAS execution is verified on TOPAS 6: the reference fixtures are reproduced
   byte for byte (KI-16).
 - easydiffraction recipes state the calculator (`cryspy` or `crysfml`) and the
