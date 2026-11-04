@@ -73,7 +73,7 @@ CASES = {
     "LaB6": {
         "example": "example_LaB6",
         "free_cell": True,  # EB-88: the example fixes the cell; every engine refines it here
-        "topas": ["lab6_rietveld"],
+        "topas": ["lab6_cell_rietveld"],  # lab6_rietveld with the cell refined (TOPAS 6 golden)
         "easydiffraction": ["lab6_crysfml_tch", "lab6_cryspy_pv"],
         "nist": NIST_660C,
     },
@@ -90,6 +90,8 @@ CASES = {
 MODEL_NOTES = {
     "lab6_rietveld": "TCHZ; no axial-asymmetry model; Chebyshev + one pv background peak; "
                      "CS_L 10000 nm fixed; **cell fixed** (fixture)",
+    "lab6_cell_rietveld": "TCHZ; no axial-asymmetry model; Chebyshev + one pv background peak; "
+                          "CS_L 10000 nm fixed; cell refined",
     "drx33_rietveld": "TCHZ instrument fixed; Chebyshev; Strain_L/Strain_G per phase; no size term",
     "lab6_crysfml_tch": "Thompson-Cox-Hastings + FCJ axial asymmetry (S/L = H/L = 0.001, fixed); "
                         "no background peak; no sample broadening (start-dependent)",

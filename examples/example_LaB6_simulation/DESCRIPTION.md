@@ -98,7 +98,7 @@ To convert any refinement recipe to simulation mode:
 - GSAS-II's pattern calculation is part of the refinement cycle
 - Setting `refine_flag=false` naturally prevents parameter updates
 - Output extraction (y_calc, background, residuals) works identically
-- Maintains Phase 1 philosophy: features via examples, not separate tools
+- Keeps features in examples rather than separate tools
 
 ## Data Source
 

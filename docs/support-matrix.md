@@ -73,7 +73,7 @@ python -c "import powderline, json; print(json.dumps(powderline.support_matrix()
 ```
 
 The PowderLine version in the table is the package's `__version__` at
-generation time; it reads `0.2.0` once the release step bumps the version.
+generation time (`0.2.0`).
 The TOPAS `engine_version_spec` is the native declaration (`==6`, TOPAS 6
 only): the `topas.*` 0.1.0 recipes state `engine_version: "6"`.
 

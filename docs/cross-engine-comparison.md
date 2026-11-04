@@ -93,16 +93,17 @@ puts the peak centroid, and therefore the lattice parameter:
   shift), not Uiso. Compare cells (with the EB-88-size offsets in mind) and
   expansion across engines; absolute Uiso agrees only when the profile
   models do.
-- **TOPAS.** The committed TOPAS 6 LaB6 fixture keeps the cell **fixed** at
-  the starting value (it exercises the instrument, background and scale), so
-  the TOPAS row shows no refined LaB6 cell. A cell-refined TOPAS LaB6 fixture
-  and golden can only be produced on a machine with TOPAS; it is on the
-  maintainers' list for the first TOPAS-machine run, and this row will carry a
-  Δ once that golden is committed. The TOPAS fixture also has no
-  axial-asymmetry model, which is why its Rwp is the highest of the LaB6 rows.
+- **TOPAS.** The TOPAS row is the cell-refined LaB6 fixture
+  (`lab6_cell_rietveld`: the TOPAS LaB6 fixture with a, b, c refined), whose
+  TOPAS 6 output files were produced on a TOPAS machine and reproduced there
+  by `tests/test_topas_exec.py`. Its cell sits +87 ppm above GSAS-II's. The
+  TOPAS fixture has no axial-asymmetry model, which is why its Rwp is the
+  highest of the LaB6 rows; an unmodelled asymmetry shifts the fitted peak
+  positions and so the cell, the same kind of offset as easydiffraction's
+  symmetric pseudo-Voigt above.
 
 **Against the NIST certificate.** All the refined LaB6 cells sit roughly
-+90 to +160 ppm above SRM 660c's certified a = 4.156826(8) Å (k = 2, 22.5 °C).
++80 to +180 ppm above SRM 660c's certified a = 4.156826(8) Å (k = 2, 22.5 °C).
 That offset is common to every engine, so it is a property of the
 measurement, not of the refinement: the recipe's wavelength and
 sample-position terms (zero shift fixed at 0) were not refined against the

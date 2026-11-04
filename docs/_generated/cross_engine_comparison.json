@@ -6,7 +6,7 @@
      "engine": "GSAS-II",
      "engine_version": "5.7.9",
      "source": "run",
-     "model": "FCJ axial asymmetry (SH/L 0.002); no background peak (P-01); size 10 \u00b5m / strain 0 defaults (A87/A107), not refined",
+     "model": "FCJ axial asymmetry (SH/L 0.002); no background peak; size 10 \u00b5m / strain 0 defaults, not refined",
      "rwp": 5.999947665798629,
      "r_exp": 12.454715300939052,
      "gof": 0.4817410531532784,
@@ -63,31 +63,31 @@
     },
     {
      "engine": "TOPAS",
-     "engine_version": "6 (golden; not run here, P-08)",
-     "source": "golden `lab6_rietveld`",
-     "model": "TCHZ; no axial-asymmetry model; Chebyshev + one pv background peak; CS_L 10000 nm fixed; **cell fixed** (fixture)",
-     "rwp": 8.90051334277001,
-     "r_exp": 12.451396256163012,
-     "gof": 0.714820503633443,
+     "engine_version": "6 (golden)",
+     "source": "golden `lab6_cell_rietveld`",
+     "model": "TCHZ; no axial-asymmetry model; Chebyshev + one pv background peak; CS_L 10000 nm fixed; cell refined",
+     "rwp": 7.447295423560774,
+     "r_exp": 12.449736401958987,
+     "gof": 0.5981890044185136,
      "n_points": 3767,
-     "parameters_varied": 16,
-     "parameters_requested": 16,
+     "parameters_varied": 17,
+     "parameters_requested": 17,
      "warnings": [
       "topas_parameter_at_limit"
      ],
      "cell": {
       "LaB6": {
        "a": [
-        4.15682,
-        0.0
+        4.15757873108,
+        1.90391846938e-05
        ],
        "b": [
-        4.15682,
-        0.0
+        4.15757873108,
+        1.90391846938e-05
        ],
        "c": [
-        4.15682,
-        0.0
+        4.15757873108,
+        1.90391846938e-05
        ],
        "alpha": [
         90.0,
@@ -104,22 +104,26 @@
       }
      },
      "refined_cell": {
-      "LaB6": []
+      "LaB6": [
+       "a",
+       "b",
+       "c"
+      ]
      },
      "golden_files": [
-      "lab6_rietveld__snapped.inp",
-      "lab6_rietveld__snapped_bkg.inp",
-      "lab6_rietveld__snapped_bkg_profile.txt",
-      "lab6_rietveld__snapped_p1_peaks.txt",
-      "lab6_rietveld__snapped_profile.txt",
-      "lab6_rietveld__snapped_results.csv"
+      "lab6_cell_rietveld__snapped.inp",
+      "lab6_cell_rietveld__snapped_bkg.inp",
+      "lab6_cell_rietveld__snapped_bkg_profile.txt",
+      "lab6_cell_rietveld__snapped_p1_peaks.txt",
+      "lab6_cell_rietveld__snapped_profile.txt",
+      "lab6_cell_rietveld__snapped_results.csv"
      ]
     },
     {
      "engine": "easydiffraction",
      "engine_version": "0.21.1",
      "source": "golden `lab6_crysfml_tch`",
-     "model": "crysfml (`cwl-thompson-cox-hastings`): Thompson-Cox-Hastings + FCJ axial asymmetry (S/L = H/L = 0.001, fixed); no background peak; no sample broadening (start-dependent, A175)",
+     "model": "crysfml (`cwl-thompson-cox-hastings`): Thompson-Cox-Hastings + FCJ axial asymmetry (S/L = H/L = 0.001, fixed); no background peak; no sample broadening (start-dependent)",
      "rwp": 6.7647887198484895,
      "r_exp": 12.456374491687894,
      "gof": 0.5430784635097969,
@@ -186,7 +190,8 @@
      "parameters_varied": 13,
      "parameters_requested": 13,
      "warnings": [
-      "easydiffraction_negative_width"
+      "easydiffraction_negative_width",
+      "output_recipe_not_valid"
      ],
      "cell": {
       "LaB6": {
@@ -251,7 +256,7 @@
      "engine": "GSAS-II",
      "engine_version": "5.7.9",
      "source": "run",
-     "model": "FCJ axial asymmetry (SH/L 0.002); no background peak (P-01); isotropic size + microstrain refined per phase; not converged in 5 cycles",
+     "model": "FCJ axial asymmetry (SH/L 0.002); no background peak; isotropic size + microstrain refined per phase; not converged in 5 cycles",
      "rwp": 10.828755586959636,
      "r_exp": 9.814448722664777,
      "gof": 1.1033483278538603,
@@ -338,7 +343,7 @@
     },
     {
      "engine": "TOPAS",
-     "engine_version": "6 (golden; not run here, P-08)",
+     "engine_version": "6 (golden)",
      "source": "golden `drx33_rietveld`",
      "model": "TCHZ instrument fixed; Chebyshev; Strain_L/Strain_G per phase; no size term",
      "rwp": 7.305334825171796,
@@ -552,8 +557,8 @@
   }
  ],
  "generated": {
-  "date": "2026-10-13",
-  "commit": "47805d0",
+  "date": "2026-11-04",
+  "commit": "4029d22",
   "no_run": true
  }
 }

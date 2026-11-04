@@ -12,7 +12,7 @@ record below.**
 |---|---|---|---|
 | GSAS-II | `pixi.toml` `[feature.gsasii.dependencies] GSAS-II = { git = ..., rev = <commit> }` -- the pixi-build source revision | `src/powderline/gateways/gsasii/gateway.py` `ENGINE_VERSION_SPEC` (`GSASII.__version__`) | `pixi run -e gsasii test-gsasii` |
 | easydiffraction | `pixi.toml` `[feature.easydiffraction.pypi-dependencies] easydiffraction = "==x.y.z"` | `src/powderline/gateways/easydiffraction/gateway.py` `ENGINE_VERSION_SPEC` | `pixi run -e easydiffraction test-easydiffraction` |
-| TOPAS | not installable: the recipe declares `engine_version`, the installed version is declared in `.powderline_config.yaml` | `src/powderline/gateways/topas/schema.py` `SUPPORTED_ENGINE_VERSIONS` (the published `==6` is derived from it) | `pixi run test-topas` on the TOPAS machine (`topas_exec`) |
+| TOPAS | not installable: the recipe declares `engine_version`; the installed version is declared with `--topas-version` (the `topas_version` option of `powderline.run()`) or `topas.version` in `.powderline_config.yaml` | `src/powderline/gateways/topas/schema.py` `SUPPORTED_ENGINE_VERSIONS` (the published `==6` is derived from it) | `pixi run test-topas` on the TOPAS machine (`topas_exec`) |
 
 `tests/test_gateways.py` asserts the manifest pins lie inside the specs;
 `tests/test_gateways_installed_engines.py` asserts the installed engine does.
@@ -73,8 +73,8 @@ pixi run python scripts/check_engine_version_candidate.py --engine topas --versi
   (published as `==6`), and the goldens live under
   `tests/data/topas/native/golden/<version>/`, chosen by each fixture's
   `engine_version`. Widening
-  to TOPAS 7 needs the TOPAS 7 machine for the `topas_exec` run and the
-  TOPAS 7 convergence follow-up; it is post-refactor unless the
-  maintainer says otherwise. The generation suite (`topas_gen`) runs
+  to TOPAS 7 needs a TOPAS 7 installation for the `topas_exec` run, its own
+  goldens and a check of TOPAS 7's convergence; it is a separate addition,
+  not part of 0.2.0. The generation suite (`topas_gen`) runs
   anywhere and compares INPs byte-for-byte with the TOPAS 6 goldens, so a
   version change that alters what is written is visible without TOPAS.

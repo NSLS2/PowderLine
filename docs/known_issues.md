@@ -721,38 +721,38 @@ GSAS-II pin move regenerates the references anyway.
 
 ---
 
-## KI-16 — TOPAS execution of 0.2.0 recipes is unverified; only INP generation is exercised `blocker (for the upstream merge) · major` → implemented (0.2.0: verified on TOPAS 6)
+## KI-16 — TOPAS execution of 0.2.0 recipes was unverified; only INP generation was exercised `blocker (for the upstream merge) · major` → implemented (2026-11-04: verified on TOPAS 6)
 
-**What.** No machine in the 0.2.0 work had TOPAS. The `topas.*` gateway's
-INP/XYE writer is pinned text-for-text to goldens produced on a TOPAS 6
-machine before the refactor (`tests/data/topas/native/golden/6/`,
-`test_topas_native_golden.py`, which also runs the current result parser on
-the committed TOPAS output), and on a machine without `tc.exe` a run writes
-the files and returns `status: generated`. Everything that needs a real run
-— the parser on output the current writer's INP produced, the background-only second run, the
+**What.** Until 2026-11-04 no machine in the 0.2.0 work had TOPAS. The
+`topas.*` gateway's INP/XYE writer was pinned text-for-text to goldens
+produced on a TOPAS 6 machine on 2026-10-09
+(`tests/data/topas/native/golden/6/`, `test_topas_native_golden.py`, which
+also runs the current result parser on the committed TOPAS output), and on a
+machine without `tc.exe` a run writes the files and returns
+`status: generated`. Everything that needs a real run — the parser on output
+the current writer's INP produced, the background-only second run, the
 `topas_parameter_at_limit` warning against a real drift, non-ASCII output
-directories, the failure contract when `tc.exe` dies or rejects an INP,
-and the cell-refined LaB6 row of the cross-engine comparison page — has not
-run since the refactor. TOPAS 7 is out of scope for 0.2.0.
+directories, the failure contract when `tc.exe` dies or rejects an INP, and
+the cell-refined LaB6 row of the cross-engine comparison page — had not run
+on the 0.2.0 code. TOPAS 7 is out of scope for 0.2.0.
 
-**Evidence.** The maintainers keep the deferred list (nine items:
-the native-runner smoke on both workflows, a cell-refined LaB6 fixture for
-the comparison page, the at-limit warning and the non-ASCII output directory
-against real runs, the ionic scattering types, the failure contract when
-`tc.exe` dies or rejects an INP, the March–Dollase preferred orientation); `docs/cross-engine-comparison.md` (the
-TOPAS LaB6 row keeps the cell fixed); `docs/support-matrix.md` states the
-verification status.
+**Evidence.** The deferred list had seven items: the native-runner smoke on
+both workflows, a cell-refined LaB6 fixture for the comparison page, the
+at-limit warning and the non-ASCII output directory against real runs, the
+ionic scattering types, the failure contract when `tc.exe` dies or rejects
+an INP, and the March–Dollase preferred orientation. The real-run checks are
+the `topas_exec` tests in `tests/test_topas_exec.py`; `docs/support-matrix.md` states the verification status.
 
-**Decision.** On the fork, keep shipping generate-only with the goldens as
-the contract, and say so where support is claimed (`docs/support-matrix.md`).
-For the **upstream merge this is a blocker**: an engine the support matrix
-lists must have had its execution path run at least once on the release's
-code — the deferred items run on the first machine with TOPAS 6, and
-recorded, move this entry to `watch`. The goldens move only with an
-equivalence record (INP bytes must match).
+**Decision.** An engine the support matrix lists must have had its execution
+path run at least once on the release's code. For TOPAS 6 that is done: the
+`topas_exec` tests passed on the release's code (below), and TOPAS 6 is
+supported for execution as well as generation. Without `tc.exe` a run stays
+generate-only, with the goldens as the contract. The goldens move only with
+an equivalence record (INP bytes must match).
 
-**Revisit.** The first session on a machine with `tc.exe`; before the
-upstream PR in any case.
+**Revisit.** A change to what the writer emits (regenerate the goldens on a
+TOPAS machine), or a new TOPAS version: TOPAS 7 is a separate release, to be
+added with its own goldens and the same `topas_exec` tests.
 
 **Update (2026-11-04).** A first session on a TOPAS 6 machine ran the native
 runner on six fixtures. Every file each run produced matched its golden byte
@@ -766,19 +766,23 @@ is stopped. It also found three things, fixed in 0.2.0:
 - an output folder outside the Windows ANSI code page made TOPAS fail
   (`tc.exe` now gets the folder's 8.3 short path, or the run is refused
   with a clear message);
-- a negative TCHZ Lorentzian width ran without complaint (now a
-  validation error).
+- a TCHZ width that is not positive in the fit window made TOPAS write no
+  results (now a validation error, `topas_tchz_width_not_positive`; a
+  negative Lorentzian part with a positive total width runs as written).
 
-**Resolved (2026-11-04).** On the release's code, on Windows with TOPAS 6, `pixi run test-topas` with
-`tc.exe` declared passed every `topas_exec` test:
-- every golden fixture was reproduced file for file through `powderline.run()`, including a cell-refined
-  LaB6 fixture;
-- the ionic example's La3+/La intensity ratios agree with GSAS-II's;
-- the textured example recovers the March–Dollase r.
+**Resolved (2026-11-04).** A second session, on the release's code on
+Windows 11 with TOPAS 6, ran `pixi run test-topas` with `tc.exe` declared:
+286 passed, 22 skipped, including all nine `topas_exec` tests:
+- all seven golden fixtures were reproduced file for file through
+  `powderline.run()`, including the cell-refined LaB6 fixture;
+- the ionic example's La3+/La intensity ratios agree with GSAS-II's within
+  the 1 % gate (measured 0.069 %);
+- the textured example recovers the March–Dollase r: 0.5982(14) against the
+  programmed 0.6.
 
-The five example TOPAS recipes ran through the CLI, and the GSAS-II and easydiffraction suites passed on the
-same machine. TOPAS execution is verified for TOPAS 6. TOPAS 7 is a separate release, to be added with its
-own goldens and the same tests.
+The five example TOPAS recipes ran through the CLI with exit status 0,
+`powderline --doctor` found no problems, and the GSAS-II and easydiffraction
+suites passed on the same machine. TOPAS execution is verified for TOPAS 6.
 
 ---
 

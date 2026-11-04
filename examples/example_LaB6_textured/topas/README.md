@@ -14,9 +14,10 @@ The writer emits TOPAS.INC's `PO` macro in the phase's `str`:
 r (min 0.0001, max 2r + 0.5). TOPAS's `PO` is the March–Dollase correction in
 GSAS-II's convention (checked to 1.4e-7 in
 `tests/test_topas_preferred_orientation.py`); refined from 0.8 on this pattern
-TOPAS 6 recovered r = 0.5982(14) (GSAS-II 0.5978(14), CrysPy 0.5976(14)). The
-golden for this recipe comes from the next TOPAS machine session; until then
-`tests/test_topas_exec.py` (TOPAS machine only) checks r within 0.01 of 0.6.
+TOPAS 6 recovered r = 0.5982(14) (GSAS-II 0.5978(14), CrysPy 0.5976(14)). No
+golden file is committed for this recipe: on the TOPAS machine
+`tests/test_topas_exec.py::test_textured_example_recovers_r` runs it through
+`tc.exe` and checks the refined r within 0.01 of 0.6 (passed on TOPAS 6).
 No TOPAS output is committed under `examples/`. Validate with `powderline
 input.json --validate-only`; a run needs `tc.exe` on win-64 and a declared
 version (`--topas-version 6`).

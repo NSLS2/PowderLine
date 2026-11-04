@@ -5,14 +5,14 @@ Fit window and points: 3767 points (every engine scores the same points).
 | Engine (version) | Source | Model | Varied | Rwp % | Rexp % | GoF | Warnings |
 |---|---|---|---:|---:|---:|---:|---|
 | GSAS-II 5.7.9 | run | FCJ axial asymmetry (SH/L 0.002); no background peak; size 10 µm / strain 0 defaults, not refined | 14 | 6.000 | 12.455 | 0.482 | `gsasii_broadening_default_applied`, `gsasii_refinement_message` |
-| TOPAS 6 (golden) | golden `lab6_rietveld` | TCHZ; no axial-asymmetry model; Chebyshev + one pv background peak; CS_L 10000 nm fixed; **cell fixed** (fixture) | 16 | 8.901 | 12.451 | 0.715 | `topas_parameter_at_limit` |
+| TOPAS 6 (golden) | golden `lab6_cell_rietveld` | TCHZ; no axial-asymmetry model; Chebyshev + one pv background peak; CS_L 10000 nm fixed; cell refined | 17 | 7.447 | 12.450 | 0.598 | `topas_parameter_at_limit` |
 | easydiffraction 0.21.1 | golden `lab6_crysfml_tch` | crysfml (`cwl-thompson-cox-hastings`): Thompson-Cox-Hastings + FCJ axial asymmetry (S/L = H/L = 0.001, fixed); no background peak; no sample broadening (start-dependent) | 13 | 6.765 | 12.456 | 0.543 | `easydiffraction_crysfml_start_dependent`, `easydiffraction_reflections_not_available` |
-| easydiffraction 0.21.1 | golden `lab6_cryspy_pv` | cryspy (`cwl-pseudo-voigt`): pseudo-Voigt, no asymmetry; no background peak; no sample broadening | 13 | 6.815 | 12.456 | 0.547 | `easydiffraction_negative_width` |
+| easydiffraction 0.21.1 | golden `lab6_cryspy_pv` | cryspy (`cwl-pseudo-voigt`): pseudo-Voigt, no asymmetry; no background peak; no sample broadening | 13 | 6.815 | 12.456 | 0.547 | `easydiffraction_negative_width`, `output_recipe_not_valid` |
 
 | Engine | Phase | Parameter | Value (ESD) | Δ vs GSAS-II (ppm) | Δ/σ | Δ vs NIST SRM 660c (ppm) | Δ/σ |
 |---|---|---|---:|---:|---:|---:|---:|
 | GSAS-II | LaB6 | a | 4.157217(21) Å | reference | — | +94 | +8.6 |
-| TOPAS | LaB6 | a | 4.156820 Å (fixed) | not refined | — | — | — |
+| TOPAS | LaB6 | a | 4.157579(19) Å | +87 | +12.7 | +181 | +17.0 |
 | easydiffraction | LaB6 | a | 4.157175(18) Å | -10 | -1.5 | +84 | +8.0 |
 | easydiffraction | LaB6 | a | 4.157495(17) Å | +67 | +10.2 | +161 | +15.4 |
 
@@ -59,4 +59,4 @@ Fit window and points: 3767 points (every engine scores the same points).
 - GSAS-II 5.7.9: run 2026-10-13 (PowderLine 0.1.1, Python 3.13.15); `execution_mode='subprocess'`.
 - TOPAS: TOPAS-64 Version 6 goldens (`tests/data/topas/native/golden/6/`, TOPAS machine runs of 2026-10-09); **not executed for this page**: the rows are the gateway's result built from the committed files.
 - easydiffraction goldens (`tests/data/easydiffraction/native/golden/`, runs of 2026-10-09): easydiffraction 0.21.1, cryspy 0.13.0, crysfml 0.8.0, lmfit 1.3.4, numpy 2.4.6, scipy 1.18.0.
-- Table generated 2026-10-13 by `scripts/cross_engine_comparison.py` at commit `47805d0` in `--no-run` mode (GSAS-II rows from the committed JSON record).
+- Table generated 2026-11-04 by `scripts/cross_engine_comparison.py` at commit `4029d22` in `--no-run` mode (GSAS-II rows from the committed JSON record).
