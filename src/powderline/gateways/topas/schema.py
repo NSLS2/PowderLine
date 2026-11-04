@@ -98,8 +98,10 @@ SUPPORTED_ENGINE_VERSIONS: tuple[str, ...] = ("6",)
 
 
 def _version_spec(versions: tuple[str, ...]) -> str:
-    """The published specifier for :data:`SUPPORTED_ENGINE_VERSIONS` (``"==6"``). A specifier set cannot state
-    "6 or 7" (its clauses are joined by *and*), so a second version needs a decision on the published form."""
+    """The published specifier for :data:`SUPPORTED_ENGINE_VERSIONS` (``"==6"``). TOPAS 6 and TOPAS 7 are separate
+    commercial releases, each supported in its own right (A196): when TOPAS 7 is added, publish the releases one
+    by one (e.g. ``"==6; ==7"`` listed per release) rather than as one PEP 440 specifier, which cannot express a
+    set of versions (its clauses are joined by *and*)."""
     if len(versions) != 1:
         raise NotImplementedError("publishing several TOPAS versions as one specifier is not decided")
     return f"=={versions[0]}"
