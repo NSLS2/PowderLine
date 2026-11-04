@@ -3,7 +3,7 @@
 ## Scientific Purpose
 
 **LaB6 powders do not texture; this is a mathematical demonstration** of
-PowderLine's March–Dollase preferred orientation (P-48, re/29) on the one
+PowderLine's March–Dollase preferred orientation on the one
 well-conditioned phase in the examples. The pattern is simulated with a known
 texture, so the question the example asks has a known answer: *is the
 programmed coefficient recovered by refinement?*
@@ -50,7 +50,7 @@ last accepted values (here the start) but storing the rejected step's
 calculated pattern — finite but worthless, wR printed at its 100 % cap — so no
 statistic belongs to the parameters. GSAS-II's GUI keeps such a result behind
 a "Minimizer halted" warning; PowderLine reports it as a `diverged` failure
-(EB-99; before re/29 it returned `status: ok` with an astronomical Rwp). The same happens on the real,
+(EB-99; before PowderLine 0.2.0 it returned `status: ok` with an astronomical Rwp). The same happens on the real,
 untextured `example_LaB6` data. From 0.9 the pattern goes non-finite
 (`diverged` as before); from 1.2 the refinement settles on the needle-side
 minimum r = 1.73 (Rwp far above the true solution). Start on the side of 1
@@ -82,7 +82,7 @@ The standard gsasii set (`refined_parameters.csv`, `LaB6_unit_cell_report.csv`,
   with `diverged`, at 1.2 finds the wrong minimum — see above; this is
   GSAS-II's refinement, not a PowderLine bug, and is recorded as EB-99.
 - TOPAS does not accept `preferred_orientation` in schema 0.1.0 (its
-  `PO(...)` half awaits a TOPAS 6 run, T9), so there is no topas recipe.
+  `PO(...)` half awaits a TOPAS 6 run), so there is no topas recipe.
 - The example is simulated; no measured textured LaB6 exists here.
 
 ## Per-engine recipes

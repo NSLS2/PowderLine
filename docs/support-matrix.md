@@ -1,18 +1,18 @@
 # Schema and engine support matrix
 
-<!-- Model: master plan A40 (compatibility is declared, never inferred from
-     version arithmetic), A65 (declarations as capabilities() keys;
-     support_matrix() in powderline.compat), A44 (engine versions pinned and
-     checked at run time), A144/A145 (TOPAS declares its version in the recipe;
-     the installed version is declared by the user), A157 B2 (easydiffraction
-     recipes carry no engine version), A110 (gemmi pinned exactly). The table
-     below is generated: scripts/gen_schema_field_tables.py. -->
+<!-- Model: compatibility is declared, never inferred from version
+     arithmetic; declarations are capabilities() keys (support_matrix() in
+     powderline.compat); engine versions are pinned and checked at run time;
+     TOPAS declares its version in the recipe and the installed version is
+     declared by the user; easydiffraction recipes carry no engine version;
+     gemmi is pinned exactly. The table below is generated:
+     scripts/gen_schema_field_tables.py. -->
 
 ## How compatibility is decided
 
 PowderLine never works out from version numbers whether a recipe is
 acceptable. Every acceptance is **declared** in code, and this page is
-generated from those declarations (A40, A65):
+generated from those declarations:
 
 - **Core** (`powderline.schema_core`) declares `CORE_SCHEMA_VERSION`, the
   version new recipes are written against, and `SUPPORTED_CORE_SCHEMAS`, a
@@ -39,13 +39,13 @@ deliberate act with a compatibility run behind it, never a range.
 
 | Engine | How the version is fixed | Checked |
 |---|---|---|
-| GSAS-II | pinned by pixi; the gateway declares `engine_version_spec` | at run time against the installed package (A44) |
-| easydiffraction | pinned by pixi (`==0.21.1`); recipes carry no engine version (A157 B2) | at run time against the installed package (A44) |
-| TOPAS | cannot be pinned: a `topas.*` recipe states `engine_version` (`"6"`; 0.1.0 supports TOPAS 6 only, `supported_engine_versions == "==6"`, A143/A144) | at run time against the version **the user declares** (`topas_version` argument or `.powderline_config.yaml` `topas.version`), since `tc.exe` carries no version PowderLine could read (A145) |
+| GSAS-II | pinned by pixi; the gateway declares `engine_version_spec` | at run time against the installed package |
+| easydiffraction | pinned by pixi (`==0.21.1`); recipes carry no engine version | at run time against the installed package |
+| TOPAS | cannot be pinned: a `topas.*` recipe states `engine_version` (`"6"`; 0.1.0 supports TOPAS 6 only, `supported_engine_versions == "==6"`) | at run time against the version **the user declares** (`topas_version` argument or `.powderline_config.yaml` `topas.version`), since `tc.exe` carries no version PowderLine could read |
 
 gemmi, which provides the canonical space-group names core validates against,
 is pinned exactly (`==0.7.5`); widening it means re-running the symmetry
-tests and regenerating `tests/data/canonical_space_groups.txt` (A110).
+tests and regenerating `tests/data/canonical_space_groups.txt`.
 
 ## The matrix
 
@@ -75,7 +75,7 @@ python -c "import powderline, json; print(json.dumps(powderline.support_matrix()
 The PowderLine version in the table is the package's `__version__` at
 generation time; it reads `0.2.0` once the release step bumps the version.
 The TOPAS `engine_version_spec` is the native declaration (`==6`, TOPAS 6
-only, A143): the `topas.*` 0.1.0 recipes state `engine_version: "6"`.
+only): the `topas.*` 0.1.0 recipes state `engine_version: "6"`.
 
 **Verification status (0.2.0).** The `topas.*` gateway's INP and XYE writer is
 verified byte-for-byte against goldens produced on a TOPAS 6 machine; a run

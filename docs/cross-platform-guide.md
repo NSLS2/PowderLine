@@ -40,7 +40,7 @@ to follow so pixi tasks and code stay portable.
 > Sections 2–4 and 6 are the original analysis, kept as the reference for the
 > patterns; the module paths they quote (`gsas_server.py`, `mp_simulate.py`)
 > are the pre-refactor ones: now `gateways/gsasii/server.py`; the `mp-simulate`
-> tool left PowderLine in 0.2.0 (P-36).
+> tool left PowderLine in 0.2.0.
 
 ---
 

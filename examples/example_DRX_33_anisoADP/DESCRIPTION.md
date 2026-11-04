@@ -174,7 +174,7 @@ This two-phase Rietveld refinement produces:
 ## Known Issues
 
 **The output recipe of this example is not valid as posed** (`output_recipe_valid:
-false`, warning `output_recipe_not_valid`; KI-04, P-43 D5): the committed reference
+false`, warning `output_recipe_not_valid`; KI-04): the committed reference
 refines the DRX_33 isotropic crystallite size to about −9.7 µm (ESD ≈ 1.3 µm), which
 the schema refuses; the output recipe is written and returned with that value and
 the warning names it. Holding both sizes at 10 µm (the `example_DRX_33_strainonly`
@@ -220,7 +220,7 @@ recipe states exactly what GSAS-II refines. This example uses the **explicit
 style** - every parameter is listed with a symmetry-consistent flag.
 
 The recipe was converted from its schema-0.26.0 form with
-`scripts/convert_recipe_026.py` at PowderLine 0.2.0 (re/07); the converter's
+`scripts/convert_recipe_026.py` at PowderLine 0.2.0; the converter's
 notes for each example are in `docs/SCHEMA_HISTORY.md`'s gsasii section.
 
 ## Data citation

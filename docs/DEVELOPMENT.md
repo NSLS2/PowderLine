@@ -54,14 +54,14 @@ reproducible, automatable, and accessible.
 | `api.py` | `validate()` and `run()`: resolve the gateway from `schema_name` (`<engine>.<workflow>`) through the registry and hand the recipe over; `ValidationResult` |
 | `kicker.py` | the one CLI (`powderline <recipe>`; `pixi run kicker` runs the same `main`): loads the recipe, refuses templates, maps the engine flags onto the gateway's run options, prints the summary and the structured warnings |
 | `registry.py` | gateway discovery from the `powderline.gateways` entry-point group, lazy loading, `Gateway` dataclass (`name`, `capabilities`, `validate`, `run`), `register_gateway` escape hatch, the engine-version check |
-| `schema_core.py` | core schema 0.1.0: `CoreRecipe` (frame), `RefinableParameter` / `BoundedRefinableParameter`, `XRDData`, `FitRange`, `ChebyshevBackground`, `UnitCell`, `Atom`, `UanisoTensor`, `Phase[P]` (the phase block with every symmetry rule), `CoreFloat`/`CoreInt`/`CoreName`, `collect_warnings`, `parameters_requested`, `fit_limits_on_data`; the engine schema building blocks (P-37): `EngineRecipe`, `recipe_validator`, `refined_flags`, `custom_error` / `raise_problems`, `omit_absent`, `absent_not_null`, `unique_phase_names`, `fit_window`, `fit_range_problems`, `outside_window_problems`, `refined_flag_problems`, `unit_schema` |
+| `schema_core.py` | core schema 0.1.0: `CoreRecipe` (frame), `RefinableParameter` / `BoundedRefinableParameter`, `XRDData`, `FitRange`, `ChebyshevBackground`, `UnitCell`, `Atom`, `UanisoTensor`, `Phase[P]` (the phase block with every symmetry rule), `CoreFloat`/`CoreInt`/`CoreName`, `collect_warnings`, `parameters_requested`, `fit_limits_on_data`; the engine schema building blocks: `EngineRecipe`, `recipe_validator`, `refined_flags`, `custom_error` / `raise_problems`, `omit_absent`, `absent_not_null`, `unique_phase_names`, `fit_window`, `fit_range_problems`, `outside_window_problems`, `refined_flag_problems`, `unit_schema` |
 | `symmetry.py` | gemmi-backed symmetry: canonical space-group names, cell tie groups and the cell check, special-position analysis, coupling groups for coordinates and Uij |
 | `compat.py` | declared schema-version compatibility: `check_engine_schema_version`, `support_matrix()`, `schema_declarations()` (a gateway's `DECLARATIONS`) |
 | `fitstats.py` | the uniform Rwp / Rexp / GoF / χ²_red over the fit window with positive weights |
 | `reports.py` | the standardized report writers (`refined_parameters.csv`, unit-cell and peak-list reports, `fit_profile.txt`): one column order, UTF-8, LF; the fixed-name list PowderLine owns (`FIXED_OUTPUT_NAMES` / `FIXED_OUTPUT_PATTERNS`, `FAILURE_FILE`) and `clear_fixed_outputs()` |
 | `recipes.py` | `load_recipe_asset` (JSON / YAML) |
 | `exceptions.py` | `PowderLineError`, `SymmetryError`, `GatewayNotInstalledError`, `EngineNotAvailableError`, `EngineVersionError`, `EngineExecutionError`, `ExecutionBackendError` (both with `.reason` / `.result`), the `StructuredWarning` shape; `WARNING_CODES`, the registry of every structured-warning code with its owner and level (asserted against `src/` and the engine-behaviour table) |
-| `results.py` | the run-result envelope (re/12): `ENVELOPE_VERSION`, the reason-code sets, `failure_envelope`, `generated_envelope`, `with_status_fields`, `raise_if_failed` |
+| `results.py` | the run-result envelope: `ENVELOPE_VERSION`, the reason-code sets, `failure_envelope`, `generated_envelope`, `with_status_fields`, `raise_if_failed` |
 | `config_loader.py` | `.powderline_config.yaml` (the `simulation_defaults` block; engine-free) |
 | `_status.py` | console status glyphs |
 
@@ -82,7 +82,7 @@ Each gateway is a package with the same two layers:
 
 | Gateway | Runtime modules |
 |---|---|
-| `gsasii/` (GSAS-II 5.7.9) | the **frozen** setup/execution code moved verbatim from `kicker.py` at the re/01 baseline `daace24`: `helpers.py`, `project.py`, `setters.py`, `executors.py`, `extractors.py`, `constraints.py` (code-hashed; see [policies](policies.md#frozen-gsas-ii-code-and-the-edits-ledger)); non-frozen additions `routing.py` (one entry for in-process, server and client), `fit_report.py` (uniform statistics, `engine_details`, convergence, divergence), `sites.py` (GSAS-II's reading of each site vs core's), `report_rows.py`, `paths.py` (GSAS-II parameter names → recipe paths for the output recipe), `console.py` (the engine's console tail into a failed envelope), `scattering.py` (GSAS-II's ion table and spelling); `server.py` / `client.py` (the persistent FastAPI server and `GSASClient`: per-user, loopback, ephemeral port, signed requests and responses, `POWDERLINE_NO_SERVER=1` disables it — v0.1.2); `simulation_builder.py` (structure dict → simulation recipe; see [the builder](#the-simulation-recipe-builder)) |
+| `gsasii/` (GSAS-II 5.7.9) | the **frozen** setup/execution code moved verbatim from `kicker.py` at the baseline `daace24`: `helpers.py`, `project.py`, `setters.py`, `executors.py`, `extractors.py`, `constraints.py` (code-hashed; see [policies](policies.md#frozen-gsas-ii-code)); non-frozen additions `routing.py` (one entry for in-process, server and client), `fit_report.py` (uniform statistics, `engine_details`, convergence, divergence), `sites.py` (GSAS-II's reading of each site vs core's), `report_rows.py`, `paths.py` (GSAS-II parameter names → recipe paths for the output recipe), `console.py` (the engine's console tail into a failed envelope), `scattering.py` (GSAS-II's ion table and spelling); `server.py` / `client.py` (the persistent FastAPI server and `GSASClient`: per-user, loopback, ephemeral port, signed requests and responses, `POWDERLINE_NO_SERVER=1` disables it — v0.1.2); `simulation_builder.py` (structure dict → simulation recipe; see [the builder](#the-simulation-recipe-builder)) |
 | `topas/` (TOPAS 6) | `native_writer.py` (model → INP + `.xye`), `native_run.py` (run `tc.exe`, read TOPAS's files strictly, build the result; the background-only second run), `peak_list.py`, `runner.py` (find `tc.exe`, read `.powderline_config.yaml`) |
 | `easydiffraction/` (0.21.1) | `native_builder.py` (model → easydiffraction `Project`; the CrysPy template rule; anisotropic atoms first), `native_run.py` (calculate or lmfit fit, the result), `space_group_table.py` / `space_group_support.py` (the 531 settings and the per-calculator verified sets), `scattering.py` (CrysPy's ion table) |
 
@@ -195,7 +195,7 @@ distribution (out of tree) that provides:
      naming the value to write; apply the three shared value rules
      (wavelength > 0, scale per engine, peak positions inside the window) and
      the fit window on data points (`fit_limits_on_data`). The shared pieces
-     are core building blocks (P-37), not copies: `absent_not_null` for a
+     are core building blocks, not copies: `absent_not_null` for a
      block that may be left out but never be `null`, `omit_absent` in the
      wrap serializer that drops it from dumps, `unique_phase_names`,
      `fit_range_problems` / `fit_window` / `outside_window_problems` /
@@ -268,15 +268,15 @@ distribution (out of tree) that provides:
 The same discipline, smaller: a new field or block goes into the engine
 schema with its unit, its validators and its refusals; the gateway consumes it
 from the validated model (for gsasii, an **input-side read in a frozen module
-is a ledger row**, otherwise the read happens in the non-frozen modules); a
+is a signed-off frozen-code edit**, otherwise the read happens in the non-frozen modules); a
 fixture and a golden prove it reaches the engine and does what the recipe
 says; the engine-behaviour register records anything the engine does with it
 silently; SCHEMA_HISTORY and the generated field tables record the field. If
 the field changes what an existing recipe means, that is a deliberate change
-(table row, CHANGELOG, migration note) — and if the engine's own behaviour
+(recorded, CHANGELOG, migration note) — and if the engine's own behaviour
 is unknown, that is a question for the maintainer, not an inference.
 
-Worked example — March–Dollase preferred orientation (re/29, P-48):
+Worked example — March–Dollase preferred orientation:
 
 1. **Ground truth first.** Read and run each engine: GSAS-II's HAP
    `Pref.Ori.` entry and `GetPrefOri`; easydiffraction's
@@ -289,7 +289,7 @@ Worked example — March–Dollase preferred orientation (re/29, P-48):
    plus the required `march_random_fract`); topas declares the field and
    refuses it until its half is verified on a TOPAS machine.
 3. **The gateway reads the model.** gsasii: an additive frozen setter and its
-   call, two ledger rows with proofs (the project-dict diff shows only
+   call, two signed-off frozen-code edits with proofs (the project-dict diff shows only
    `Pref.Ori.`), and the refined name `p:h:MD` in `paths.py`;
    easydiffraction: the builder's row plus the `_free` bookkeeping that maps
    the refined value back to the recipe path.
@@ -309,11 +309,11 @@ Worked example — March–Dollase preferred orientation (re/29, P-48):
 
 The GSAS-II setup/execution code manipulates the `proj.data` dictionary of a
 GSAS-II project directly (explicit control, debuggable, brittle to GSAS-II
-internals). It moved verbatim out of `kicker.py` at the re/01 baseline
+internals). It moved verbatim out of `kicker.py` at the baseline
 `daace24` (not on `main`) and is
 frozen behind a code hash; input-side edits go through the maintainers'
-signed-off edits ledger ([policies](policies.md#frozen-gsas-ii-code-and-the-edits-ledger)).
-The module headers still read "moved verbatim"; the ledger, not the headers,
+signed-off record of frozen-code edits ([policies](policies.md#frozen-gsas-ii-code)).
+The module headers still read "moved verbatim"; that record, not the headers,
 is the record of the additive edits made since (ionic types in `project.py`,
 the preferred-orientation setter in `setters.py`, the simulation ESDs in
 `extractors.py`).
@@ -389,7 +389,7 @@ removes every PowderLine-owned fixed name (`reports.FIXED_OUTPUT_NAMES` /
 `FIXED_OUTPUT_PATTERNS`) from the directory before dispatch and never the
 engine's files; a failed run leaves the engine's files plus `failure.json`
 (the envelope with a `powderline_provenance` block) and no result table —
-in gsasii the checks run before the tables are written (ledger row R38).
+in gsasii the checks run before the tables are written.
 
  The `refined_parameters.csv`
 columns: `parameter_name` (the engine's identifier), `descriptive_name`,
@@ -471,7 +471,7 @@ import PowderLine set `PYTHONPATH` through the task-level `env` dict (cross-plat
 
 The server amortizes GSAS-II's import (~2.6 s) over many runs (batch jobs:
 0.1–0.3 s per run against 1–2 s in-process). It **caches code**, so restart it
-after editing anything under `src/` it executes; since re/17 a forgotten
+after editing anything under `src/` it executes; since 0.2.0 a forgotten
 restart is caught: `/health` reports the PowderLine version and an MD5 of the
 source tree the server loaded (`server.source_tree_hash()`), the client
 compares both with its own and treats a mismatch as a **stale** server —
@@ -479,7 +479,7 @@ compares both with its own and treats a mismatch as a **stale** server —
 `server_unavailable` naming `gsas-server restart`, and `gsas-server status`
 prints `Code: STALE`.
 
-**No shared filesystem (re/19, KI-12):** the client sends the recipe inline and
+**No shared filesystem (KI-12):** the client sends the recipe inline and
 the server runs each job in a private scratch directory under its state dir;
 every output file comes back base64-encoded inside the signed response
 (`files`, GSAS-II's `*.bak*.gpx` backups excepted) and the client writes it
@@ -547,7 +547,7 @@ pixi run -e gsasii gsas-server logs
 1. **Schema**: add the field to the engine's `schema.py` (unit metadata,
    validators, refusals; for a structural quantity, to `schema_core`).
 2. **Gateway**: consume it from the validated model in the runtime layer
-   (gsasii: a non-frozen module, or a ledger row for a frozen read).
+   (gsasii: a non-frozen module, or a signed-off edit for a frozen read).
 3. **Fixture + golden**: a native recipe stating it and the engine's output.
 4. **Example** if it is a real case: `examples/<case>/` with `DESCRIPTION.md`
    and, for gsasii, the committed output (regression reference).
@@ -653,7 +653,7 @@ guard: `powderline.run()` trusts its caller.
   usual cause of "my fix has no effect".
 - **`pixi reinstall powderline --all`** after touching entry points or
   `[project.scripts]`, or when the registry reports no gateways (KI-13).
-- **Frozen modules** change only through the ledger; `test_code_hash` guards
+- **Frozen modules** change only through signed-off, recorded edits; `test_code_hash` guards
   them; `pixi run update-code-hash` after a signed edit.
 - **Generated docs** go stale silently unless regenerated
   (`gen_schema_field_tables.py --check`).
@@ -684,7 +684,7 @@ symmetry-unique sites with an orbit self-check, two-origin groups moved to
 origin choice 2, the canonical space-group name, every default stated, SH/L
 0.002, instrument defaults from `.powderline_config.yaml`'s
 `simulation_defaults`. The Materials Project fetch and `.chi` export that
-drove it (`mp-simulate`) left PowderLine in 0.2.0 (P-36); RandomXRD carries
+drove it (`mp-simulate`) left PowderLine in 0.2.0; RandomXRD carries
 its own copy. The recipe's `metadata.materials_project` block (material id,
 formula, the space group as stated) keeps its name: it is what the tests and
 RandomXRD's copy read, and a source-neutral key is a shape decision for the
@@ -692,8 +692,8 @@ maintainer.
 
 ## Future roadmap
 
-- The TOPAS halves of ionic scattering types (T7) and March–Dollase
-  preferred orientation (T9) on a TOPAS 6 machine; a later minor gsasii
+- The TOPAS halves of ionic scattering types and March–Dollase
+  preferred orientation on a TOPAS 6 machine; a later minor gsasii
   schema version with bounds (clamp-freeze-refit); TOPAS 7 after a
   compatibility run on a TOPAS 7 machine; `unsafe_mode` for deliberately
   relaxed checks; a recipe builder / CIF importer upstream of the schemas;
@@ -707,7 +707,7 @@ Key principles for future work:
   recorded in the engine-behaviour register
 - Behaviour changes are deliberate, recorded and reviewed; references move
   only with an equivalence record
-- Frozen modules through the ledger; "ask, don't assume" on any open
+- Frozen modules only through signed-off, recorded edits; "ask, don't assume" on any open
   decision ([policies](policies.md))
 - Add regression tests, fixtures and goldens for new capabilities
 

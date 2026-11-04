@@ -68,9 +68,8 @@ change in behaviour is never incidental:
 
 - Every intentional change relative to the previous release (a default, a
   validation rule, a statistic's meaning, a unit, a file set) is **recorded
-  as a deliberate change** in the maintainers' table (one row per change:
-  what changes, who notices, why, the decision), reviewed at a gate, and
-  surfaces in the CHANGELOG and, where a user must act, in the migration
+  as a deliberate change** in the maintainers' record (what changes, who
+  notices, why, the decision), reviewed before merge, and surfaces in the CHANGELOG and, where a user must act, in the migration
   guide.
 - The references under `examples/**/output/` move only through a
   **re-baseline** with an equivalence record: the old path and the new path
@@ -82,35 +81,35 @@ change in behaviour is never incidental:
   `unit_cell_match`), with a documented loose class for correlated
   size/strain terms; peak lists are compared by row count.
 
-## Frozen GSAS-II code and the edits ledger
+## Frozen GSAS-II code
 
 The code that sets up and executes a GSAS-II refinement, in
 `src/powderline/gateways/gsasii/{helpers,project,setters,executors,extractors,constraints}.py`,
-is **frozen**: it was moved verbatim out of `kicker.py` at the verified re/01
+is **frozen**: it was moved verbatim out of `kicker.py` at the verified
 baseline `daace24` (the `require_phase` decorator in place of five inline phase
-checks, A46; a refactor-branch commit, not on `main`), and
+checks; a refactor-branch commit, not on `main`), and
 every statement that touches the GSAS-II project dictionary is protected.
 `src/powderline/_code_hash.json` holds a hash of each module, and
 `tests/test_code_hash.py` fails when a module changes without the hash being
 regenerated.
 
 - An edit to these modules happens only through the maintainers'
-  **signed-off edits ledger** (one row per edit: the line, the reason, the
-  proof, the signature); additive behaviour goes into new modules
-  (`fit_report.py`, `sites.py`, `routing.py`, `gateway.py`) rather than into
-  the frozen ones. What the ledger admits: additive or input-side edits
-  (R31–R37), and output-side control flow that leaves the project-dictionary
-  work untouched when the failure contract needs it (R30, the failure
-  propagation; R38, the checks before any result table is written).
+  **signed-off record of frozen-code edits** (one entry per edit: the line,
+  the reason, the proof, the signature); additive behaviour goes into new
+  modules (`fit_report.py`, `sites.py`, `routing.py`, `gateway.py`) rather
+  than into the frozen ones. What that record admits: additive or input-side
+  edits, and output-side control flow that leaves the project-dictionary
+  work untouched when the failure contract needs it (the failure
+  propagation; the checks before any result table is written).
 - After a signed edit, run `pixi run update-code-hash` and commit
-  `_code_hash.json` with the change; the commit message cites the ledger
-  row.
+  `_code_hash.json` with the change; the commit message cites the recorded
+  edit.
 - A GSAS-II server started before the edit still runs the old code: restart
   it (`pixi run -e gsasii gsas-server restart`).
 
 The freeze protects GSAS-II's project-dictionary conventions, which no test
 can fully pin down; it does not protect the recipe reads, which the native
-schema replaced under the ledger.
+schema replaced through recorded edits.
 
 ## Engine-version pins: how to try a newer engine
 
@@ -128,37 +127,24 @@ The pins (`pixi.toml` and each gateway's `ENGINE_VERSION_SPEC`; the
    documented tolerances, or every difference must be attributed to an
    engine change and recorded as a deliberate change.
 3. Record the run (engine version, platform, counts, differences) in the
-   branch report.
+   pull request.
 4. Move the pin and the specifier **together**, in one commit, and update
    [SCHEMA_HISTORY](SCHEMA_HISTORY.md) / the CHANGELOG. For TOPAS, widening
    `supported_engine_versions` (e.g. to TOPAS 7) also needs the TOPAS-7
    behaviours recorded as *unverified* on the
    [engine behaviour page](engine-behavior.md) to be checked.
 
-The testing branch of the refactor (re/09) owns the per-environment suite
-layout and may move this procedure onto a dedicated testing page; until then
-this section is the reference.
+## Review
 
-## Review gates
-
-The refactor was organized as a branch series with **gates** rather than
-per-commit review: G1 (shared core and registry), G2 (the native gsasii
-path and the removal of the unified schema: equivalence report, deliberate
-changes, public API, suites per environment), G3 (packaging and tests), G4
-(documentation, the full Linux + Windows matrix, the TOPAS smoke on a TOPAS
-machine, the version bump). Each gate produces an evidence record in the
-maintainers' devkit and needs the maintainer's sign-off; the final pull
-request `refactor/multi-engine` → `main` is where CI first runs, and its
-matrix must be green before the merge. After the refactor the same
-principle holds for ordinary work: a change that moves a reference, a
+Every branch is reviewed and the full test matrix (Linux and Windows, every
+pixi environment) is run before merge. A change that moves a reference, a
 default, a pin or a frozen module is reviewed against its record, not
 against its diff alone.
 
 ## "Ask, don't assume"
 
 For contributors (human or AI): if a design decision is not already made
-(in the decision log, in a signed-off record, in this page or in the
-schema history), **stop and ask the maintainer** rather than inferring an
+(in a signed-off record, in this page or in the schema history), **stop and ask the maintainer** rather than inferring an
 answer from the code's current behaviour or from what another engine does.
 Record the answer where the next contributor will find it. The reason is
 the project's whole stance: an engine's silent default is not a decision,
@@ -166,17 +152,3 @@ and a plausible inference about a quirk has been wrong often enough
 (origin choices, variance vs width, the X/Y role swap) that the written
 answer is the only safe one.
 
-## Provisional decisions
-
-The maintainer's decision log is the authority for every policy above.
-During October 2026 a set of decisions was taken while the maintainer was
-away, to finish the refactor as a tested starting point; they are numbered
-**P-01 onward** in the maintainers' record (the P-numbers quoted in the
-CHANGELOG and the migration guide) and are **provisional, pending the
-maintainer's review**: each may be accepted, amended or reverted. Where
-this documentation describes a behaviour that rests on a P-row (the removal
-of the LaB6 background peak, the per-engine example recipes, the rejection
-of charged scattering types, the public API and single CLI, the pixi
-environment layout, the generated field tables), it describes what the code
-does today; the maintainer's answer may change it in a later release, and
-the CHANGELOG will say so.

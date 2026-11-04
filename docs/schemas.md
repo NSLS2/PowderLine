@@ -60,11 +60,11 @@ four blocks (`radiation {type: "PXC", wavelength}`, `geometry {bank, azimuth}`,
 refined). Optional: `fit_range`, `background` (left out: no background),
 `peak_broadening` per phase (left out: 10 µm / 0 microstrain, fixed, with a
 warning), `scattering_types` per phase (`{<atom label>: "La3+"}`, CIF spelling;
-left out: neutral atoms; only ions GSAS-II 5.7.9 has a form factor for, P-47),
+left out: neutral atoms; only ions GSAS-II 5.7.9 has a form factor for),
 `preferred_orientation` per phase (March–Dollase: `{model: "march_dollase",
 hkl: [h, k, l], ratio: [r, flag]}`, `hkl` integers not all zero, `r > 0`;
 GSAS-II's convention, 1 random, < 1 platy, > 1 needle, averaged over the
-axis's equivalents; left out: none; P-48), `instrument.description`.
+axis's equivalents; left out: none), `instrument.description`.
 
 ### `gsasii.spf`
 
@@ -87,7 +87,7 @@ simulation). Nothing has a default: `fit_range`, `background`,
 `peak_broadening` are optional, and a block left out is **not modelled**.
 `scattering_types` (ionic types) and `preferred_orientation` (March–Dollase)
 are declared and **refused** in topas 0.1.0: their TOPAS halves (`occ Fe+3`,
-the `PO(...)` macro) await a TOPAS 6 run (P-47 T7, P-48 T9).
+the `PO(...)` macro) await a TOPAS 6 run.
 
 ### `topas.spf`
 
@@ -105,10 +105,10 @@ Required: `xrd_data`, `instrument` with `radiation {setup_wavelength}`,
 flag set is a simulation. Optional: `fit_range`, `background`,
 `instrument.polarization`, `instrument.absorption`, a Kα2 line in
 `radiation`, `scattering_types` per phase (cryspy calculator only, CIF
-spelling, ions CrysPy has a form factor for; P-47), `preferred_orientation`
+spelling, ions CrysPy has a form factor for), `preferred_orientation`
 per phase (March–Dollase as in gsasii with a bounded `ratio` plus the
 required `march_random_fract: [f, flag, min, max]` in [0, 1]; cryspy
-calculator only — CrysFML ignores it, EB-97; P-48); left out means not
+calculator only — CrysFML ignores it, EB-97); left out means not
 modelled.
 
 ## Outputs
@@ -120,30 +120,30 @@ tables are dicts keyed by phase name.
 
 | Key | Meaning |
 |---|---|
-| `status`, `converged`, `envelope_version` | outcome (re/12): `status` is `"ok"` or `"generated"` (a TOPAS run whose input was written but no `tc.exe` is declared); **a failed run never returns** — it raises `EngineExecutionError` (the engine ran and failed) or `ExecutionBackendError` (it did not run), each with `.reason` (table below) and `.result`, the failed envelope: `failure = {kind, reason, message, traceback, engine_details, console_tail (gsasii)}` plus `output_files` (the files kept for diagnosis: the engine's own files written so far and `failure.json`, the envelope written to the output directory with a `powderline_provenance` block naming the recipe, the engine and its version, and PowderLine's version; no PowderLine result table exists for a failed run, re/30), `warnings`, `run_id`, `method`, `elapsed_time`. `converged` is `true` / `false` / `null` (`null`: the engine cannot report it — TOPAS 6 — or nothing was refined). `envelope_version` is `"1"`: it names the shape of this Python-facing envelope (the GSAS-II client/server wire form is internal and version-locked by the stale-server check). There is no `success` key; the pre-0.2.0 `error` / `traceback` keys are gone |
+| `status`, `converged`, `envelope_version` | outcome: `status` is `"ok"` or `"generated"` (a TOPAS run whose input was written but no `tc.exe` is declared); **a failed run never returns** — it raises `EngineExecutionError` (the engine ran and failed) or `ExecutionBackendError` (it did not run), each with `.reason` (table below) and `.result`, the failed envelope: `failure = {kind, reason, message, traceback, engine_details, console_tail (gsasii)}` plus `output_files` (the files kept for diagnosis: the engine's own files written so far and `failure.json`, the envelope written to the output directory with a `powderline_provenance` block naming the recipe, the engine and its version, and PowderLine's version; no PowderLine result table exists for a failed run), `warnings`, `run_id`, `method`, `elapsed_time`. `converged` is `true` / `false` / `null` (`null`: the engine cannot report it — TOPAS 6 — or nothing was refined). `envelope_version` is `"1"`: it names the shape of this Python-facing envelope (the GSAS-II client/server wire form is internal and version-locked by the stale-server check). There is no `success` key; the pre-0.2.0 `error` / `traceback` keys are gone |
 | `run_id` | UUID4 of this run |
 | `rwp`, `r_exp`, `gof`, `chi2_red` | PowderLine's **uniform** statistics over the fit window (percent / dimensionless); `None` where undefined |
 | `simulation_mode` | `true` when nothing was refined |
-| `engine_details` | the engine's own statistics and counts (gsasii, verbose run: also `console_tail`, the engine's console text, re/27): `parameters_requested` (from the recipe), `parameters_varied` (what the engine varied), `n_points`, the engine's own Rwp/GoF, and per engine `converged` (gsasii Rietveld), `calculator` / `peak_type` (easydiffraction), `tc_path` (topas: the executable that ran), `engine_version` |
+| `engine_details` | the engine's own statistics and counts (gsasii, verbose run: also `console_tail`, the engine's console text): `parameters_requested` (from the recipe), `parameters_varied` (what the engine varied), `n_points`, the engine's own Rwp/GoF, and per engine `converged` (gsasii Rietveld), `calculator` / `peak_type` (easydiffraction), `tc_path` (topas: the executable that ran), `engine_version` |
 | `warnings` | structured warnings `{code, message, field_path[, level]}` from validation and from the run; `level` is `"warning"` (absent means this) or `"info"` (a record of something PowderLine did that changes no outcome, e.g. `symmetry_value_derived`) |
 | `elapsed_time`, `method` | wall-clock seconds; which execution path ran (`server` / `subprocess` for gsasii; `topas`, `easydiffraction`, or their `_simulation` variants) |
 | `output_files` | paths written to the output directory |
-| `output_recipe`, `output_recipe_valid` | **the next step's input** (re/20, KI-04): a complete recipe of the same `schema_name`, *resolved* — refined values written back at their recipe paths, symmetry-derived values in their exact (held) form, gateway defaults stated, the user's flags, bounds, controls and data unchanged, plus the one metadata key PowderLine writes, `metadata.powderline_provenance` (`parent_run_id`, `schema_name`, `engine`, `engine_version` — the version the run used, as `engine_details.engine_version` states it; TOPAS: the declared one; `null` for validate-only — `powderline_version`, `created`). Core propagates every symmetry tie group and checks that every atom keeps its multiplicity. `output_recipe_valid` says whether it re-validates as written; when it does not (an engine returned a value the schema refuses, a tie came back inconsistent) the recipe is still returned and written and the warning `output_recipe_not_valid` lists why. The validate-only summary carries the resolved recipe too |
+| `output_recipe`, `output_recipe_valid` | **the next step's input** (KI-04): a complete recipe of the same `schema_name`, *resolved* — refined values written back at their recipe paths, symmetry-derived values in their exact (held) form, gateway defaults stated, the user's flags, bounds, controls and data unchanged, plus the one metadata key PowderLine writes, `metadata.powderline_provenance` (`parent_run_id`, `schema_name`, `engine`, `engine_version` — the version the run used, as `engine_details.engine_version` states it; TOPAS: the declared one; `null` for validate-only — `powderline_version`, `created`). Core propagates every symmetry tie group and checks that every atom keeps its multiplicity. `output_recipe_valid` says whether it re-validates as written; when it does not (an engine returned a value the schema refuses, a tie came back inconsistent) the recipe is still returned and written and the warning `output_recipe_not_valid` lists why. The validate-only summary carries the resolved recipe too |
 | `parameter_dispositions` | one row per refinable leaf: `path, value, esd, disposition, at_limit`; `disposition` is `default_applied`, `held_by_symmetry`, `held_by_user`, `requested_not_varied` or `varied` (first that applies); `at_limit` marks a value that ended on a stated bound or an engine default limit |
 | `fit_profile` | `two_theta, y_obs, y_weights, y_calc, y_diff, y_bkg, q_values, d_spacings` |
 | `unit_cell_data` | per phase: `parameter, value, esd`, seven rows in the **report vocabulary** `cell_a, cell_b, cell_c, cell_alpha, cell_beta, cell_gamma, cell_volume` (see below) |
 | `peak_list_data` | per phase: reflection list (`h, k, l, …, d_spacing, 2theta, …`; columns are the engine's) |
 | `refined_parameters` | 9 columns: `parameter_name, descriptive_name, phase_name, phase_idx, atom_name, atom_idx, value, esd, category` |
 | `spf_peaks`, `spf_convergence_diagnostics` | single peak fitting only (empty otherwise; the gsasii and topas column sets differ) |
-| `peak_fit` | `gsasii.spf` only (`None` otherwise): `{"parameters": [{"name", "value", "esd"}]}`, every parameter GSAS-II's peak fit varied by GSAS-II's own name (`Back;0`, `BkPkpos;0`, `U` … `Z`, `pos3`, `int3` …) with its ESD — the source of the output recipe for a peak fit, whose fit fills no covariance block (re/21) |
+| `peak_fit` | `gsasii.spf` only (`None` otherwise): `{"parameters": [{"name", "value", "esd"}]}`, every parameter GSAS-II's peak fit varied by GSAS-II's own name (`Back;0`, `BkPkpos;0`, `U` … `Z`, `pos3`, `int3` …) with its ESD — the source of the output recipe for a peak fit, whose fit fills no covariance block |
 
 **The failure record** (`e.result["failure"]`, the GSAS-II server's envelope
 alike): `kind` (`engine` / `backend`), `reason` (the table below), `message`,
 `traceback`, `engine_details`, and for `gsasii.*` runs `console_tail` — the
-last 64 KiB of what GSAS-II printed during the run (re/27, KI-05), `None`
+last 64 KiB of what GSAS-II printed during the run (KI-05), `None`
 when it printed nothing.
 
-**Two vocabularies, one bridge** (re/23, P-45). The unit-cell report speaks the
+**Two vocabularies, one bridge**. The unit-cell report speaks the
 *spreadsheet* vocabulary: its rows are `cell_a … cell_gamma, cell_volume`, the
 same for every engine (`powderline.reports.UNIT_CELL_ROWS`; the writer refuses
 any other row), so a row stays self-describing when tables are concatenated.
@@ -158,8 +158,8 @@ the engine propagates one (gsasii, topas), `0.0` for a cell with nothing refined
 else empty (easydiffraction). gsasii follows it in every mode: held cell →
 `0.0` (`example_LaB6`), refined → propagated (`example_DRX_33`), a simulation
 (nothing refined, no covariance) → `0.0` everywhere (`example_LaB6_simulation`;
-frozen-edits ledger row R34, re/24 — before it a simulation left every ESD
-field empty).
+since 0.2.0, through a recorded edit to the frozen GSAS-II code — before it a
+simulation left every ESD field empty).
 `refined_parameters.csv`, by contrast, deliberately
 speaks the **engine's** names (`0::A0`, `broad_gauss_u`, `p1_cell_a`): it is the
 engine's own table, with `descriptive_name`, `phase_name` and `atom_name` beside
@@ -170,8 +170,8 @@ each name; the recipe-path view of the same values is `parameter_dispositions`.
 
 | Reason | Kind | Meaning |
 |---|---|---|
-| `diverged` | engine | a non-finite calculated pattern or value inside the fit window (A130), or a GSAS-II refinement GSAS-II itself aborted — no damped step lowered χ² (`Rvals['Aborted']`, EB-99; simulations exempt) |
-| `unusable_site` | engine | the engine reads an atom's site or a symmetry tie differently from core (gsasii A117 / EB-40, EB-05; easydiffraction EB-47); the run stops before refining |
+| `diverged` | engine | a non-finite calculated pattern or value inside the fit window, or a GSAS-II refinement GSAS-II itself aborted — no damped step lowered χ² (`Rvals['Aborted']`, EB-99; simulations exempt) |
+| `unusable_site` | engine | the engine reads an atom's site or a symmetry tie differently from core (gsasii EB-40, EB-05; easydiffraction EB-47); the run stops before refining |
 | `peak_fit_failed` | engine | GSAS-II's peak fit returned nothing (EB-38) |
 | `engine_crashed` | engine | the engine raised or exited abnormally (GSAS-II crash, lmfit/CrysPy/CrysFML error, `tc.exe` could not start) |
 | `output_missing` | engine | TOPAS wrote none of its expected files |
@@ -195,13 +195,13 @@ every gateway: `status` (`"validated"`), `rwp` (`None`), `elapsed_time` (`0.0`),
 Written by every engine into the output directory, with fixed names:
 `refined_parameters.csv`, `<phase>_unit_cell_report.csv`,
 `<phase>_peak_list_report.csv` (not with the CrysFML calculator, which reports
-no reflection list), `fit_profile.txt`, and since re/20 `output_recipe.json` and
+no reflection list), `fit_profile.txt`, and `output_recipe.json` and
 `parameter_dispositions.csv` (the output recipe and how each value came about;
 the recipe repeats the data arrays, so it is about the size of the input).
 `powderline.run()` removes these fixed-name files (and `failure.json`) from
 the directory before every run and never the engine's own files, so a reused
 directory holds one run's results; a failed run writes none of them and
-leaves `failure.json` beside the engine's files (re/30). Single peak fitting adds a peak report
+leaves `failure.json` beside the engine's files. Single peak fitting adds a peak report
 (`single_peaks_report.txt` for gsasii, `single_peaks_report.csv` for topas;
 gsasii also writes `peak_convergence_diagnostics.txt` when a peak did not
 converge).

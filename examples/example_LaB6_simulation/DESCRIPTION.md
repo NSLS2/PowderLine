@@ -67,7 +67,7 @@ This simulation produces:
 
 - **dummy.gpx** - GSAS-II project file (gitignored)
 - **dummy.lst** - Log file (shows 1 cycle with no parameter changes)
-- **LaB6_unit_cell_report.csv** - Unit cell parameters (unchanged from input; every `esd` is `0.0` — nothing refined, no covariance; re/24, ledger row R34)
+- **LaB6_unit_cell_report.csv** - Unit cell parameters (unchanged from input; every `esd` is `0.0` — nothing refined, no covariance)
 - **LaB6_peak_list_report.csv** - Reflection list (hkl, d-spacing, 2θ, intensities)
 - **fit_profile.txt** - Calculated pattern (2θ, Iobs, Iweight, Icalc, Ibackground, Idifference)
 
@@ -80,7 +80,7 @@ This example is based on the refinement example (`examples/example_LaB6/`), but 
 - `refinement_cycles: 1` (schema requires ≥1; with all params locked, no optimization occurs)
 - Same LaB6 structure, instrument setup, and XRD data
 - Same background model (Chebyshev coefficients)
-- Like `example_LaB6`, the background peak of the schema-0.26.0 recipe was removed at re/07 (P-01): invisible here (0.0126 counts high), undeterminable there
+- Like `example_LaB6`, the background peak of the schema-0.26.0 recipe was removed at the conversion to `gsasii.rietveld` (PowderLine 0.2.0): invisible here (0.0126 counts high), undeterminable there
 
 To convert any refinement recipe to simulation mode:
 1. Recursively set all `refine_flag` values to `false` (structure, background, instrument, broadening)

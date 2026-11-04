@@ -19,13 +19,13 @@ defaults:
   run:
     shell: bash
 
-# Test matrix (re/09): one job per pixi environment x (linux, windows). The
+# Test matrix: one job per pixi environment x (linux, windows). The
 # suites are pytest marker selections (pyproject.toml) bound to pixi tasks
 # (pixi.toml): `core` runs the engine-free suites in the default env with the
 # core guard on (tests/conftest.py), `gsasii` and `easydiffraction` run their
 # engine's suite in its env. Only `topas_exec` is absent: it needs tc.exe and
 # stays a manual gate step on the TOPAS machine. Every job is gated to the
-# upstream repository (A183): CI runs with the PR to NSLS2/PowderLine, not on
+# upstream repository: CI runs with the PR to NSLS2/PowderLine, not on
 # forks, and each job's command is proven locally first:
 #   pixi run test · pixi run -e gsasii test-gsasii · pixi run -e easydiffraction test-easydiffraction · pixi run docs
 # setup-pixi caches .pixi/envs per lock-file hash and environment; the cache

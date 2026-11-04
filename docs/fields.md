@@ -79,8 +79,8 @@ symmetry-determined values, tie groups and flags, the name rule) are on the
 | Background | Chebyshev + pseudo-Voigt peaks | same | Chebyshev, `One_on_X`, `xo_Is` peaks | same | Chebyshev |
 | Simulation | `refinement_cycles: 1`, no flag set | same | `iters: 0`, no flag set | same | no flag set |
 | Multi-phase | yes | — | yes | — | yes |
-| Ionic scattering types (`scattering_types`, CIF spelling) | yes (GSAS-II's 114 ions) | — | refused in 0.1.0 (T7) | — | cryspy only (111 ions) |
-| Preferred orientation (`preferred_orientation`, March–Dollase) | yes | — | refused in 0.1.0 (T9) | — | cryspy only, with `march_random_fract` |
+| Ionic scattering types (`scattering_types`, CIF spelling) | yes (GSAS-II's 114 ions) | — | refused in 0.1.0 | — | cryspy only (111 ions) |
+| Preferred orientation (`preferred_orientation`, March–Dollase) | yes | — | refused in 0.1.0 | — | cryspy only, with `march_random_fract` |
 | Engine version in the recipe | no (pinned by pixi) | no | `engine_version: "6"` | yes | no (pinned by pixi) |
 
 ## `gsasii.rietveld`

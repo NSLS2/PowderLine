@@ -86,9 +86,9 @@ This two-phase simulation produces:
 
 - **dummy.gpx** - GSAS-II project file (gitignored)
 - **dummy.lst** - Log file (shows 1 cycle with no parameter changes)
-- **DRX_33_unit_cell_report.csv** - Phase 1 unit cell parameters (unchanged from input; every `esd` is `0.0` — nothing refined, no covariance; re/24, ledger row R34)
+- **DRX_33_unit_cell_report.csv** - Phase 1 unit cell parameters (unchanged from input; every `esd` is `0.0` — nothing refined, no covariance)
 - **DRX_33_peak_list_report.csv** - Phase 1 reflection list (hkl, d-spacing, 2θ, intensities)
-- **Li4MgWO6_SG12_unit_cell_report.csv** - Phase 2 unit cell parameters (unchanged from input; every `esd` is `0.0` — nothing refined, no covariance; re/24, ledger row R34)
+- **Li4MgWO6_SG12_unit_cell_report.csv** - Phase 2 unit cell parameters (unchanged from input; every `esd` is `0.0` — nothing refined, no covariance)
 - **Li4MgWO6_SG12_peak_list_report.csv** - Phase 2 reflection list (hkl, d-spacing, 2θ, intensities)
 - **fit_profile.txt** - Calculated pattern (2θ, Iobs, Iweight, Icalc, Ibackground, Idifference)
 

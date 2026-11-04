@@ -4,7 +4,7 @@
 
 `example_LaB6` refined with lanthanum as the **La3+ ion** instead of the neutral
 atom — the form factor of the ion, not of the atom. This is the reference case
-for PowderLine's ionic scattering types (P-47, re/28): the recipe states them in
+for PowderLine's ionic scattering types: the recipe states them in
 the engine's phase block, `scattering_types`, in the CIF spelling, and each
 engine computes with the form factor it has for that ion. Boron stays neutral:
 neither GSAS-II nor CrysPy has a boron ion, and mixed ionic / neutral types are
@@ -44,7 +44,7 @@ The standard gsasii set (`refined_parameters.csv`, `LaB6_unit_cell_report.csv`,
 ## Known Issues
 
 None. TOPAS does not accept `scattering_types` in schema 0.1.0 (the TOPAS half
-awaits a TOPAS 6 run, T7), so this example has no topas recipe.
+awaits a TOPAS 6 run), so this example has no topas recipe.
 
 ## Per-engine recipes
 

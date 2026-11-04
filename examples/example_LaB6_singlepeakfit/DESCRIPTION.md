@@ -65,7 +65,7 @@ Peak List (`payload.single_peaks`) and the background peaks
 (centideg², the value always was σ²) and `pv_lorentzian_gamma` (centideg).
 With `use_instrument_profile: false` a refine flag on the instrument's U..Z is
 an error (GSAS-II would ignore it silently). Converted from the schema-0.26.0
-recipe with `scripts/convert_recipe_026.py` (SH/L 0.0 → 0.002, A91).
+recipe with `scripts/convert_recipe_026.py` (SH/L 0.0 → 0.002).
 
 ## Output Files
 
@@ -82,12 +82,12 @@ This single peak fitting analysis produces:
 ## Known Issues
 
 **The output recipe of this example is not valid as posed** (`output_recipe_valid:
-false`, warning `output_recipe_not_valid`; KI-04, P-43 D5): the one background
+false`, warning `output_recipe_not_valid`; KI-04): the one background
 single peak refines all four of its parameters, and GSAS-II lets its σ² run far below
 the 0.01 centideg² floor it silently computes with (EB-35) — the committed fit ends
 near −2700 centideg² — which the schema refuses. The output recipe is written and
 returned with that value and the warning names it; the 36 Peak List peaks and the
-Chebyshev background come back with ESDs (`peak_fit`, re/21). The reference is kept
+Chebyshev background come back with ESDs (`peak_fit`). The reference is kept
 as posed.
 
 ## Per-engine recipes

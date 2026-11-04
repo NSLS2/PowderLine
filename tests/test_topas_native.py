@@ -741,7 +741,7 @@ def test_runner_phase_contributes_nothing_warning(tmp_path, monkeypatch):
     contrib_warnings = [w for w in result["warnings"] if w["code"] == "topas_phase_contributes_nothing"]
     assert len(contrib_warnings) == 1
     assert "LaB6" in contrib_warnings[0]["message"]
-    assert contrib_warnings[0]["level"] == "info"  # informative (Dan, 2026-10-15): nothing to act on
+    assert contrib_warnings[0]["level"] == "info"  # informative: nothing to act on
 
 
 def _bkg_case(tmp_path, monkeypatch, recipe=None, bkg_profile=None, write_bkg=True):

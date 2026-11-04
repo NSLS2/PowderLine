@@ -72,7 +72,7 @@ an error; exit status 0 on success, 1 otherwise. The module imports no engine.
 
 .. py:module:: powderline.doctor
 
-``powderline --doctor``'s report (re/27, KI-13): ``report()`` returns the
+``powderline --doctor``'s report (KI-13): ``report()`` returns the
 structured dict (``powderline``, ``python``, ``platform``, ``gateways`` — one
 entry per registered gateway with ``workflows``, ``engine_version_spec``,
 ``engine_installed``, ``engine_status``, ``problem`` — ``server`` and

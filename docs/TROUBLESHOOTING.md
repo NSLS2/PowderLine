@@ -337,7 +337,7 @@ keeps the same text under `engine_details["console_tail"]`.
 2. **Divergence** (a non-finite calculated pattern): a **failure** in every
    engine (0.1.1 returned success with Rwp 100 %). Reduce the refined set,
    start closer, check correlations in `dummy.lst` (gsasii).
-3. **TOPAS not configured** (PowderLine never guesses where `tc.exe` is, P-35): the INP and `.xye` were written; run them on a
+3. **TOPAS not configured** (PowderLine never guesses where `tc.exe` is): the INP and `.xye` were written; run them on a
    machine with TOPAS 6, or pass `--topas-dir`. This is `status: "generated"`, not a failure.
 4. **TOPAS wrote no output** (`output_missing`): TOPAS 6 reports nothing through its exit code,
    so a missing output file is the error. Whatever `tc.exe` printed is in
@@ -901,10 +901,10 @@ FAILED tests/test_code_hash.py ... hash of gateways/gsasii/setters.py changed
 
 **Cause:** one of the frozen GSAS-II modules
 (`gateways/gsasii/{helpers,project,setters,executors,extractors,constraints}.py`)
-changed. These modules move only through the signed-off edits ledger
-([policies](policies.md#frozen-gsas-ii-code-and-the-edits-ledger)).
+changed. These modules move only through the maintainers' signed-off record
+of frozen-code edits ([policies](policies.md#frozen-gsas-ii-code)).
 
-**Solution:** if the edit is a signed ledger row, `pixi run update-code-hash`
+**Solution:** if the edit is a signed-off, recorded edit, `pixi run update-code-hash`
 and commit `src/powderline/_code_hash.json` with it; otherwise revert the edit
 and put the behaviour in a non-frozen module.
 

@@ -132,8 +132,8 @@ regression tolerance.
 ## Schema Features Demonstrated
 
 - **The output recipe as the step's result** (`output_recipe`,
-  `output_recipe_valid`, `parameter_dispositions`; KI-04, P-43) and
-  `powderline.recipes.with_block` as the one chaining operation (D4).
+  `output_recipe_valid`, `parameter_dispositions`; KI-04) and
+  `powderline.recipes.with_block` as the one chaining operation.
 - A refinement **warm-started** from the previous step: the cell moves by up
   to 60 ESD between temperatures and 5 cycles are enough.
 - `metadata` as the user's space (`metadata.series`), next to the one key
@@ -175,7 +175,7 @@ What the leg shows:
   temperatures) while B's Uiso is right (within 2 ESD wherever an ESD was
   reported). The data were calculated by GSAS-II: these are differences between
   the two engines' models of the same pattern, not refinement failures — GoF
-  is 1.01–1.04 in both engines. The probe (EB-93, re/24) points to
+  is 1.01–1.04 in both engines. The probe (EB-93) points to
   **profile shape**: with CrysPy's pseudo-Voigt the engines' integrated
   intensities agree (no angle trend once the integration window is wide) and
   its Uiso is still 17 % low (cell +68 ppm), so the offset is not an
@@ -190,7 +190,7 @@ What the leg shows:
   nor TCH with its FCJ terms held at 0.001 (the fit as posed; freed, they do
   not move, EB-90) can represent; the shape mismatch lands in the parameter
   that dominates the angle dependence of the intensities (holding Uiso at
-  the truth costs GoF 1.030 → 1.045 only). Shown by the re/25 test: the
+  the truth costs GoF 1.030 → 1.045 only). Shown by a test: the
   25 °C pattern simulated with a GSAS-II profile easydiffraction can
   represent (the original `example_LaB6` posing, no clamp) gives CrysPy La
   Uiso 0.00863 vs 0.00858 programmed and GSAS-II itself 0.00868, while

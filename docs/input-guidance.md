@@ -120,7 +120,7 @@ derives it).
 
 - **`element`**: the bare symbol, spelled exactly (`"Fe"`, not `"FE"`), and
   always the **neutral** atom — so the phase block means the same thing for
-  every engine and moves between recipes (P-43 D4).
+  every engine and moves between recipes.
 - **Ionic scattering types** are stated in the engine's phase block, beside
   `scale`: `"scattering_types": {"La": "La3+", "O": "O2-"}` — the atom label,
   then the ion in the CIF spelling (element, charge 1–8, sign; `"La+3"` is an
@@ -300,8 +300,8 @@ approximated; each is a validation error or simply absent.
 - **Anisotropic size/strain models** (uniaxial, ellipsoidal, Stephens):
   gsasii and topas accept `isotropic` only.
 - **Preferred orientation beyond March–Dollase** (spherical harmonics, a
-  second axis) and **March–Dollase in topas 0.1.0** (declared, refused; T9).
-- **Charged scattering types in topas 0.1.0** (declared, refused; T7).
+  second axis) and **March–Dollase in topas 0.1.0** (declared, refused).
+- **Charged scattering types in topas 0.1.0** (declared, refused).
 - **Parameter bounds in gsasii recipes**: GSAS-II clamps after the fit, so
   bounds are not exposed; they may come in a later gsasii schema version.
 - **User-defined constraints** between atoms (shared occupancies, tied ADPs
@@ -312,4 +312,4 @@ approximated; each is a validation error or simply absent.
   6 only; TOPAS 7 needs an explicit widening with a compatibility run.
 - **A structure-source plugin** (Materials Project, CIF) upstream of the
   simulation recipe builder, with its own configuration: the Materials
-  Project tool that drove the builder left PowderLine in 0.2.0 (P-36).
+  Project tool that drove the builder left PowderLine in 0.2.0.

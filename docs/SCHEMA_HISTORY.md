@@ -43,7 +43,7 @@ with a **core schema** and **one schema per engine** (`gsasii`, `topas`,
 
 Defined in `src/powderline/schema_core.py`; every engine schema builds on it.
 
-> **Pre-release revision (re/03b, not a new version).** Before its first
+> **Pre-release revision (not a new version).** Before its first
 > release, core 0.1.0 replaced its structure-only phase model (`PhaseStructure`
 > with plain values, plus `null`-valued "structure" parameters) with the
 > **phase block** described below: one block per phase, every structural
@@ -63,7 +63,7 @@ Defined in `src/powderline/schema_core.py`; every engine schema builds on it.
   `value` is always a number and `refine_flag` a JSON boolean; neither is ever
   `null`.
 - **Data and ranges**: `xrd_data` (2θ in degrees, weights 1/σ², validated as in
-  0.26.0); `fit_range` `[min, max]`, with `max > min`, inside the data's 2θ range, holding at least two points with a positive weight (re/05).
+  0.26.0); `fit_range` `[min, max]`, with `max > min`, inside the data's 2θ range, holding at least two points with a positive weight.
 - **Background**: Chebyshev (`num_coefficients`, `coefficients`, `refine_flag`).
   Coefficient semantics are documented per engine.
 - **Units** are fixed per field in the schema, never written in a recipe.
@@ -138,7 +138,7 @@ Defined in `src/powderline/schema_core.py`; every engine schema builds on it.
   - **Elements**: a bare element symbol spelled exactly (`"Fe"`, not `"FE"`),
     always the neutral atom. A charged symbol here is an error pointing at the
     engine block's `scattering_types`, where an ion is stated in the CIF
-    spelling (`"Fe3+"`; re/28, P-47) — never reduced to the neutral atom.
+    spelling (`"Fe3+"`) — never reduced to the neutral atom.
   - **Occupancy**: 0 to 1 inclusive, even where an engine would accept more.
   - **Symmetry-determined values** (special positions, anisotropic ADPs,
     tied bounds). Within 5e-6 of a special position an atom is on it; from
@@ -271,7 +271,7 @@ core `==0.1.0`. A 0.26.0 `GSASII_*` recipe is converted with
   refined; U..Z may not). GSAS-II silently ignores a refine flag on the side
   not in use, so such a flag is an error.
 - **Simulation** (`refinement_cycles` 1): every refine flag must be false.
-- **Fit window** (re/05): GSAS-II gets the first and last weighted data
+- **Fit window**: GSAS-II gets the first and last weighted data
   points inside `fit_range` as its limits (an open end, or no `fit_range`: the
   data's first or last weighted point), so it fits exactly min ≤ 2θ ≤ max, the
   points every engine fits, and its Chebyshev basis spans the same points (with
@@ -293,7 +293,7 @@ core `==0.1.0`. A 0.26.0 `GSASII_*` recipe is converted with
   that diverges (a non-finite calculated pattern) is a failure with a clear
   message; GSAS-II itself does not flag it.
 
-#### The committed examples (PowderLine 0.2.0, re/07)
+#### The committed examples (PowderLine 0.2.0)
 
 Every `examples/*/input.json` was converted in place with
 `scripts/convert_recipe_026.py` (nothing hand-patched; the converter did not
@@ -301,22 +301,21 @@ stop on any example). What it changed, per example:
 
 | Example | Converter notes |
 |---|---|
-| `example_LaB6`, `example_LaB6_simulation` | the background peak at 1.5° 2θ was removed **before** conversion (P-01: the data have no feature there and GSAS-II never determined it); `schema_version` → core/engine 0.1.0; `xrd_data.UID` → `metadata`; SH/L 0.0005 → 0.002 (A91); `unit_cell.volume` dropped (A75); size and strain broadening left out, so the documented default 10 µm / 0 microstrain applies with a structured warning (A87, A107) |
-| `example_LaB6_singlepeakfit` | `GSASII_SPF` → `gsasii.spf`; `UID` → `metadata`; SH/L 0.0 → 0.002 (A91); background `pv_gaussian_sigma` → `pv_gaussian_sigma_sq` (A89) |
-| `example_DRX_33`, `_anisoADP`, `_atomrefine`, `_simulation`, `_strainonly` | `UID` → `metadata`; SH/L 0.0005 → 0.002 (A91); one background peak with null entries dropped (D4); `unit_cell.volume` dropped (A75); `C2/m` → `C 1 2/m 1` (A105); the stated `Multiplicity: 1` of the seven Li4MgWO6_SG12 atoms dropped (derived 4/4/2/4/8/4/2; A101) |
+| `example_LaB6`, `example_LaB6_simulation` | the background peak at 1.5° 2θ was removed **before** conversion (the data have no feature there and GSAS-II never determined it); `schema_version` → core/engine 0.1.0; `xrd_data.UID` → `metadata`; SH/L 0.0005 → 0.002; `unit_cell.volume` dropped; size and strain broadening left out, so the documented default 10 µm / 0 microstrain applies with a structured warning |
+| `example_LaB6_singlepeakfit` | `GSASII_SPF` → `gsasii.spf`; `UID` → `metadata`; SH/L 0.0 → 0.002; background `pv_gaussian_sigma` → `pv_gaussian_sigma_sq` |
+| `example_DRX_33`, `_anisoADP`, `_atomrefine`, `_simulation`, `_strainonly` | `UID` → `metadata`; SH/L 0.0005 → 0.002; one background peak with null entries dropped; `unit_cell.volume` dropped; `C2/m` → `C 1 2/m 1`; the stated `Multiplicity: 1` of the seven Li4MgWO6_SG12 atoms dropped (derived 4/4/2/4/8/4/2) |
 
 The pre-conversion recipes are kept byte-identical in `tests/data/convert_026/`
-as the converter's test fixtures (P-16, P-23); the 0.26.0 path itself is gone.
+as the converter's test fixtures; the 0.26.0 path itself is gone.
 
 **Ionic scattering types and preferred orientation:** the phase block has
 `scattering_types: {<atom label>: "<El n±>"}` (CIF spelling), optional, never
 null; only ions GSAS-II 5.7.9 has a form factor for (114, pinned by a test);
-written into the GSAS-II atom record in GSAS-II's own spelling (`La+3`,
-ledger row R35). The converter maps a 0.26.0 `El±n` element onto it.
+written into the GSAS-II atom record in GSAS-II's own spelling (`La+3`). The converter maps a 0.26.0 `El±n` element onto it.
 The phase block also has `preferred_orientation: {model:
 "march_dollase", hkl, ratio: [r, flag]}`, optional, never null, `r > 0`;
-written into the HAP `Pref.Ori.` entry (`['MD', r, flag, [h,k,l], …]`, ledger
-rows R36/R37); the refined name `p:h:MD` maps back to `…preferred_orientation.ratio`.
+written into the HAP `Pref.Ori.` entry (`['MD', r, flag, [h,k,l], …]`, a
+recorded edit to the frozen GSAS-II code); the refined name `p:h:MD` maps back to `…preferred_orientation.ratio`.
 
 ## topas engine schema
 
@@ -392,8 +391,8 @@ was removed with the unified schema).
 
 **Ionic scattering types and preferred orientation:**
 `scattering_types` and `preferred_orientation` are declared and **refused**
-in 0.1.0 (the TOPAS halves — `occ Fe+3` and ATMSCAT's coverage, T7; the
-`PO(...)` macro, T9 — await a TOPAS 6 run; P-08).
+in 0.1.0 (the TOPAS halves — `occ Fe+3` and ATMSCAT's coverage; the
+`PO(...)` macro — await a TOPAS 6 run).
 
 ## easydiffraction engine schema
 

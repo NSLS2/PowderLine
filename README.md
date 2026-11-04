@@ -176,9 +176,7 @@ refuses on its behalf, is on the
 
 For the engine architecture and how to add a backend, see
 [Adding a refinement engine](docs/DEVELOPMENT.md#adding-a-refinement-engine).
-The design dossier and backend survey live in the private
-[PowderLine-devkit](https://github.com/NSLS2/PowderLine-devkit) (maintainers can
-request access).
+Maintainers keep design records in a separate private repository.
 
 ## Documentation
 

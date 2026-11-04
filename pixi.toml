@@ -8,8 +8,7 @@ requires-pixi = ">=0.82.1"
 preview = ["pixi-build"]
 
 # ---------------------------------------------------------------------------
-# Environments (re/08, master plan A31/A42; wiring decided in the pixi spike,
-# devkit tasks/re08-pixi-spike.md, P-21):
+# Environments:
 #
 #   default          core only: schema layer, registry, the engine-free CLI.
 #                    No engine -- a gsasii.* recipe validates here but a run
@@ -28,7 +27,7 @@ preview = ["pixi-build"]
 # `docs`) resolve to it automatically. All tasks use the task-level `env` dict
 # for PYTHONPATH (cross-platform; docs/cross-platform-guide.md Issue B).
 #
-# Test suites (re/09; markers declared in pyproject.toml, one per test):
+# Test suites (markers declared in pyproject.toml, one per test):
 #   pixi run test                              core + topas_gen, engine-free, any env;
 #                                              installs the core guard (tests/conftest.py)
 #   pixi run -e gsasii test-gsasii             GSAS-II suite incl. the slow regressions
@@ -40,7 +39,7 @@ preview = ["pixi-build"]
 # ---------------------------------------------------------------------------
 
 [tasks]
-# The one CLI (P-06): `powderline <recipe.json>` after `pixi reinstall powderline`;
+# The one CLI: `powderline <recipe.json>` after `pixi reinstall powderline`;
 # this task runs the same main. Dispatches on the recipe's schema_name.
 kicker = { cmd = "python -m powderline.kicker", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
 doctor = { cmd = "python -m powderline.kicker --doctor", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
@@ -58,7 +57,7 @@ fields-check = { cmd = "python scripts/gen_schema_field_tables.py --check", env 
 
 [dependencies]
 # Core = the pyproject runtime dependencies + what the editable install and the
-# test runner need. Keep this engine-free (A31): no engine package may appear here.
+# test runner need. Keep this engine-free: no engine package may appear here.
 python = ">=3.10"
 pip = ">=26.2.2"
 hatchling = ">=1.24"
@@ -72,9 +71,9 @@ fastapi = ">=0.115.0,<1"
 uvicorn = ">=0.34.0,<1"
 httpx = ">=0.28.0,<1"
 # gemmi is pinned exactly: core's space-group contract is its canonical names
-# (A105, tests/data/canonical_space_groups.txt) and the symmetry rules are
+# (tests/data/canonical_space_groups.txt) and the symmetry rules are
 # characterized against this version. Widen only after re-running the symmetry
-# tests and updating that file (re/03b review B4).
+# tests and updating that file.
 gemmi = "==0.7.5"
 packaging = ">=22"
 # tomllib fallback for Python 3.10 (tests/test_gateways.py reads this manifest).
@@ -91,7 +90,7 @@ powderline = { path = ".", editable = true }
 # the tacaswell fork, which adds the conda recipe. This installs GSAS-II on ALL
 # platforms (linux-64/win-64/osx-arm64), unlike the former linux-64-only pip pin.
 #
-# Engine-version pin (A41/A44): the conda package version (2.0.0, from the
+# Engine-version pin: the conda package version (2.0.0, from the
 # fork's recipe) is unrelated to the GSAS-II runtime version, so the pin is the
 # source revision. `rev` is the COMMIT the previous lock resolved for the fork's
 # branch `enh/pixi_pkg` (pixi.lock, 2026-10), so a re-lock cannot move GSAS-II.
@@ -131,7 +130,7 @@ ui = { cmd = "python -m GSASII", env = { GSASII_NOPATHHACKING = "true" } } # the
 test-gsasii = { cmd = 'pytest -m "gsasii"', env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
 
 # ---------------------------------------------------------------------------
-# easydiffraction (renamed from `easydiff`, A42). No GSAS-II: its suite mocks
+# easydiffraction (renamed from `easydiff`). No GSAS-II: its suite mocks
 # or import-blocks GSAS-II; cross-engine comparisons use `all`.
 # ---------------------------------------------------------------------------
 [feature.easydiffraction.dependencies]
@@ -139,8 +138,8 @@ python = ">=3.12"                 # easydiffraction floor; default env stays >=3
 "diffpy.pdffit2" = "*"            # from conda-forge: its PyPI sdist needs GSL to build
 
 [feature.easydiffraction.pypi-dependencies]
-# Exact, mirroring gateways/easydiffraction/gateway.py ENGINE_VERSION_SPEC (A41,
-# A116); tests/test_gateways.py asserts the pin lies inside the specifier.
+# Exact, mirroring gateways/easydiffraction/gateway.py ENGINE_VERSION_SPEC;
+# tests/test_gateways.py asserts the pin lies inside the specifier.
 easydiffraction = "==0.21.1"
 
 [feature.easydiffraction.tasks]

@@ -66,13 +66,13 @@ puts the peak centroid, and therefore the lattice parameter:
   the table because the committed fixtures do not use it; the register entry
   records the run.
 - **GSAS-II-calculated data refined by easydiffraction (the temperature
-  series, re/22).** On the six `example_LaB6_temperature_series` patterns,
+  series).** On the six `example_LaB6_temperature_series` patterns,
   which GSAS-II calculated with a known cell and Uiso, CrysFML TCH + FCJ puts
   the cell **14–31 ppm low** (1.7–4 ESD) at every temperature while recovering
   the *expansion* to 0.8 %, and La's Uiso **10–22 % low** (8–12 ESD) with
   B's Uiso right; GoF is 1.01–1.04 in both engines (CrysPy's symmetric
   pseudo-Voigt: Uiso 17 % low, cell +68 ppm — the shift above). The probe
-  (EB-93, re/24) points to **profile shape**: with CrysPy the engines'
+  (EB-93) points to **profile shape**: with CrysPy the engines'
   integrated intensities agree (no trend with angle once the integration
   window is wide) and its Uiso is still 17 % low, so the fitted offset is
   not an intensity difference; the trend is the same with Uiso = 0, and
@@ -84,7 +84,7 @@ puts the peak centroid, and therefore the lattice parameter:
   peaks, the one part of it neither a symmetric pseudo-Voigt nor TCH with
   its FCJ terms held can represent; the mismatch lands in the parameter that
   dominates the angle dependence of the intensities (holding Uiso at the
-  truth costs GoF 1.030 → 1.045). Shown by the re/25 test: the same pattern
+  truth costs GoF 1.030 → 1.045). Shown by a test: the same pattern
   simulated with a GSAS-II profile easydiffraction can represent (the
   original `example_LaB6` posing) gives CrysPy La Uiso 0.00863 vs 0.00858
   programmed and GSAS-II 0.00868, while CrysFML lands at 0.00823 (−4 %, the
@@ -97,7 +97,7 @@ puts the peak centroid, and therefore the lattice parameter:
   the starting value (it exercises the instrument, background and scale), so
   the TOPAS row shows no refined LaB6 cell. A cell-refined TOPAS LaB6 fixture
   and golden can only be produced on a machine with TOPAS; it is on the
-  maintainers' TOPAS-machine list for the G4 smoke, and this row will carry a
+  maintainers' list for the first TOPAS-machine run, and this row will carry a
   Δ once that golden is committed. The TOPAS fixture also has no
   axial-asymmetry model, which is why its Rwp is the highest of the LaB6 rows.
 
@@ -113,7 +113,7 @@ columns are the ones that compare the engines.
 **CrysFML start dependence.** CrysFML computes its pattern in single
 precision and lmfit differentiates with steps smaller than that precision, so
 a CrysFML *refinement* stops at a point that depends on its starting values
-(register EB-90; decision A175). Its refined cell is stable to about 1e-5
+(register EB-90). Its refined cell is stable to about 1e-5
 relative, but its Rwp and ESDs can move between runs. The row carries the
 `easydiffraction_crysfml_start_dependent` warning for that reason; the
 calculator remains available because PowderLine lets the user choose it and
@@ -133,7 +133,7 @@ overlapping peaks.
   within about 100 ppm (~1σ) and reach similar Rwp (7.2–7.3 %).
 - GSAS-II's cubic cell is about 0.26 % (2600 ppm) smaller, with a nearly
   ten times larger ESD (so the gap is only ~3σ), and its Rwp is higher. The
-  re/05 log attributes this to the engines' different profile models (the
+  refactor's log attributes this to the engines' different profile models (the
   legacy 0.26.0 translation paths show the same gap): with peaks this broad,
   the cell, the strain terms and the background trade off against one another,
   and each engine settles that trade-off differently. The large GSAS-II ESD is
@@ -155,7 +155,7 @@ what else each model was free to vary.
 | Comparable across the rows | Not directly comparable |
 |---|---|
 | Rwp / Rexp / GoF (same formula, same 3767 points) | Scale factors (each engine's own convention) |
-| The unit-cell report: columns `parameter, value, esd`, rows `cell_a … cell_volume` and the ESD rule (`powderline.reports.unit_cell_rows`; until re/23 topas and easydiffraction wrote `a … volume`) | Whether a volume ESD is propagated (gsasii and topas yes, easydiffraction no) |
+| The unit-cell report: columns `parameter, value, esd`, rows `cell_a … cell_volume` and the ESD rule (`powderline.reports.unit_cell_rows`; before 0.2.0 topas and easydiffraction wrote `a … volume`) | Whether a volume ESD is propagated (gsasii and topas yes, easydiffraction no) |
 | Cells and their ESDs (same units) | Profile parameters (different parameterizations and units; see the engine pages) |
 | The number of parameters varied (each engine's own count) | What those parameters are |
 
@@ -167,7 +167,7 @@ what else each model was free to vary.
   `pixi run -e easydiffraction python scripts/cross_engine_comparison.py
   --no-run --rerun-easydiffraction` re-runs the easydiffraction fixtures
   (keeping the GSAS-II rows just recorded) and reports how close the rerun is
-  to its golden (tolerances of decision A179).
+  to its golden (within the documented tolerances).
 - `python scripts/cross_engine_comparison.py --no-run` rebuilds the tables
   from committed files only (goldens plus the JSON record of the last GSAS-II
   run); the docs build never needs an engine. The "easydiffraction goldens

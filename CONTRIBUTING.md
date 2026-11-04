@@ -29,8 +29,8 @@ a first refinement run.
   engine or a capability**, GSAS-II integration, workflow.
 - **[docs/policies.md](docs/policies.md)** — what binds every change:
   versioning and declared compatibility, deliberate behaviour changes, the
-  frozen GSAS-II modules and the edits ledger, engine-version pins, review
-  gates, "ask, don't assume".
+  frozen GSAS-II modules, engine-version pins, review, "ask, don't
+  assume".
 - **[docs/engine-behavior.md](docs/engine-behavior.md)** — what each engine
   does with a recipe and PowderLine's policy toward it.
 - **[docs/known_issues.md](docs/known_issues.md)** — the known-issues register
@@ -41,30 +41,10 @@ a first refinement run.
 - **[examples/CONTRIBUTING_EXAMPLES.md](examples/CONTRIBUTING_EXAMPLES.md)** —
   how to contribute a new example recipe (examples drive schema evolution).
 
-## Development workflow & the devkit
+## Design records
 
-Design dossiers, implementation plans/specs, AI-agent context, publication
-benchmarks, and private regression data live in a **separate private repo,
-[NSLS2/PowderLine-devkit](https://github.com/NSLS2/PowderLine-devkit)** — not in
-this repo. Maintainers doing substantial feature work check it out as a
-gitignored `_dev/` subdirectory of a PowderLine working tree:
-
-```bash
-cd PowderLine
-git clone git@github.com:NSLS2/PowderLine-devkit.git _dev   # request access first
-git config core.hooksPath scripts/hooks                     # enable the guard (below)
-```
-
-One working tree then holds code + dev artifacts, while this repo tracks only
-code. The devkit is private; request access from the maintainers.
-
-**Where a file belongs (the contract the pre-commit guard enforces):**
-
-| Content | Home |
-|---|---|
-| Code, tests, user-facing docs (`docs/*.md/.rst`), public example references | **this repo** |
-| Design dossiers, implementation plans/specs, engine/backend surveys, agent scratch | **devkit** (`_dev/dossiers/`) |
-| Benchmarks, private/unpublishable regression data, full agent context | **devkit** |
+Maintainers keep design records in a separate private repository.
+`_dev/` is reserved and gitignored; never commit it.
 
 Dev-doc scaffold paths (`docs/superpowers/`, `docs/plans/`, `docs/specs/`,
 `docs/dev/`), `.gpx` binaries, `fort.*` scratch, and `_dev/` are all rejected by
@@ -82,14 +62,13 @@ the pre-commit guard so they never reach `main`.
   they're yours.
 - The frozen GSAS-II modules
   (`src/powderline/gateways/gsasii/{helpers,project,setters,executors,extractors,constraints}.py`)
-  change only through the maintainers' signed-off edits ledger; after such an
-  edit run `pixi run update-code-hash`. Restart the GSAS-II server after
+  change only through the maintainers' signed-off record of frozen-code
+  edits; after such an edit run `pixi run update-code-hash`. Restart the GSAS-II server after
   editing anything it runs (`pixi run -e gsasii gsas-server restart`).
 - After editing a schema module or a gateway's version declarations, run
   `PYTHONPATH=src python scripts/gen_schema_field_tables.py` and commit the
   regenerated `docs/_generated/` fragments.
-- If a decision is not written down (policies page, schema history, decision
-  log), ask the maintainer rather than inferring it.
+- If a decision is not written down (policies page, schema history), ask the maintainer rather than inferring it.
 - `examples/**/output/` is tracked on purpose (regression references) — don't
   regenerate it casually.
 - Questions and bug reports: open a GitHub issue.

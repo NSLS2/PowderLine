@@ -66,11 +66,11 @@ None.
   there (a flat ~30-count background; the first Bragg peak is at 2.29°), so the
   peak could not be determined: GSAS-II drove it out of the pattern with
   singular (zero) ESDs in every v0.1.1 reference. It was removed when the
-  example migrated to `gsasii.rietveld` at PowderLine 0.2.0 (re/07, P-01);
+  example migrated to `gsasii.rietveld` at PowderLine 0.2.0;
   every other refined value moved by less than 0.31 ESD.
 - Converted with `scripts/convert_recipe_026.py`: SH/L 0.0005 → 0.002 (the
-  value GSAS-II computed with anyway, A91); size/strain broadening left out, so
-  the documented default (10 µm / 0 microstrain, fixed; A107) applies and is
+  value GSAS-II computed with anyway); size/strain broadening left out, so
+  the documented default (10 µm / 0 microstrain, fixed) applies and is
   reported as a structured warning when the recipe is validated.
 
 ## Per-engine recipes

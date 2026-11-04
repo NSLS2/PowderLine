@@ -25,7 +25,7 @@ This example validates PowderLine's ability to refine structural parameters in m
 - **Coordinates (x, y, z)**: the DRX_33 atoms sit on the fixed special position 4a
   (0, 0, 0), so their coordinate flags are `false` in the gsasii recipe (the
   converter wrote the flags v0.1.1 effectively refined: a symmetry-fixed
-  coordinate cannot carry `true`, A95)
+  coordinate cannot carry `true`)
 - **Isotropic displacement (Uiso)**: Li, Mg, Mn1, O1, W atoms all have Uiso=true
 - **Occupancies**: Li, Mg, Mn1, O1, W atoms all have occupancy=true
 
@@ -62,7 +62,7 @@ This example validates PowderLine's ability to refine structural parameters in m
 ### Fit Quality:
 - **Expected Rwp**: 15.06% (39 refined parameters; GSAS-II's own wR in `dummy.lst`, PowderLine's uniform `rwp` 15.059)
 - Higher Rwp than base example_DRX_33 (10.83%) due to increased parameter count and model complexity
-- This 39-parameter refinement is sensitive to the fit window: with v0.1.1's window (one data point more at the high end, EB-54) it converged to another minimum at Rwp 19.35%; the native path fits exactly 1 ≤ 2θ ≤ 15 (deliberate change 23)
+- This 39-parameter refinement is sensitive to the fit window: with v0.1.1's window (one data point more at the high end, EB-54) it converged to another minimum at Rwp 19.35%; the native path fits exactly 1 ≤ 2θ ≤ 15
 - χ² should still be reasonable given the added structural freedom
 
 ### Typical Runtime:
@@ -146,7 +146,7 @@ This two-phase Rietveld refinement produces:
 ## Known Issues
 
 **The output recipe of this example is not valid as posed** (`output_recipe_valid:
-false`, warning `output_recipe_not_valid`; KI-04, P-43 D5): the committed reference
+false`, warning `output_recipe_not_valid`; KI-04): the committed reference
 refines the DRX_33 Li occupancy to about −0.35 and the Li4MgWO6 crystallite size to
 about −8 µm, which the schema refuses; the output recipe is written and returned with
 those values and the warning names them. Holding the sizes at 10 µm does not rescue
@@ -173,7 +173,7 @@ recipe states exactly what GSAS-II refines. This example uses the **explicit
 style** - every parameter is listed with a symmetry-consistent flag.
 
 The recipe was converted from its schema-0.26.0 form with
-`scripts/convert_recipe_026.py` at PowderLine 0.2.0 (re/07); the converter's
+`scripts/convert_recipe_026.py` at PowderLine 0.2.0; the converter's
 notes for each example are in `docs/SCHEMA_HISTORY.md`'s gsasii section.
 
 ## Data citation

@@ -52,12 +52,12 @@ dependencies = [
     "packaging>=22",
 ]
 
-# Gateway plugins (master plan A17): each entry targets an engine-free factory
+# Gateway plugins: each entry targets an engine-free factory
 # module. Entry-point metadata is written at install time -- after editing this
 # table, re-install the editable package (`pixi reinstall powderline`) or the
 # registry finds no gateways.
-# The one CLI (P-06): ``powderline <recipe.json>``; ``pixi run kicker`` runs the
-# same ``main`` (task names are re/08's). Console scripts are written at install
+# The one CLI: ``powderline <recipe.json>``; ``pixi run kicker`` runs the
+# same ``main`` (task names are pixi.toml's). Console scripts are written at install
 # time too (``pixi reinstall powderline``).
 [project.scripts]
 powderline = "powderline.kicker:main"
@@ -88,11 +88,11 @@ only-include = ["src/powderline", "LICENSE", "README.md", "pyproject.toml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-# Suite markers (re/09, master plan A13.6 / invariant 4.4). Every test carries
+# Suite markers. Every test carries
 # exactly ONE suite marker -- tests/conftest.py refuses to run otherwise -- plus
 # the optional `slow`. The pixi tasks select on them (`test`, `test-gsasii`,
 # `test-easydiffraction`, `test-topas`, `test-all`; see pixi.toml), and a run
-# restricted to core/topas_gen installs the core guard (conftest.py, P-26) that
+# restricted to core/topas_gen installs the core guard (conftest.py) that
 # blocks every engine import.
 addopts = "--strict-markers"
 markers = [

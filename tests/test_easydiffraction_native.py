@@ -708,7 +708,7 @@ def test_run_simulation_phase_scale_zero_warning(tmp_path):
     warnings = [w for w in result["warnings"] if w["code"] == "easydiffraction_phase_contributes_nothing"]
     assert len(warnings) == 1
     assert warnings[0]["field_path"] == "payload.phases.LaB6"
-    assert warnings[0]["level"] == "info"  # informative (Dan, 2026-10-15): nothing to act on
+    assert warnings[0]["level"] == "info"  # informative: nothing to act on
 
 
 def test_run_parameter_at_limit_warning(tmp_path):

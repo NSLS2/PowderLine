@@ -62,7 +62,7 @@ Concretely, each phase's `peak_broadening.size_broadening` is set to
   *Known Issues*. The reported equatorial microstrain (which combines them) is
   stable regardless.
 - **Fit quality**: **Rwp = 8.46%, GOF = 0.86** (chi**2 = 2781.62 on 3767
-  observations: the native path fits exactly 1 ≤ 2θ ≤ 15, deliberate change 23). This is an improvement over the base example (Rwp = 10.83%,
+  observations: the native path fits exactly 1 ≤ 2θ ≤ 15). This is an improvement over the base example (Rwp = 10.83%,
   GOF = 1.10): removing the ill-conditioned size parameters yields a cleaner fit.
   GOF < 1 indicates the profile ESDs are mildly overestimated.
 - **Refined values (with ESDs)**:
@@ -138,7 +138,7 @@ recipe states exactly what GSAS-II refines. This example uses that mechanism dir
 present with `refine_flag=false`, pinning crystallite size while strain refines.
 
 The recipe was converted from its schema-0.26.0 form with
-`scripts/convert_recipe_026.py` at PowderLine 0.2.0 (re/07); the converter's
+`scripts/convert_recipe_026.py` at PowderLine 0.2.0; the converter's
 notes for each example are in `docs/SCHEMA_HISTORY.md`'s gsasii section.
 
 ## Data citation
