@@ -151,7 +151,7 @@ print("OK")
 
 def test_validate_invalid_recipe_raises():
     """validate() raises ValidationError for a recipe missing required fields."""
-    bad = {"schema_name": "gsasii.rietveld", "core_schema_version": "1.0.0", "engine_schema_version": "1.0.0"}
+    bad = {"schema_name": "gsasii.rietveld", "core_schema_version": "0.1.0", "engine_schema_version": "0.1.0"}
     with pytest.raises(ValidationError):
         powderline.validate(bad)
 
@@ -286,7 +286,7 @@ def test_run_validate_only_summary_is_uniform_across_gateways(tmp_path):
         assert s["status"] == "validated" and s["rwp"] is None and s["elapsed_time"] == 0.0, name
         assert s["status"] == "validated", name  # re/12 D3: every run() dict carries a status
         assert s["method"] == "validate_only" and s["schema_name"].startswith(name + "."), name
-        assert s["core_schema_version"] == "1.0.0" and s["engine_schema_version"] == "1.0.0", name
+        assert s["core_schema_version"] == "0.1.0" and s["engine_schema_version"] == "0.1.0", name
         assert s["phases"] == 1 and isinstance(s["simulation_mode"], bool), name
         assert isinstance(s["parameters_requested"], int) and s["parameters_requested"] > 0, name
         assert isinstance(s["warnings"], list) and isinstance(s["engine"], dict), name

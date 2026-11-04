@@ -1,7 +1,7 @@
 {
   "schema_name": "gsasii.rietveld",
-  "core_schema_version": "1.0.0",
-  "engine_schema_version": "1.0.0",
+  "core_schema_version": "0.1.0",
+  "engine_schema_version": "0.1.0",
   "metadata": {
     "textured": {
       "what": "simulated LaB6 with March-Dollase r = 0.6 along [001]; a mathematical demonstration (LaB6 does not texture); see DESCRIPTION.md and data/truth.json"

@@ -93,5 +93,5 @@ own recipe is valid before a full run.
   file, and the `powderline.run()` Python API.
 - **[Troubleshooting](TROUBLESHOOTING.md)** — if a run fails or a recipe is
   rejected.
-- **[Migration guide](migration-0.26-to-1.0.md)** — if you have recipes from
+- **[Migration guide](migration-0.1-to-0.2.md)** — if you have recipes from
   PowderLine 0.1.1 (schema 0.26.0).

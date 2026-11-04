@@ -43,7 +43,7 @@ Core (engine-free; `import powderline` imports no engine):
   (lazy `ep.load`), the frozen `Gateway` dataclass (`name`, `capabilities`,
   `validate`, `run`), `register_gateway` escape hatch, `check_engine_version`.
   Entry points only; no in-code fallback (KI-13).
-- `schema_core.py` — core schema **1.0.0**: `CoreRecipe` frame
+- `schema_core.py` — core schema **0.1.0**: `CoreRecipe` frame
   (`schema_name`, `core_schema_version`, `engine_schema_version`, `metadata`
   ≤ 1 MiB, `payload`), `RefinableParameter` `[value, flag]` /
   `BoundedRefinableParameter` `[value, flag, min, max]`, `XRDData`, `FitRange`,
@@ -69,7 +69,7 @@ Core (engine-free; `import powderline` imports no engine):
   tie propagation, KI-04); `doctor.py` — the `--doctor` report (KI-13).
 
 Gateways (`src/powderline/gateways/<engine>/`), each a **schema layer**
-(`schema.py`: the engine schema 1.0.0 on core 1.0.0, `DECLARATIONS`,
+(`schema.py`: the engine schema 0.1.0 on core 0.1.0, `DECLARATIONS`,
 `SCHEMA_NAMES`, `validate_recipe`; imports no engine) plus a **runtime
 layer** (`gateway.py` factory `get_gateway()` with `capabilities()`,
 `validate()`, `run()`, `ENGINE_VERSION_SPEC`, `ENV`/`INSTALL_COMMAND`; engine
@@ -101,7 +101,7 @@ imported lazily from `run()`):
   (CrysPy's ion table, re/28).
 
 Docs: `docs/schemas.md`, `docs/fields.md` (generated tables), `docs/input-guidance.md`,
-`docs/engine-behavior.md`, `docs/policies.md`, `docs/migration-0.26-to-1.0.md`,
+`docs/engine-behavior.md`, `docs/policies.md`, `docs/migration-0.1-to-0.2.md`,
 `docs/support-matrix.md`, `docs/cross-engine-comparison.md`, `docs/DEVELOPMENT.md`
 ("Adding a refinement engine"). Scripts: `scripts/gen_schema_field_tables.py`
 (field tables + support matrix → `docs/_generated/`), `scripts/cross_engine_comparison.py`,

@@ -38,7 +38,7 @@ def test_validate_only_gsasii_native_recipe(capsys):
     assert rc == 0
     assert "Recipe validation successful" in out
     assert "Schema name: gsasii.rietveld" in out
-    assert "Core schema version: 1.0.0" in out and "Engine schema version: 1.0.0" in out
+    assert "Core schema version: 0.1.0" in out and "Engine schema version: 0.1.0" in out
     assert "gsasii_broadening_default_applied" in out  # the structured warnings are shown
 
 
@@ -47,7 +47,7 @@ def test_validate_only_topas_native_recipe(capsys):
     out = capsys.readouterr().out
     assert rc == 0
     assert "Schema name: topas.rietveld" in out
-    assert "Core schema version: 1.0.0" in out and "Engine schema version: 1.0.0" in out  # uniform summary (P-28)
+    assert "Core schema version: 0.1.0" in out and "Engine schema version: 0.1.0" in out  # uniform summary (P-28)
     assert "Engine version: 6" in out and "Iterations: " in out and "Parameters requested: " in out
     assert "warning(s):" in out and "topas_adp_converted" in out  # the structured warnings are shown
 
@@ -57,7 +57,7 @@ def test_validate_only_easydiffraction_native_recipe(capsys):
     out = capsys.readouterr().out
     assert rc == 0
     assert "Schema name: easydiffraction.rietveld" in out
-    assert "Core schema version: 1.0.0" in out  # uniform summary (P-28)
+    assert "Core schema version: 0.1.0" in out  # uniform summary (P-28)
     assert "Calculator: crysfml" in out
 
 

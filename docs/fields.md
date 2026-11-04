@@ -17,7 +17,7 @@ table on the [support matrix](support-matrix.md) page.
 
 - **Parameters.** A refinable quantity is a JSON list, never an object:
   `[value, refine_flag]` in `gsasii.*` (GSAS-II applies limits only after a
-  fit, so gsasii 1.0.0 exposes no bounds), `[value, refine_flag, min, max]`
+  fit, so gsasii 0.1.0 exposes no bounds), `[value, refine_flag, min, max]`
   in `topas.*` and `easydiffraction.*`. `value` is a number and never `null`;
   `refine_flag` is a JSON boolean (`true`/`false`, never `1` or `"true"`);
   `min`/`max` are numbers or `null` (open side). A parameter refines when its
@@ -79,8 +79,8 @@ symmetry-determined values, tie groups and flags, the name rule) are on the
 | Background | Chebyshev + pseudo-Voigt peaks | same | Chebyshev, `One_on_X`, `xo_Is` peaks | same | Chebyshev |
 | Simulation | `refinement_cycles: 1`, no flag set | same | `iters: 0`, no flag set | same | no flag set |
 | Multi-phase | yes | — | yes | — | yes |
-| Ionic scattering types (`scattering_types`, CIF spelling) | yes (GSAS-II's 114 ions) | — | refused in 1.0.0 (T7) | — | cryspy only (111 ions) |
-| Preferred orientation (`preferred_orientation`, March–Dollase) | yes | — | refused in 1.0.0 (T9) | — | cryspy only, with `march_random_fract` |
+| Ionic scattering types (`scattering_types`, CIF spelling) | yes (GSAS-II's 114 ions) | — | refused in 0.1.0 (T7) | — | cryspy only (111 ions) |
+| Preferred orientation (`preferred_orientation`, March–Dollase) | yes | — | refused in 0.1.0 (T9) | — | cryspy only, with `march_random_fract` |
 | Engine version in the recipe | no (pinned by pixi) | no | `engine_version: "6"` | yes | no (pinned by pixi) |
 
 ## `gsasii.rietveld`

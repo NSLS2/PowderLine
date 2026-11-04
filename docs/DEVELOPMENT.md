@@ -54,7 +54,7 @@ reproducible, automatable, and accessible.
 | `api.py` | `validate()` and `run()`: resolve the gateway from `schema_name` (`<engine>.<workflow>`) through the registry and hand the recipe over; `ValidationResult` |
 | `kicker.py` | the one CLI (`powderline <recipe>`; `pixi run kicker` runs the same `main`): loads the recipe, refuses templates, maps the engine flags onto the gateway's run options, prints the summary and the structured warnings |
 | `registry.py` | gateway discovery from the `powderline.gateways` entry-point group, lazy loading, `Gateway` dataclass (`name`, `capabilities`, `validate`, `run`), `register_gateway` escape hatch, the engine-version check |
-| `schema_core.py` | core schema 1.0.0: `CoreRecipe` (frame), `RefinableParameter` / `BoundedRefinableParameter`, `XRDData`, `FitRange`, `ChebyshevBackground`, `UnitCell`, `Atom`, `UanisoTensor`, `Phase[P]` (the phase block with every symmetry rule), `CoreFloat`/`CoreInt`/`CoreName`, `collect_warnings`, `parameters_requested`, `fit_limits_on_data`; the engine schema building blocks (P-37): `EngineRecipe`, `recipe_validator`, `refined_flags`, `custom_error` / `raise_problems`, `omit_absent`, `absent_not_null`, `unique_phase_names`, `fit_window`, `fit_range_problems`, `outside_window_problems`, `refined_flag_problems`, `unit_schema` |
+| `schema_core.py` | core schema 0.1.0: `CoreRecipe` (frame), `RefinableParameter` / `BoundedRefinableParameter`, `XRDData`, `FitRange`, `ChebyshevBackground`, `UnitCell`, `Atom`, `UanisoTensor`, `Phase[P]` (the phase block with every symmetry rule), `CoreFloat`/`CoreInt`/`CoreName`, `collect_warnings`, `parameters_requested`, `fit_limits_on_data`; the engine schema building blocks (P-37): `EngineRecipe`, `recipe_validator`, `refined_flags`, `custom_error` / `raise_problems`, `omit_absent`, `absent_not_null`, `unique_phase_names`, `fit_window`, `fit_range_problems`, `outside_window_problems`, `refined_flag_problems`, `unit_schema` |
 | `symmetry.py` | gemmi-backed symmetry: canonical space-group names, cell tie groups and the cell check, special-position analysis, coupling groups for coordinates and Uij |
 | `compat.py` | declared schema-version compatibility: `check_engine_schema_version`, `support_matrix()`, `schema_declarations()` (a gateway's `DECLARATIONS`) |
 | `fitstats.py` | the uniform Rwp / Rexp / GoF / χ²_red over the fit window with positive weights |
@@ -123,8 +123,8 @@ code, so **restart it after editing anything it runs**
 
 ```
 schema_name              "<engine>.<workflow>"
-core_schema_version      "1.0.0"
-engine_schema_version    "1.0.0"
+core_schema_version      "0.1.0"
+engine_schema_version    "0.1.0"
 metadata                 free-form, echoed, never read (<= 1 MiB)
 payload                  the engine schema's payload model
 ```
@@ -182,8 +182,8 @@ distribution (out of tree) that provides:
    - the recipe model(s) subclassing `powderline.schema_core.EngineRecipe`
      with `schema_name` narrowed to a `Literal` and two class variables,
      `gateway_name` and `schema_declarations = DECLARATIONS`, where
-     `DECLARATIONS = compat.schema_declarations(engine_schema_version="1.0.0",
-     supported_engine_schemas="==1.0.0", requires_core_schema="==1.0.0")`
+     `DECLARATIONS = compat.schema_declarations(engine_schema_version="0.1.0",
+     supported_engine_schemas="==0.1.0", requires_core_schema="==0.1.0")`
      (widened explicitly later, never by range); `EngineRecipe` runs the
      version check;
    - `validate_recipe = schema_core.recipe_validator({<schema_name>: <model>, ...},
@@ -373,7 +373,7 @@ schema names it `pv_gaussian_sigma_sq`); SH/L is floored at 0.002 in the
 profile calculation; `Refine` returns nothing and stores its messages in the
 project; `Nvars` counts parameters dropped as singular; `GOF` means two
 different things in Rietveld and Peak List fits; limits are applied after the
-cycles (why gsasii 1.0.0 exposes no bounds).
+cycles (why gsasii 0.1.0 exposes no bounds).
 
 ### Output files
 
@@ -679,7 +679,7 @@ guard: `powderline.run()` trusts its caller.
 
 `powderline.gateways.gsasii.simulation_builder.SimulationRecipeBuilder` turns a
 crystal-structure dict (`space_group`, `unit_cell`, `atoms`, `formula`) into a
-`gsasii.rietveld` 1.0.0 simulation recipe: the conventional cell reduced to
+`gsasii.rietveld` 0.1.0 simulation recipe: the conventional cell reduced to
 symmetry-unique sites with an orbit self-check, two-origin groups moved to
 origin choice 2, the canonical space-group name, every default stated, SH/L
 0.002, instrument defaults from `.powderline_config.yaml`'s

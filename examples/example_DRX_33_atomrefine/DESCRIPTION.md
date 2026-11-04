@@ -100,7 +100,7 @@ The `ADP` field serves two purposes:
 
 **Refinement is controlled by the `refine_flag`** (second element in `[value, refine_flag]`):
 
-### Phase block (gsasii 1.0.0):
+### Phase block (gsasii 0.1.0):
 Each atom states its values and flags together. DRX_33's Li (fixed position 4a)
 refines occupancy and Uiso; Li4MgWO6_SG12's Li1 (site 4g: x and z fixed by
 symmetry) refines only y:
@@ -162,7 +162,7 @@ as posed.
 | example_DRX_33_anisoADP | ❌ None | ✅ Uaniso (O1 only, 6 components) | Demonstrate anisotropic displacement parameters |
 | example_DRX_33_simulation | ❌ All locked | ❌ All locked | Validate forward calculation only |
 
-## Refine flags (gsasii 1.0.0)
+## Refine flags (gsasii 0.1.0)
 
 Every refinable parameter is `[value, refine_flag]` (no bounds: GSAS-II applies
 limits only after a fit); a parameter refines iff its flag is `true`. The gsasii

@@ -15,8 +15,8 @@ versions it accepts (see [the support matrix](support-matrix.md)):
 | Key | Meaning | Today |
 |---|---|---|
 | `schema_name` | `<engine>.<workflow>` | one of the five below |
-| `core_schema_version` | the shared top level and structural models (`xrd_data`, `fit_range`, the phase block, parameter lists, `metadata`) | `"1.0.0"` |
-| `engine_schema_version` | that engine's payload (instrument, background, controls, engine-specific phase fields) | `"1.0.0"` for every engine |
+| `core_schema_version` | the shared top level and structural models (`xrd_data`, `fit_range`, the phase block, parameter lists, `metadata`) | `"0.1.0"` |
+| `engine_schema_version` | that engine's payload (instrument, background, controls, engine-specific phase fields) | `"0.1.0"` for every engine |
 
 Validation never needs an engine: `powderline <recipe> --validate-only` (or
 `powderline.validate(recipe)`) works in the core-only default environment for
@@ -86,7 +86,7 @@ simulation). Nothing has a default: `fit_range`, `background`,
 `instrument.corrections`, `instrument.geometry` and the phases'
 `peak_broadening` are optional, and a block left out is **not modelled**.
 `scattering_types` (ionic types) and `preferred_orientation` (March–Dollase)
-are declared and **refused** in topas 1.0.0: their TOPAS halves (`occ Fe+3`,
+are declared and **refused** in topas 0.1.0: their TOPAS halves (`occ Fe+3`,
 the `PO(...)` macro) await a TOPAS 6 run (P-47 T7, P-48 T9).
 
 ### `topas.spf`

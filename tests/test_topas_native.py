@@ -908,7 +908,7 @@ def test_gateway_run_validate_only(tmp_path):
     assert "warnings" in result
     # the uniform summary (P-28): the TOPAS items under "engine", core_schema_version present
     assert tuple(result) == VALIDATE_ONLY_KEYS
-    assert result["core_schema_version"] == "1.0.0"
+    assert result["core_schema_version"] == "0.1.0"
     assert result["engine"] == {"iters": _rietveld()["payload"]["refinement_controls"]["iters"], "engine_version": "6"}
     assert "iters" not in result and "engine_version" not in result
     from powderline.schema_core import parameters_requested

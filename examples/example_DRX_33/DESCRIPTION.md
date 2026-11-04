@@ -80,7 +80,7 @@ kept deliberately as the ill-conditioned posing; `example_DRX_33_strainonly` is 
 physical re-parameterisation (size held at 10 µm; Rwp 8.46 % against 10.83 % here)
 whose output recipe is valid and feeds back.
 
-## Refine flags (gsasii 1.0.0)
+## Refine flags (gsasii 0.1.0)
 
 Every refinable parameter is `[value, refine_flag]` (no bounds: GSAS-II applies
 limits only after a fit); a parameter refines iff its flag is `true`. The gsasii

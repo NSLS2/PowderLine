@@ -133,7 +133,7 @@ def refined_by_path(model, result: Mapping[str, Any]) -> tuple:
 
     ``refined`` maps recipe paths to ``(value, esd)`` in recipe units for everything GSAS-II varied;
     ``not_varied`` lists the flagged paths GSAS-II reported nothing for (a flagged parameter that does
-    not affect the pattern, or one GSAS-II dropped); ``at_limit`` is empty: gsasii 1.0.0 has no bounds;
+    not affect the pattern, or one GSAS-II dropped); ``at_limit`` is empty: gsasii 0.1.0 has no bounds;
     ``problems`` are the reasons the output recipe cannot be trusted as the run's result (an unmapped
     name, a peak fit whose refined values were not reported back) -- the caller marks it not valid with them.
     """

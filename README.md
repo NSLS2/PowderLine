@@ -191,8 +191,8 @@ request access).
 - **[Engine behaviour notes](docs/engine-behavior.md)** — what each engine
   does, and PowderLine's policy toward it.
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** — common errors and fixes.
-- **[Migration guide](docs/migration-0.26-to-1.0.md)** — from PowderLine 0.1.1
-  (unified schema 0.26.0) to 0.2.0 (core + engine schemas 1.0.0).
+- **[Migration guide](docs/migration-0.1-to-0.2.md)** — from PowderLine 0.1.1
+  (unified schema 0.26.0) to 0.2.0 (core + engine schemas 0.1.0).
 - **[Schema History](docs/SCHEMA_HISTORY.md)** and the
   **[support matrix](docs/support-matrix.md)** — schema versions and declared
   compatibility.

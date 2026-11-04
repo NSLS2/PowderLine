@@ -59,7 +59,7 @@ def _controls(iters=100000):
 
 def _rietveld():
     return {
-        "schema_name": "topas.rietveld", "core_schema_version": "1.0.0", "engine_schema_version": "1.0.0",
+        "schema_name": "topas.rietveld", "core_schema_version": "0.1.0", "engine_schema_version": "0.1.0",
         "engine_version": "6",
         "payload": {
             "xrd_data": _xrd(), "fit_range": [2.0, 14.0], "instrument": _instrument(),
@@ -91,7 +91,7 @@ def _spf():
     instrument = _instrument()
     del instrument["geometry"], instrument["corrections"]["Simple_Axial_Model"]
     return {
-        "schema_name": "topas.spf", "core_schema_version": "1.0.0", "engine_schema_version": "1.0.0",
+        "schema_name": "topas.spf", "core_schema_version": "0.1.0", "engine_schema_version": "0.1.0",
         "engine_version": "6",
         "payload": {
             "xrd_data": _xrd(), "instrument": instrument,

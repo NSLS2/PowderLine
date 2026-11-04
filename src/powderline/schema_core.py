@@ -1,4 +1,4 @@
-"""Core recipe schema (core schema 1.0.0): the models every engine schema shares.
+"""Core recipe schema (core schema 0.1.0): the models every engine schema shares.
 
 Engine-free and pure pydantic. Engine schemas (``gsasii.*``, ``topas.*``,
 ``easydiffraction.*``; re/04-06) build their payloads from these models; nothing
@@ -70,10 +70,10 @@ from powderline.symmetry import (
 # --- versions (A40, A65) ---------------------------------------------------
 
 #: The core schema version new recipes are written against.
-CORE_SCHEMA_VERSION = "1.0.0"
+CORE_SCHEMA_VERSION = "0.1.0"
 #: Core schema versions this PowderLine accepts (PEP 440 specifier). Widened
 #: explicitly when a new core version is compatible; never inferred (A40).
-SUPPORTED_CORE_SCHEMAS = "==1.0.0"
+SUPPORTED_CORE_SCHEMAS = "==0.1.0"
 
 #: Size cap on the serialized ``metadata`` block, in bytes of UTF-8 JSON (A64).
 #: A sanity limit against accidents (e.g. a pasted pattern); amend here and in
@@ -89,7 +89,7 @@ def parse_version(field: str, value: str) -> Version:
     try:
         return Version(value)
     except InvalidVersion:
-        raise ValueError(f"{field} {value!r} is not a valid version (PEP 440, e.g. '1.0.0')") from None
+        raise ValueError(f"{field} {value!r} is not a valid version (PEP 440, e.g. '0.1.0')") from None
 
 
 def check_core_schema_version(version: str) -> None:
@@ -872,7 +872,7 @@ class MarchDollase(CoreModel, Generic[P]):
     capability, and a core field would reserve the name for engines that do not have it yet (A93, A109).
     """
 
-    model: Literal["march_dollase"] = Field(description="The only model in 1.0.0")
+    model: Literal["march_dollase"] = Field(description="The only model in 0.1.0")
     hkl: tuple[CoreInt, CoreInt, CoreInt] = Field(description="Texture axis as Miller indices, not all zero")
     ratio: P = Field(description="March coefficient r: 1 = random, < 1 platy, > 1 needle; > 0")
 

@@ -59,7 +59,7 @@ This example demonstrates single peak fitting capabilities:
 
 ## Schema
 
-`gsasii.spf` 1.0.0 (core 1.0.0). Every parameter is `[value, refine_flag]`; the
+`gsasii.spf` 0.1.0 (core 0.1.0). Every parameter is `[value, refine_flag]`; the
 Peak List (`payload.single_peaks`) and the background peaks
 (`payload.background.single_peaks`) both state `pv_gaussian_sigma_sq`
 (centideg², the value always was σ²) and `pv_lorentzian_gamma` (centideg).

@@ -27,7 +27,7 @@ fresh clone to a finished refinement, on Linux or Windows.
    integration-guide
    cross-engine-comparison
    TROUBLESHOOTING
-   migration-0.26-to-1.0
+   migration-0.1-to-0.2
    support-matrix
    SCHEMA_HISTORY
    policies

@@ -51,7 +51,7 @@ python scripts/convert_recipe_026.py old_input.json -o input.json
 ```
 
 For TOPAS or easydiffraction write a native recipe (there is no converter).
-The [migration guide](migration-0.26-to-1.0.md) explains every change. A
+The [migration guide](migration-0.1-to-0.2.md) explains every change. A
 mistyped engine name (`gsasii.reitveld`) is reported against that engine's
 workflow names; an unknown engine prefix (`gsas2.rietveld`) raises
 `GatewayNotInstalledError` listing the installed gateways.
@@ -105,16 +105,16 @@ never written as `null`.
 
 **Error:**
 ```
-  • core_schema_version: Value error, core_schema_version '1.1.0' is not supported by PowderLine 0.2.0 (accepted: ==1.0.0; current: 1.0.0)
-  • engine_schema_version: ... the 'gsasii' gateway of PowderLine 0.2.0 accepts engine schema ==1.0.0 (current: 1.0.0)
+  • core_schema_version: Value error, core_schema_version '1.1.0' is not supported by PowderLine 0.2.0 (accepted: ==0.1.0; current: 0.1.0)
+  • engine_schema_version: ... the 'gsasii' gateway of PowderLine 0.2.0 accepts engine schema ==0.1.0 (current: 0.1.0)
 ```
 
 **Cause:** PowderLine **declares** the schema versions it accepts and does not
 infer compatibility from version numbers; today every declaration is
-`==1.0.0`.
+`==0.1.0`.
 
-**Solution:** write `"core_schema_version": "1.0.0"` and
-`"engine_schema_version": "1.0.0"`. The [support matrix](support-matrix.md)
+**Solution:** write `"core_schema_version": "0.1.0"` and
+`"engine_schema_version": "0.1.0"`. The [support matrix](support-matrix.md)
 lists the declarations of every installed gateway.
 
 ---
@@ -259,7 +259,7 @@ hand; TOPAS cannot be pinned, so a `topas.*` run needs the installed version
 **Solution:** `pixi install -e gsasii` restores the pinned GSAS-II; for TOPAS
 pass `--topas-dir` (the folder holding `tc.exe`) and `--topas-version 6`, or
 set both in `.powderline_config.yaml`; PowderLine never searches for TOPAS.
-`topas.*` 1.0.0 supports TOPAS 6 only.
+`topas.*` 0.1.0 supports TOPAS 6 only.
 
 ---
 
@@ -916,7 +916,7 @@ The field tables and the support matrix under `docs/_generated/` are
 generated from the schemas. `pixi run fields-check` compares them with the
 code and prints one line on success:
 ```
-fields-check: 7 files under docs/_generated match the schema declarations (core 1.0.0; easydiffraction 1.0.0, gsasii 1.0.0, topas 1.0.0)
+fields-check: 7 files under docs/_generated match the schema declarations (core 0.1.0; easydiffraction 0.1.0, gsasii 0.1.0, topas 0.1.0)
 ```
 A non-zero exit names the stale file. After changing a schema module or a
 gateway's declarations:

@@ -69,7 +69,7 @@ true]}`; `hkl` integers not all zero, `ratio` > 0 in the engine's parameter
 shape; 1 is random, < 1 platy, > 1 needle, in GSAS-II's convention averaged
 over the axis's symmetry equivalents). easydiffraction's block also requires
 `march_random_fract` (`[f, flag, min, max]`, 0 ≤ f ≤ 1) and needs the cryspy
-calculator; topas 1.0.0 refuses both fields (their TOPAS halves await a TOPAS
+calculator; topas 0.1.0 refuses both fields (their TOPAS halves await a TOPAS
 machine). Start `ratio` on the expected side of 1, not at exactly 1.0: in a cubic phase
 the averaged correction is stationary at r = 1 and GSAS-II aborts the
 refinement (EB-99, `example_LaB6_textured`).
@@ -130,7 +130,7 @@ derives it).
   factor for, naming the forms it has: GSAS-II 5.7.9 has 114 ions, CrysPy
   111 (no `O2-`, only `O1-`), CrysFML computes neutral atoms only (use the
   cryspy calculator), and **TOPAS does not accept `scattering_types` in
-  schema 1.0.0** (its half awaits a TOPAS run). PowderLine spells the ion
+  schema 0.1.0** (its half awaits a TOPAS run). PowderLine spells the ion
   the engine's way itself; GSAS-II would read `"La3+"` as hydrogen (EB-94).
 - **Coordinates** are fractional JSON numbers. On a special position the
   values fixed or tied by symmetry follow one rule (the full table with
@@ -288,7 +288,7 @@ approximated; each is a validation error or simply absent.
 - **Recipe translation between engines**: a recipe is written in one engine's
   terms; the structural block can be reused, the rest cannot.
 - **Kα doublets and laboratory X-ray data**, **neutron** and **time-of-flight**
-  data: gsasii 1.0.0 is `PXC` single-wavelength only; TOPAS recipes state one
+  data: gsasii 0.1.0 is `PXC` single-wavelength only; TOPAS recipes state one
   `lam` line; easydiffraction's Kα2 slot exists and reaches the engine, but
   PowderLine has no laboratory-data example or verification behind it yet.
 - **Fundamental-parameters profiles** (TOPAS `fp`): out of scope.
@@ -300,15 +300,15 @@ approximated; each is a validation error or simply absent.
 - **Anisotropic size/strain models** (uniaxial, ellipsoidal, Stephens):
   gsasii and topas accept `isotropic` only.
 - **Preferred orientation beyond March–Dollase** (spherical harmonics, a
-  second axis) and **March–Dollase in topas 1.0.0** (declared, refused; T9).
-- **Charged scattering types in topas 1.0.0** (declared, refused; T7).
+  second axis) and **March–Dollase in topas 0.1.0** (declared, refused; T9).
+- **Charged scattering types in topas 0.1.0** (declared, refused; T7).
 - **Parameter bounds in gsasii recipes**: GSAS-II clamps after the fit, so
   bounds are not exposed; they may come in a later gsasii schema version.
 - **User-defined constraints** between atoms (shared occupancies, tied ADPs
-  across sites): not in 1.0.0.
+  across sites): not in 0.1.0.
 - **`unsafe_mode`** (relaxing checks such as the occupancy range without
   guaranteeing the recipe's intent): a named future feature, not present.
-- **TOPAS 7**: `topas.*` 1.0.0 is verified against TOPAS 6 and declares TOPAS
+- **TOPAS 7**: `topas.*` 0.1.0 is verified against TOPAS 6 and declares TOPAS
   6 only; TOPAS 7 needs an explicit widening with a compatibility run.
 - **A structure-source plugin** (Materials Project, CIF) upstream of the
   simulation recipe builder, with its own configuration: the Materials

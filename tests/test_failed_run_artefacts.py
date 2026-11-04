@@ -12,7 +12,7 @@ from powderline.results import failure_envelope
 
 pytestmark = pytest.mark.core
 
-RECIPE = {"schema_name": "fake.rietveld", "core_schema_version": "1.0.0", "engine_schema_version": "1.0.0", "payload": {}}
+RECIPE = {"schema_name": "fake.rietveld", "core_schema_version": "0.1.0", "engine_schema_version": "0.1.0", "payload": {}}
 
 
 def _gateway(name, run):

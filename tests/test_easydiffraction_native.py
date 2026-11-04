@@ -778,7 +778,7 @@ def test_run_validate_only(tmp_path):
     # the uniform summary (P-28): the easydiffraction item under "engine", core_schema_version present
     from powderline.registry import VALIDATE_ONLY_KEYS
     assert tuple(result) == VALIDATE_ONLY_KEYS
-    assert result["core_schema_version"] == "1.0.0"
+    assert result["core_schema_version"] == "0.1.0"
     assert result["engine"] == {"calculator": "crysfml"} and "calculator" not in result
     assert isinstance(result["parameters_requested"], int) and result["parameters_requested"] > 0
 

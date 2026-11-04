@@ -1,10 +1,10 @@
-"""GSAS-II engine schemas ``gsasii.rietveld`` and ``gsasii.spf`` (engine schema 1.0.0).
+"""GSAS-II engine schemas ``gsasii.rietveld`` and ``gsasii.spf`` (engine schema 0.1.0).
 
 Built on the core schema (:mod:`powderline.schema_core`): a recipe is a
 :class:`~powderline.schema_core.CoreRecipe`, a phase a
 ``Phase[RefinableParameter]`` with the gsasii fields flat in the same block
 (A93). Values are in GSAS-II's native units (A4); every refinable is
-``[value, refine_flag]``: gsasii 1.0.0 exposes no bounds (A84). Invalid recipes
+``[value, refine_flag]``: gsasii 0.1.0 exposes no bounds (A84). Invalid recipes
 raise pydantic's ``ValidationError`` with every problem at its location (A70).
 
 Engine-free: imports no GSAS-II (enforced by an import-block test), so
@@ -78,9 +78,9 @@ from powderline.symmetry import cell_tie_groups
 
 # --- versions (A65, A81) ----------------------------------------------------
 
-ENGINE_SCHEMA_VERSION = "1.0.0"
-SUPPORTED_ENGINE_SCHEMAS = "==1.0.0"
-REQUIRES_CORE_SCHEMA = "==1.0.0"
+ENGINE_SCHEMA_VERSION = "0.1.0"
+SUPPORTED_ENGINE_SCHEMAS = "==0.1.0"
+REQUIRES_CORE_SCHEMA = "==0.1.0"
 
 #: The gateway's schema declarations (``capabilities()`` keys, A65).
 DECLARATIONS = schema_declarations(
@@ -364,7 +364,7 @@ DEFAULT_LG_ETA = 1.0
 
 
 class SizeBroadening(CoreModel):
-    """Crystallite-size broadening; isotropic only in gsasii 1.0.0."""
+    """Crystallite-size broadening; isotropic only in gsasii 0.1.0."""
 
     model: Literal["isotropic"] = Field(description="'isotropic' (uniaxial and ellipsoidal are not supported)")
     isotropic_size: RefinableParameter = Field(json_schema_extra=unit_schema(UNIT_MICROMETRE), description="> 0")
@@ -380,7 +380,7 @@ class SizeBroadening(CoreModel):
 
 
 class StrainBroadening(CoreModel):
-    """Microstrain broadening; isotropic only in gsasii 1.0.0."""
+    """Microstrain broadening; isotropic only in gsasii 0.1.0."""
 
     model: Literal["isotropic"] = Field(description="'isotropic' (uniaxial and generalized are not supported)")
     isotropic_strain: RefinableParameter = Field(json_schema_extra=unit_schema(UNIT_MICROSTRAIN),

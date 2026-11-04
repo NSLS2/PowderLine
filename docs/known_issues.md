@@ -31,7 +31,7 @@ directly rather than registered (keeps the register lean).
   decision, revisit trigger. Reference related issues by id.
 
 **0.2.0 dispositions are confirmed.** The multi-engine refactor (PowderLine
-0.2.0, native schemas 1.0.0) changed the ground under several entries. Each
+0.2.0, native schemas 0.1.0) changed the ground under several entries. Each
 affected entry below carries a *Disposition (0.2.0, confirmed 2026-10-16)*
 paragraph that cites the decision which changed it; the heading status is
 amended with the outcome. The maintainer (Dan, acting, 2026-10-16; P-39,
@@ -71,7 +71,7 @@ fixed distorted cell.
 validation option is added. If added, it should be *opt-in / warn* so the
 legitimate symmetry-breaking-simulation use survives.
 
-**Disposition (0.2.0, confirmed 2026-10-16: resolved by A77/A123).** Core schema 1.0.0 refuses a cell that does not fit the space group
+**Disposition (0.2.0, confirmed 2026-10-16: resolved by A77/A123).** Core schema 0.1.0 refuses a cell that does not fit the space group
 (tied lengths and angles equal the first member, fixed angles exact, within
 1e-9), in every engine schema, with a message giving the value to write. The
 pass-through no longer exists for native recipes; the "deliberate
@@ -272,7 +272,7 @@ not imply hard bounds.
 **Disposition (0.2.0, confirmed 2026-10-16: not exposed, by A84).** The re/04 spike confirmed the clamp-and-freeze semantics in detail
 (EB-30: the reported values, ESDs and Rwp belong to the unclamped fit; EB-31:
 direct-cell boxes map onto A-term limits exactly for four of seven crystal
-systems). gsasii 1.0.0 therefore exposes **no bounds**: a 4-element parameter
+systems). gsasii 0.1.0 therefore exposes **no bounds**: a 4-element parameter
 list is a validation error, and the converter reports every bound it drops.
 Bounds may come in a later gsasii schema version with a clamp-freeze-refit
 scheme. `topas.*` and `easydiffraction.*` have bounds with their own,
@@ -576,7 +576,7 @@ in-repo gateways use exactly the plugin mechanism a third-party engine will
 use, and a hard-coded fallback would add a second discovery path and hide a
 stale install. The registry's error already names the fix. re/08 added the
 install-health guidance above; the re-install step is documented for users in
-the [migration guide](migration-0.26-to-1.0.md) and for contributors on the
+the [migration guide](migration-0.1-to-0.2.md) and for contributors on the
 [policies page](policies.md) and in `CLAUDE.md`.
 
 **Disposition (0.2.0, confirmed 2026-10-16: stays `watch`, A58).**

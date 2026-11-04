@@ -2,8 +2,8 @@
 
 | Gateway | PowderLine | Core schema (current / accepted) | Engine schema (current / accepted) | Requires core | Engine version | Workflows |
 |---|---|---|---|---|---|---|
-| `easydiffraction` | 0.2.0 | 1.0.0 / `==1.0.0` | 1.0.0 / `==1.0.0` | `==1.0.0` | `==0.21.1` | `easydiffraction.rietveld` |
-| `gsasii` | 0.2.0 | 1.0.0 / `==1.0.0` | 1.0.0 / `==1.0.0` | `==1.0.0` | `==5.7.9` | `gsasii.rietveld`, `gsasii.spf` |
-| `topas` | 0.2.0 | 1.0.0 / `==1.0.0` | 1.0.0 / `==1.0.0` | `==1.0.0` | `==6` | `topas.rietveld`, `topas.spf` |
+| `easydiffraction` | 0.2.0 | 0.1.0 / `==0.1.0` | 0.1.0 / `==0.1.0` | `==0.1.0` | `==0.21.1` | `easydiffraction.rietveld` |
+| `gsasii` | 0.2.0 | 0.1.0 / `==0.1.0` | 0.1.0 / `==0.1.0` | `==0.1.0` | `==5.7.9` | `gsasii.rietveld`, `gsasii.spf` |
+| `topas` | 0.2.0 | 0.1.0 / `==0.1.0` | 0.1.0 / `==0.1.0` | `==0.1.0` | `==6` | `topas.rietveld`, `topas.spf` |
 
 Generated from `powderline.support_matrix()` of PowderLine 0.2.0; 3 of 3 gateways declare their versions.

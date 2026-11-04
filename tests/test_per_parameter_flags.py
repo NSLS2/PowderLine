@@ -6,7 +6,7 @@ varyList and the held values in the saved project.
 
 These tests run real GSAS-II refinements on small synthetic patterns; the fit
 quality is irrelevant (the data are featureless), only the constraint
-machinery is under test. The recipes are native ``gsasii.rietveld`` 1.0.0
+machinery is under test. The recipes are native ``gsasii.rietveld`` 0.1.0
 (re/07 H; until then the same probes ran on the 0.26.0 path): a cell flag is
 stated per GSAS-II cell group (A95: tetragonal ``a`` and ``b`` refine together),
 every value is stated with its flag.
@@ -38,8 +38,8 @@ def make_recipe(space_group, cell, atoms, cell_flags=None):
     flags = set(cell_flags or ())
     return {
         "schema_name": "gsasii.rietveld",
-        "core_schema_version": "1.0.0",
-        "engine_schema_version": "1.0.0",
+        "core_schema_version": "0.1.0",
+        "engine_schema_version": "0.1.0",
         "payload": {
             "xrd_data": {"tth": tth.tolist(), "Itth": y.tolist(), "Itth_weights": w.tolist()},
             "instrument": {

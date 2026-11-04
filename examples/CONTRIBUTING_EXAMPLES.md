@@ -4,8 +4,8 @@
 
 A recipe names its engine and workflow in `schema_name` and carries two
 versions: `core_schema_version` (the engine-independent part: data, phase
-blocks, fit window; **1.0.0**) and `engine_schema_version` (the engine's own
-instrument, background and controls; **1.0.0** for every engine). The
+blocks, fit window; **0.1.0**) and `engine_schema_version` (the engine's own
+instrument, background and controls; **0.1.0** for every engine). The
 committed examples use:
 
 | `schema_name` | Engine | Where |
@@ -44,8 +44,8 @@ committed examples use:
 ```json
 {
   "schema_name": "gsasii.rietveld",
-  "core_schema_version": "1.0.0",
-  "engine_schema_version": "1.0.0",
+  "core_schema_version": "0.1.0",
+  "engine_schema_version": "0.1.0",
   "payload": {
     "xrd_data": { ... },
     "instrument": { ... },

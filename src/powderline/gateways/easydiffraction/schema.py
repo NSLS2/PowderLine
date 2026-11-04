@@ -1,4 +1,4 @@
-"""easydiffraction engine schema ``easydiffraction.rietveld`` (engine schema 1.0.0, easydiffraction 0.21.1).
+"""easydiffraction engine schema ``easydiffraction.rietveld`` (engine schema 0.1.0, easydiffraction 0.21.1).
 
 Built on the core schema (:mod:`powderline.schema_core`): a recipe is a
 :class:`~powderline.schema_core.CoreRecipe`, a phase a
@@ -101,9 +101,9 @@ P = BoundedRefinableParameter
 
 # --- versions (A65) -------------------------------------------------------------
 
-ENGINE_SCHEMA_VERSION = "1.0.0"
-SUPPORTED_ENGINE_SCHEMAS = "==1.0.0"
-REQUIRES_CORE_SCHEMA = "==1.0.0"
+ENGINE_SCHEMA_VERSION = "0.1.0"
+SUPPORTED_ENGINE_SCHEMAS = "==0.1.0"
+REQUIRES_CORE_SCHEMA = "==0.1.0"
 
 #: The gateway's schema declarations (``capabilities()`` keys, A65). No engine
 #: version in the recipe: the library is pinned and read at run time (A157 B2).

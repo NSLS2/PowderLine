@@ -21,7 +21,7 @@ PowderLine 0.2.0 is a **clean break** from the unified recipe schema 0.26.0
 (A4, A14): one recipe now targets one engine, in that engine's own
 conventions, and nothing is translated between engines. Existing 0.26.0
 recipes do not validate; see the
-[migration guide](docs/migration-0.26-to-1.0.md).
+[migration guide](docs/migration-0.1-to-0.2.md).
 
 ### Added
 
@@ -101,7 +101,7 @@ recipes do not validate; see the
   GSAS-II reads `La3+` as hydrogen, EB-94); easydiffraction hands the CIF
   spelling to CrysPy, and refuses ions with the crysfml calculator (it strips
   every charge, EB-96) or outside CrysPy's table (its silent neutral fallback,
-  EB-95); **topas refuses `scattering_types` in 1.0.0** (TOPAS spells `Fe+3`
+  EB-95); **topas refuses `scattering_types` in 0.1.0** (TOPAS spells `Fe+3`
   and reports an unknown ion only on its console; no TOPAS run here, P-08,
   T7). Gate: the La3+/La per-reflection intensity ratios of the LaB6
   calculation agree between GSAS-II and CrysPy within 1 % (golden
@@ -120,7 +120,7 @@ recipes do not validate; see the
   required `march_random_fract` in [0, 1]), **cryspy calculator only**
   (CrysFML ignores the row silently, EB-97; the row must be keyed by the
   lowercase structure name or CrysPy ignores it too, EB-97); **topas refuses
-  it in 1.0.0** (`PO(...)` awaits a TOPAS 6 run, T9). Gate (C1): on a
+  it in 0.1.0** (`PO(...)` awaits a TOPAS 6 run, T9). Gate (C1): on a
   simulated textured LaB6, each engine's textured/untextured intensity ratio
   per resolved reflection equals Dollase's correction averaged over the
   reflection's cubic equivalents within 0.2 % (CrysPy's correction carries a
@@ -185,16 +185,22 @@ recipes do not validate; see the
   now states the verification status per engine).
 
 **Schemas and versioning**
-- **Core schema 1.0.0** (`src/powderline/schema_core.py`): the shared top level
+- **Core schema 0.1.0** (`src/powderline/schema_core.py`): the shared top level
   (`schema_name`, `core_schema_version`, `engine_schema_version`, `metadata`,
   `payload`) and the structural models every engine uses — `xrd_data`,
   `fit_range`, Chebyshev background, parameter lists, and one **phase block**
   per phase (`space_group`, `unit_cell`, `atoms`) whose every structural
   quantity is a refinable parameter and whose flags, values and bounds are
   checked against the symmetry (A93; `SCHEMA_HISTORY.md` "Core schema").
-- **Engine schemas 1.0.0** on core 1.0.0: `gsasii.rietveld` / `gsasii.spf`,
+- **Engine schemas 0.1.0** on core 0.1.0: `gsasii.rietveld` / `gsasii.spf`,
   `topas.rietveld` / `topas.spf` (TOPAS 6), `easydiffraction.rietveld`
-  (`SCHEMA_HISTORY.md`, one section per engine).
+  (`SCHEMA_HISTORY.md`, one section per engine). Core and engine schemas are
+  versioned separately and all start at **0.1.0**; they replace the single
+  0.1–0.26.0 schema line (`GSASII_Rietveld` / `GSASII_SPF`), which ends at
+  0.26.0 and is told apart by `schema_name`, not by number
+  (`SCHEMA_HISTORY.md` "Version numbering"). While the schemas are 0.x, a
+  breaking change bumps the minor and an additive change or fix the patch
+  (`docs/policies.md`).
 - **Declared compatibility** (A40, A65): core declares the core-schema
   versions it accepts; each gateway declares `engine_schema_version`,
   `supported_engine_schemas` and `requires_core_schema`. `validate()` enforces
@@ -279,7 +285,7 @@ recipes do not validate; see the
 
 **Project**
 - This `CHANGELOG.md` (A12/A16), the migration guide
-  [`docs/migration-0.26-to-1.0.md`](docs/migration-0.26-to-1.0.md), and the
+  [`docs/migration-0.1-to-0.2.md`](docs/migration-0.1-to-0.2.md), and the
   new documentation pages: recipe schemas, fields and features (tables
   generated from the schemas by `scripts/gen_schema_field_tables.py`, P-27),
   input guidance, engine behaviour notes (from the engine-behaviour register,
@@ -356,7 +362,7 @@ recipes do not validate; see the
 - **The simulation recipe builder** (`simulation_builder.SimulationRecipeBuilder`;
   the `mp-simulate` tool that drove it was removed later in this release, see
   Removed) writes SH/L 0.002 (the gsasii floor) instead of 0.001 (P-05,
-  provisional) and emits a `gsasii.rietveld` 1.0.0 recipe. Its structures are now reduced to the
+  provisional) and emits a `gsasii.rietveld` 0.1.0 recipe. Its structures are now reduced to the
   symmetry-unique sites (v0.1.1 handed GSAS-II every atom of the conventional
   cell, so a site was counted *multiplicity* times) and two-origin groups are
   moved to origin choice 2; the simulated grid includes `max_2theta` (row 31,
@@ -487,12 +493,12 @@ recipes do not validate; see the
   `powderline.validate()`, `powderline.run()` and the CLI it fails at
   `schema_name` with "does not name an engine: expected `<engine>.<workflow>`";
   the message names the expected form, not the converter — the
-  [migration guide](docs/migration-0.26-to-1.0.md) does.
+  [migration guide](docs/migration-0.1-to-0.2.md) does.
 - `refinement_controls.refinement_algorithm` (v0.1.1 accepted and ignored it)
   and the `null`-valued `broadening` / `corrections` / phase
   `parameterization` forms that crashed v0.1.1 at run time: the gsasii
   instrument and phase blocks are explicit (row 15, D17/A92/A99).
-- Parameter bounds in gsasii recipes: gsasii 1.0.0 exposes none (GSAS-II
+- Parameter bounds in gsasii recipes: gsasii 0.1.0 exposes none (GSAS-II
   clamps after the fit); a 4-element list is a validation error and the
   converter reports every bound it drops (A84).
 - `payload.asset_path` (not a gateway input, A50) and the second GSAS-II
@@ -567,7 +573,7 @@ recipes do not validate; see the
 
 ### Known limitations carried into 0.2.0
 
-- **TOPAS 7** is out of scope: `topas.*` 1.0.0 supports TOPAS 6 only (P-07,
+- **TOPAS 7** is out of scope: `topas.*` 0.1.0 supports TOPAS 6 only (P-07,
   A143).
 
 ## 0.1.2 — 2026-10-10

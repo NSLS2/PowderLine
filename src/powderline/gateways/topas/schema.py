@@ -1,4 +1,4 @@
-"""TOPAS engine schemas ``topas.rietveld`` and ``topas.spf`` (engine schema 1.0.0, TOPAS 6).
+"""TOPAS engine schemas ``topas.rietveld`` and ``topas.spf`` (engine schema 0.1.0, TOPAS 6).
 
 Built on the core schema (:mod:`powderline.schema_core`): a recipe is a
 :class:`~powderline.schema_core.CoreRecipe` plus ``engine_version``, a phase a
@@ -15,7 +15,7 @@ Engine-free: imports nothing of TOPAS (it has no Python package), so
 A147); engine behaviour: ``tasks/re05-topas6-compat.md`` (C1-C30).
 
 Engine version: the recipe states the TOPAS major version it is written for
-(``engine_version``, A144); 1.0.0 supports TOPAS 6 only (A143).
+(``engine_version``, A144); 0.1.0 supports TOPAS 6 only (A143).
 
 TOPAS rules checked here:
 
@@ -84,10 +84,10 @@ P = BoundedRefinableParameter
 
 # --- versions (A65, A143, A144) -----------------------------------------------
 
-ENGINE_SCHEMA_VERSION = "1.0.0"
-SUPPORTED_ENGINE_SCHEMAS = "==1.0.0"
-REQUIRES_CORE_SCHEMA = "==1.0.0"
-#: TOPAS major versions a ``topas.*`` 1.0.0 recipe may state (A143, A144); widened explicitly, never by range.
+ENGINE_SCHEMA_VERSION = "0.1.0"
+SUPPORTED_ENGINE_SCHEMAS = "==0.1.0"
+REQUIRES_CORE_SCHEMA = "==0.1.0"
+#: TOPAS major versions a ``topas.*`` 0.1.0 recipe may state (A143, A144); widened explicitly, never by range.
 SUPPORTED_ENGINE_VERSIONS = "==6"
 
 #: The gateway's schema declarations (``capabilities()`` keys, A65) plus the TOPAS versions (A144).

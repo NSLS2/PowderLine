@@ -179,7 +179,7 @@ def _engine_version():
 
 
 #: value slots of a GSAS-II constant-wavelength peak row ``[pos, flag, int, flag, sig, flag, gam, flag]``
-#: (``getHeaderInfo``; TOF / pink-beam rows carry ``alp`` and ``bet`` before ``sig`` -- gsasii 1.0.0 is PXC only)
+#: (``getHeaderInfo``; TOF / pink-beam rows carry ``alp`` and ``bet`` before ``sig`` -- gsasii 0.1.0 is PXC only)
 _PEAK_SLOT = {"pos": 0, "int": 2, "sig": 4, "gam": 6}
 
 

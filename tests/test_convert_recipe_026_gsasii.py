@@ -23,7 +23,7 @@ from test_convert_recipe_026 import EXAMPLES, conv  # noqa: E402
 
 def test_space_group_every_spelling_gsasii_read_converts_to_the_same_setting():
     """Every gemmi spelling v0.1.1's GSAS-II read (incl. its StandardizeSpcName fallback) converts to that
-    setting, or stops (origin choice 1, or a setting gsasii 1.0.0 refuses); never another setting (A132)."""
+    setting, or stops (origin choice 1, or a setting gsasii 0.1.0 refuses); never another setting (A132)."""
     import gemmi
     xyz = (0.1234, 0.2345, 0.3456)
 

@@ -78,8 +78,8 @@ inside them):
 
     {
       "schema_name": "gsasii.rietveld",
-      "core_schema_version": "1.0.0",
-      "engine_schema_version": "1.0.0",
+      "core_schema_version": "0.1.0",
+      "engine_schema_version": "0.1.0",
       "payload": {
         "xrd_data": {
           "tth": [1.0, 1.0036, 1.0071],

@@ -43,7 +43,7 @@ The standard gsasii set (`refined_parameters.csv`, `LaB6_unit_cell_report.csv`,
 
 ## Known Issues
 
-None. TOPAS does not accept `scattering_types` in schema 1.0.0 (the TOPAS half
+None. TOPAS does not accept `scattering_types` in schema 0.1.0 (the TOPAS half
 awaits a TOPAS 6 run, T7), so this example has no topas recipe.
 
 ## Per-engine recipes

@@ -71,8 +71,8 @@ def _rietveld_recipe():
     """A minimal valid Rietveld recipe (deep-copy before editing)."""
     return {
         "schema_name": "gsasii.rietveld",
-        "core_schema_version": "1.0.0",
-        "engine_schema_version": "1.0.0",
+        "core_schema_version": "0.1.0",
+        "engine_schema_version": "0.1.0",
         "payload": {
             "xrd_data": _xrd(),
             "instrument": _instrument(),
@@ -91,8 +91,8 @@ def _spf_recipe():
     instrument["broadening"] = {k: p(v[0]) for k, v in instrument["broadening"].items()}
     return {
         "schema_name": "gsasii.spf",
-        "core_schema_version": "1.0.0",
-        "engine_schema_version": "1.0.0",
+        "core_schema_version": "0.1.0",
+        "engine_schema_version": "0.1.0",
         "payload": {
             "xrd_data": _xrd(),
             "instrument": instrument,
@@ -121,11 +121,11 @@ def _errors(exc_info):
 
 def test_version_engine_schema_version_wrong_rejected():
     recipe = copy.deepcopy(_rietveld_recipe())
-    recipe["engine_schema_version"] = "1.0.1"
+    recipe["engine_schema_version"] = "0.1.1"
     with pytest.raises(ValidationError) as exc:
         validate_recipe(recipe)
     # The version check raises an error about unsupported version
-    assert "not supported" in str(exc.value) or "1.0.1" in str(exc.value)
+    assert "not supported" in str(exc.value) or "0.1.1" in str(exc.value)
 
 
 def test_version_core_schema_version_wrong_rejected():
@@ -1017,11 +1017,11 @@ def test_gateway_capabilities_has_expected_keys():
     """gateway.capabilities() contains expected keys."""
     caps = gateway.capabilities()
     assert "engine_schema_version" in caps
-    assert caps["engine_schema_version"] == "1.0.0"
+    assert caps["engine_schema_version"] == "0.1.0"
     assert "supported_engine_schemas" in caps
-    assert caps["supported_engine_schemas"] == "==1.0.0"
+    assert caps["supported_engine_schemas"] == "==0.1.0"
     assert "requires_core_schema" in caps
-    assert caps["requires_core_schema"] == "==1.0.0"
+    assert caps["requires_core_schema"] == "==0.1.0"
     assert "workflows" in caps
     assert "gsasii.rietveld" in caps["workflows"]
     assert "gsasii.spf" in caps["workflows"]

@@ -1,4 +1,4 @@
-# Migrating recipes from schema 0.26.0 to 1.0.0
+# Migrating from PowderLine 0.1.x (schema 0.26.0) to PowderLine 0.2 (core + engine schemas 0.1.0)
 
 <!-- Every statement below is traceable to docs/SCHEMA_HISTORY.md,
      scripts/convert_recipe_026.py, the maintainers' deliberate-changes table
@@ -7,14 +7,18 @@
 
 This guide is for anyone holding recipes written for **PowderLine 0.1.1**
 (unified recipe schema **0.26.0**, `schema_name` `GSASII_Rietveld` or
-`GSASII_SPF`). **PowderLine 0.2.0** reads **core schema 1.0.0** plus one
-**engine schema 1.0.0** (`gsasii`, `topas` or `easydiffraction`). Two
-identifiers appear on every page of these docs, so keep them apart:
+`GSASII_SPF`). **PowderLine 0.2.0** reads **core schema 0.1.0** plus one
+**engine schema 0.1.0** (`gsasii`, `topas` or `easydiffraction`). The new
+schemas are separately versioned and start again at 0.1.0; they are told apart
+from the old 0.1–0.26.0 line by `schema_name` (`gsasii.rietveld`, not
+`GSASII_Rietveld`), not by the number (see
+[SCHEMA_HISTORY](SCHEMA_HISTORY.md)). Two identifiers appear on every page of
+these docs, so keep them apart:
 
 | Identifier | 0.1.1 | 0.2.0 |
 |---|---|---|
 | PowderLine package version | `0.1.1` | `0.2.0` |
-| Recipe schema version(s) | `"schema_version": "0.26.0"` | `"core_schema_version": "1.0.0"` **and** `"engine_schema_version": "1.0.0"` |
+| Recipe schema version(s) | `"schema_version": "0.26.0"` | `"core_schema_version": "0.1.0"` **and** `"engine_schema_version": "0.1.0"` |
 
 ## 1. What changed, and why
 
@@ -39,16 +43,16 @@ identifiers appear on every page of these docs, so keep them apart:
   PowderLine) and `engine_schema_version` (that engine's payload). Each
   PowderLine release *declares* which versions it accepts; nothing is
   inferred from version arithmetic (A40, A65). Today every declaration is
-  `==1.0.0`; see [the support matrix](support-matrix.md).
-- **Unknown keys are errors** at every level of a 1.0.0 recipe; 0.26.0
-  allowed extras and ignored them (SCHEMA_HISTORY, core 1.0.0 "Recipe
+  `==0.1.0`; see [the support matrix](support-matrix.md).
+- **Unknown keys are errors** at every level of a 0.1.0 recipe; 0.26.0
+  allowed extras and ignored them (SCHEMA_HISTORY, core 0.1.0 "Recipe
   frame").
 - **The recipe is the record of the refinement intent.** Validation never
   changes what a recipe means: values fixed or tied by symmetry must be
   stated consistently (an inconsistent cubic cell, or `b` refined while `a`
   is not, is an error, not a silent fix), and GSAS-II's silent floors and
   defaults are now either stated in the recipe or applied with a structured
-  warning (SCHEMA_HISTORY, core 1.0.0 "Phase block"; rows 6–13).
+  warning (SCHEMA_HISTORY, core 0.1.0 "Phase block"; rows 6–13).
 
 ## 2. gsasii: use the converter
 
@@ -79,14 +83,14 @@ converter stops and lists every problem (row 21, A132).
 
 **Top level**
 - `schema_name` `GSASII_Rietveld` → `gsasii.rietveld`; `GSASII_SPF` →
-  `gsasii.spf`. `schema_version` → `core_schema_version: "1.0.0"` and
-  `engine_schema_version: "1.0.0"`.
+  `gsasii.spf`. `schema_version` → `core_schema_version: "0.1.0"` and
+  `engine_schema_version: "0.1.0"`.
 - `payload.asset_path` is dropped (not a gateway input, A50).
 - `xrd_data`: `tth`, `Itth`, `Itth_weights` and `filename` are kept; **every
   other key** (e.g. `UID`) moves to `metadata.xrd_data.<key>`.
 - `fit_range` is carried as is; `null` / `[null, null]` is left out.
 - Every populated `min`/`max` of a 4-element `[value, flag, min, max]` list is
-  **dropped and reported**: gsasii 1.0.0 exposes no bounds (A84; GSAS-II only
+  **dropped and reported**: gsasii 0.1.0 exposes no bounds (A84; GSAS-II only
   clamps after the fit).
 - Keys the 0.26.0 schema never defined (0.1.1 ignored them) are dropped and
   reported.
@@ -104,7 +108,7 @@ converter stops and lists every problem (row 21, A132).
 
 **Background**
 - `chebyshev` is carried unchanged (`num_coefficients`, `coefficients`,
-  `refine_flag`). Left out, it is reported: 1.0.0 means *no background* (one
+  `refine_flag`). Left out, it is reported: 0.1.0 means *no background* (one
   fixed term 0.0) where 0.1.1 used GSAS-II's constant 1.0 (row 7).
 - `single_peaks.pv_gaussian_sigma` is renamed **`pv_gaussian_sigma_sq`** (the
   value always was σ², A89). A peak with a `null` entry in any of the four
@@ -146,13 +150,13 @@ A101, A105)
   fixed `Uij` within 1e-6 Å² of 0 becomes `0.0` (A121). Both are reported.
 - `scale` with no value becomes `[1.0, flag]` (GSAS-II's default, D9).
 - `peak_broadening.size_broadening` / `strain_broadening` with no value are
-  **left out** and reported: 1.0.0's documented default (10 µm / 0
+  **left out** and reported: 0.1.0's documented default (10 µm / 0
   microstrain, fixed, no sample broadening) applies where 0.1.1 used GSAS-II's
   1 µm / 1000 microstrain (row 6, A87/A107). `LG_eta` with no value →
   `[1.0, flag]`. The uniaxial / ellipsoidal / Stephens fields are dropped and
   reported (the isotropic model 0.1.1 ran did not use them).
 
-Finally the converted recipe is validated against gsasii 1.0.0; any error
+Finally the converted recipe is validated against gsasii 0.1.0; any error
 there is added to the problem list and the conversion stops.
 
 ### 2.2 Where the converter stops, and what you must decide
@@ -169,10 +173,10 @@ listed. The converter never guesses.
 | an atom is in the **ambiguous band** (5e-6 to 2e-3 off a special position; A73) | `0.33` and `0.3333` are neither 1/3 nor a general position | state the position (`0.333333`) or move the atom at least 2e-3 off it |
 | a `parameterization` `Uaniso` gives some but not all six `Uij` | 0.1.1 raised, so there is no refinement to reproduce | give all six, or use `Uiso` |
 | `parameterization.corrections` has an unknown key | 0.1.1 raised for it | remove it |
-| `initialization[0]` has GSAS-II keys gsasii 1.0.0 does not model (e.g. `Lam1`/`Lam2`, a Kα doublet), is missing a key, or `Type` is not `PXC` | gsasii 1.0.0 is single-wavelength PXC only (SCHEMA_HISTORY "Instrument") | a doublet, TOF or neutron recipe has no 1.0.0 equivalent today |
+| `initialization[0]` has GSAS-II keys gsasii 0.1.0 does not model (e.g. `Lam1`/`Lam2`, a Kα doublet), is missing a key, or `Type` is not `PXC` | gsasii 0.1.0 is single-wavelength PXC only (SCHEMA_HISTORY "Instrument") | a doublet, TOF or neutron recipe has no 0.1.0 equivalent today |
 | `structure.phase_name` differs from the phase key | the key is the name (A100) | make them agree |
-| `peak_broadening.*.model` is not `isotropic` | gsasii 1.0.0 supports isotropic only | drop the block (default applies) or state an isotropic value |
-| the converted recipe fails gsasii 1.0.0 validation | the recipe states something GSAS-II silently replaced or could not do | see the message: it names the field and the value to write |
+| `peak_broadening.*.model` is not `isotropic` | gsasii 0.1.0 supports isotropic only | drop the block (default applies) or state an isotropic value |
+| the converted recipe fails gsasii 0.1.0 validation | the recipe states something GSAS-II silently replaced or could not do | see the message: it names the field and the value to write |
 
 The last row is where the 0.26.0 LaB6 recipes stopped (the pre-conversion
 recipes are kept as the converter's test fixtures in `tests/data/convert_026/`).
@@ -208,7 +212,7 @@ letters/digits/underscore only, distinct ignoring case* (A112; e.g.
 `"2H-MoS2"` → `MoS2_2H`); a charged `element` (`"Fe3+"` belongs in `scattering_types`, §5); a
 `Multiplicity`, cell or `Uaniso` inconsistent with the space group.
 
-### 2.3 Field map: 0.26.0 `GSASII_*` → 1.0.0 `gsasii.*`
+### 2.3 Field map: 0.26.0 `GSASII_*` → 0.1.0 `gsasii.*`
 
 <!-- Derived from scripts/convert_recipe_026.py (SPEC_026, IPARM1, _Conversion)
      and checked against src/powderline/gateways/gsasii/schema.py (classes
@@ -222,10 +226,10 @@ letters/digits/underscore only, distinct ignoring case* (A112; e.g.
 `[v, f]` = `[value, refine_flag]`. Where a 0.26.0 cell lists two sources, the
 first non-`null` wins (parameterization over structure / Iparm1).
 
-| 0.26.0 (`GSASII_Rietveld` / `GSASII_SPF`) | 1.0.0 (`gsasii.rietveld` / `gsasii.spf`) | Note |
+| 0.26.0 (`GSASII_Rietveld` / `GSASII_SPF`) | 0.1.0 (`gsasii.rietveld` / `gsasii.spf`) | Note |
 |---|---|---|
 | `schema_name: GSASII_Rietveld` / `GSASII_SPF` | `schema_name: gsasii.rietveld` / `gsasii.spf` | |
-| `schema_version: "0.26.0"` | `core_schema_version: "1.0.0"`, `engine_schema_version: "1.0.0"` | two versions |
+| `schema_version: "0.26.0"` | `core_schema_version: "0.1.0"`, `engine_schema_version: "0.1.0"` | two versions |
 | — | `metadata` (optional, free-form, ≤ 1 MiB) | converter puts extra `xrd_data` keys here |
 | `payload.asset_path` | — | dropped (A50) |
 | `payload.xrd_data.{tth, Itth, Itth_weights, filename}` | same | |
@@ -272,7 +276,7 @@ first non-`null` wins (parameterization over structure / Iparm1).
 ## 3. TOPAS and easydiffraction: no converter
 
 <!-- A137 (no 0.26.0 → topas.* converter); SCHEMA_HISTORY topas / easydiffraction
-     1.0.0 sections ("There is no converter from 0.26.0 recipes") -->
+     0.1.0 sections ("There is no converter from 0.26.0 recipes") -->
 
 A 0.26.0 recipe held GSAS-II's model of your sample. A `topas.*` or
 `easydiffraction.*` recipe holds **that engine's** model — its own peak-shape
@@ -294,8 +298,8 @@ same LaB6 and DRX_33 data as the examples and documented beside the files:
   `README.md`).
 
 For the field-by-field meaning, units and validation rules read the
-[`topas` 1.0.0](SCHEMA_HISTORY.md#topas-engine-schema) and
-[`easydiffraction` 1.0.0](SCHEMA_HISTORY.md#easydiffraction-engine-schema)
+[`topas` 0.1.0](SCHEMA_HISTORY.md#topas-engine-schema) and
+[`easydiffraction` 0.1.0](SCHEMA_HISTORY.md#easydiffraction-engine-schema)
 entries of the schema history. Points that most often surprise someone coming
 from a GSAS-II recipe:
 
@@ -306,7 +310,7 @@ from a GSAS-II recipe:
   bound replaces the engine's default/physical limit on that side, `null`
   keeps it.
 - **TOPAS**: the recipe states `engine_version` (`"6"`; TOPAS 6 only in
-  1.0.0 — A143, P-07), and a run needs the installed version declared
+  0.1.0 — A143, P-07), and a run needs the installed version declared
   (`topas_version` or `.powderline_config.yaml`), because `tc.exe` carries no
   version PowderLine could read (A144, A145). TCHZ U…Z are not GSAS-II's;
   `CS_L`/`CS_G`/`Strain_L`/`Strain_G` are not sizes or strains (LVol-IB and
@@ -363,13 +367,13 @@ from a GSAS-II recipe:
   spelling (`Fe+3`) through unchecked; the converter turns such an element
   into the neutral symbol plus the `scattering_types` entry and notes it. Each
   engine refuses an ion it has no form factor for; TOPAS accepts none in
-  schema 1.0.0 (its half awaits a TOPAS run, T7).
+  schema 0.1.0 (its half awaits a TOPAS run, T7).
 - **`refinement_algorithm`** is gone (0.1.1 accepted and ignored it); the
   `null`-valued `broadening`, `corrections` and phase `parameterization`
   blocks that crashed 0.1.1 at run time have no equivalent (row 15).
 - **Bounds in gsasii recipes** are gone (A84): GSAS-II applies limits only
   after the fit. Bounds live in `topas.*` and `easydiffraction.*` recipes.
-- **Kα doublets, TOF, neutron** are not modelled by gsasii 1.0.0.
+- **Kα doublets, TOF, neutron** are not modelled by gsasii 0.1.0.
 - **Package moves, no shims**: `powderline.topas` → `powderline.gateways.topas`
   and `powderline.easydiff` → `powderline.gateways.easydiffraction`
   (rows 22, 25; A136). Code importing the old paths must be updated. An

@@ -11,19 +11,40 @@ version numbers (`powderline.support_matrix()` lists the declarations).
 > **PowderLine 0.2.0** reads these schemas only. The unified 0.26.0 schema of
 > PowderLine 0.1.1 is documented in the archive at the bottom of this page and
 > is no longer accepted; `scripts/convert_recipe_026.py` converts a 0.26.0
-> GSAS-II recipe (see the [migration guide](migration-0.26-to-1.0.md)). The
+> GSAS-II recipe (see the [migration guide](migration-0.1-to-0.2.md)). The
 > field tables generated from these schemas are on the [fields page](fields.md).
+
+## Version numbering: a new line starting at 0.1.0
+
+PowderLine 0.2.0 replaces the single recipe schema of PowderLine 0.1.x —
+versions 0.1 to **0.26.0**, `schema_name` `GSASII_Rietveld` / `GSASII_SPF` —
+with a **core schema** and **one schema per engine** (`gsasii`, `topas`,
+`easydiffraction`). Each is versioned separately, and each starts at
+**0.1.0** in PowderLine 0.2.0 (`"core_schema_version": "0.1.0"`,
+`"engine_schema_version": "0.1.0"`).
+
+- The old line **ends at 0.26.0**. It is told apart from the new schemas by
+  `schema_name` (`GSASII_Rietveld` versus `gsasii.rietveld`) and by the split
+  into `core_schema_version` + `engine_schema_version` (instead of one
+  `schema_version`), **not by the number**: a new schema at 0.1.0 is not
+  older than 0.26.0, it is a different schema.
+- The new schemas are 0.x because PowderLine is pre-production and they will
+  still evolve; the bump rule for 0.x versions is in
+  [policies](policies.md#versioning-and-compatibility).
+- `scripts/convert_recipe_026.py` migrates a 0.26.0 GSAS-II recipe to
+  `gsasii.*` 0.1.0; there is no converter to `topas.*` or `easydiffraction.*`
+  (see the [migration guide](migration-0.1-to-0.2.md)).
 
 ---
 
 ## Core schema
 
-### 1.0.0 — introduced in PowderLine 0.2.0
+### 0.1.0 — introduced in PowderLine 0.2.0
 
 Defined in `src/powderline/schema_core.py`; every engine schema builds on it.
 
 > **Pre-release revision (re/03b, not a new version).** Before its first
-> release, core 1.0.0 replaced its structure-only phase model (`PhaseStructure`
+> release, core 0.1.0 replaced its structure-only phase model (`PhaseStructure`
 > with plain values, plus `null`-valued "structure" parameters) with the
 > **phase block** described below: one block per phase, every structural
 > quantity a refinable parameter, flags and bounds checked against the symmetry,
@@ -49,7 +70,7 @@ Defined in `src/powderline/schema_core.py`; every engine schema builds on it.
 - **Numbers** are JSON numbers: a quoted number (`"0.25"`) or a boolean is an
   error, never converted. Integer fields (`Multiplicity`, `num_coefficients`)
   take a whole number (`4` or `4.0`), not `4.5`.
-- **Accepted core versions** (this release): `==1.0.0`. Compatibility is
+- **Accepted core versions** (this release): `==0.1.0`. Compatibility is
   declared, never inferred ([support matrix](support-matrix.md)).
 
 - **Phase block** (`Phase`): one block per phase, keyed by the phase name in
@@ -192,32 +213,30 @@ Defined in `src/powderline/schema_core.py`; every engine schema builds on it.
       values; otherwise the error gives them.
     - Atoms at the same position are independent: their flags are never tied.
 
-**1.0.0 was extended before its first release** (PowderLine 0.2.0 is tagged
-on the maintainers' fork only; P-43 D6): re/23 fixed the unit-cell report's row
-vocabulary (an output, not a recipe field), and re/28 (P-47) added the
-building block behind the engines' `scattering_types` — `element` stays the
-neutral atom; an ionic type is engine content. re/29 (P-48) added the
-`MarchDollase` building block (`model: "march_dollase"`, `hkl` integers not
-all zero, `ratio > 0` in the engine's parameter shape) behind the engines'
-`preferred_orientation`; it is not a core `Phase` field (texture is a sample
-and engine matter, not a crystal fact). No recipe that validated before stops
-validating; the error text for a charged `element` now points at
-`scattering_types`.
+**Also in 0.1.0:** the unit-cell report's row vocabulary is fixed (an
+output, not a recipe field); a building block sits behind the engines'
+`scattering_types` — `element` stays the neutral atom; an ionic type is
+engine content, and the error text for a charged `element` points at
+`scattering_types`; and the `MarchDollase` building block (`model:
+"march_dollase"`, `hkl` integers not all zero, `ratio > 0` in the engine's
+parameter shape) sits behind the engines' `preferred_orientation`; it is not
+a core `Phase` field (texture is a sample and engine matter, not a crystal
+fact).
 
 ## gsasii engine schema
 
-### 1.0.0 — introduced in PowderLine 0.2.0
+### 0.1.0 — introduced in PowderLine 0.2.0
 
 Defined in `src/powderline/gateways/gsasii/schema.py` (engine-free), on core
-1.0.0. Accepted versions are declared: engine schema `==1.0.0`, requiring
-core `==1.0.0`. A 0.26.0 `GSASII_*` recipe is converted with
+0.1.0. Accepted versions are declared: engine schema `==0.1.0`, requiring
+core `==0.1.0`. A 0.26.0 `GSASII_*` recipe is converted with
 `scripts/convert_recipe_026.py`, which reports every change.
 
 - **Workflows**: `gsasii.rietveld` (`phases`, no `single_peaks`) and
   `gsasii.spf` (`single_peaks`, no `phases`; `refinement_controls.single_peak_fitting_mode`
   required).
 - **Parameters**: `[value, refine_flag]` only. GSAS-II applies parameter
-  limits only after the fit, so gsasii 1.0.0 exposes no bounds; a 4-element
+  limits only after the fit, so gsasii 0.1.0 exposes no bounds; a 4-element
   list is an error.
 - **Phase block**: core's `space_group`, `unit_cell`, `atoms`, plus `scale`
   (required, >= 0) and `peak_broadening` (isotropic size in µm and microstrain,
@@ -282,37 +301,37 @@ stop on any example). What it changed, per example:
 
 | Example | Converter notes |
 |---|---|
-| `example_LaB6`, `example_LaB6_simulation` | the background peak at 1.5° 2θ was removed **before** conversion (P-01: the data have no feature there and GSAS-II never determined it); `schema_version` → core/engine 1.0.0; `xrd_data.UID` → `metadata`; SH/L 0.0005 → 0.002 (A91); `unit_cell.volume` dropped (A75); size and strain broadening left out, so the documented default 10 µm / 0 microstrain applies with a structured warning (A87, A107) |
+| `example_LaB6`, `example_LaB6_simulation` | the background peak at 1.5° 2θ was removed **before** conversion (P-01: the data have no feature there and GSAS-II never determined it); `schema_version` → core/engine 0.1.0; `xrd_data.UID` → `metadata`; SH/L 0.0005 → 0.002 (A91); `unit_cell.volume` dropped (A75); size and strain broadening left out, so the documented default 10 µm / 0 microstrain applies with a structured warning (A87, A107) |
 | `example_LaB6_singlepeakfit` | `GSASII_SPF` → `gsasii.spf`; `UID` → `metadata`; SH/L 0.0 → 0.002 (A91); background `pv_gaussian_sigma` → `pv_gaussian_sigma_sq` (A89) |
 | `example_DRX_33`, `_anisoADP`, `_atomrefine`, `_simulation`, `_strainonly` | `UID` → `metadata`; SH/L 0.0005 → 0.002 (A91); one background peak with null entries dropped (D4); `unit_cell.volume` dropped (A75); `C2/m` → `C 1 2/m 1` (A105); the stated `Multiplicity: 1` of the seven Li4MgWO6_SG12 atoms dropped (derived 4/4/2/4/8/4/2; A101) |
 
 The pre-conversion recipes are kept byte-identical in `tests/data/convert_026/`
 as the converter's test fixtures (P-16, P-23); the 0.26.0 path itself is gone.
 
-**Extended before its first release (re/28, P-47):** the phase block gains
+**Ionic scattering types and preferred orientation:** the phase block has
 `scattering_types: {<atom label>: "<El n±>"}` (CIF spelling), optional, never
 null; only ions GSAS-II 5.7.9 has a form factor for (114, pinned by a test);
 written into the GSAS-II atom record in GSAS-II's own spelling (`La+3`,
 ledger row R35). The converter maps a 0.26.0 `El±n` element onto it.
-**And (re/29, P-48):** the phase block gains `preferred_orientation: {model:
+The phase block also has `preferred_orientation: {model:
 "march_dollase", hkl, ratio: [r, flag]}`, optional, never null, `r > 0`;
 written into the HAP `Pref.Ori.` entry (`['MD', r, flag, [h,k,l], …]`, ledger
 rows R36/R37); the refined name `p:h:MD` maps back to `…preferred_orientation.ratio`.
 
 ## topas engine schema
 
-### 1.0.0 — introduced in PowderLine 0.2.0
+### 0.1.0 — introduced in PowderLine 0.2.0
 
 Defined in `src/powderline/gateways/topas/schema.py` (engine-free), on core
-1.0.0. Accepted versions are declared: engine schema `==1.0.0`, requiring core
-`==1.0.0`. Native recipes state TOPAS's own keywords, macro parameters and
+0.1.0. Accepted versions are declared: engine schema `==0.1.0`, requiring core
+`==0.1.0`. Native recipes state TOPAS's own keywords, macro parameters and
 units: the numbers in the recipe are the numbers in the INP. There is no
 converter from 0.26.0 recipes (the 0.26.0 `GSASII_*` → TOPAS translation path
 was removed with the unified schema).
 
 - **Workflows**: `topas.rietveld` (`phases`) and `topas.spf` (`single_peaks`).
 - **TOPAS version**: required `engine_version`, the TOPAS major version the
-  recipe is written for; 1.0.0 supports `"6"` only (declared,
+  recipe is written for; 0.1.0 supports `"6"` only (declared,
   `supported_engine_versions == "==6"`). A run needs the installed version
   declared (`topas_version` or `.powderline_config.yaml` `topas.version`) and
   equal to it; `tc.exe` carries no version PowderLine could read.
@@ -371,18 +390,18 @@ was removed with the unified schema).
   non-finite number in them (`nan`, `1.#QNAN`, `-nan(ind)`, …) is a divergence
   error, while an undetermined ESD is left empty.
 
-**Extended before its first release (re/28, P-47; re/29, P-48):**
+**Ionic scattering types and preferred orientation:**
 `scattering_types` and `preferred_orientation` are declared and **refused**
-in 1.0.0 (the TOPAS halves — `occ Fe+3` and ATMSCAT's coverage, T7; the
+in 0.1.0 (the TOPAS halves — `occ Fe+3` and ATMSCAT's coverage, T7; the
 `PO(...)` macro, T9 — await a TOPAS 6 run; P-08).
 
 ## easydiffraction engine schema
 
-### 1.0.0 — introduced in PowderLine 0.2.0
+### 0.1.0 — introduced in PowderLine 0.2.0
 
 Defined in `src/powderline/gateways/easydiffraction/schema.py` (engine-free),
-on core 1.0.0. Accepted versions are declared: engine schema `==1.0.0`,
-requiring core `==1.0.0`. Native recipes use easydiffraction's own names and
+on core 0.1.0. Accepted versions are declared: engine schema `==0.1.0`,
+requiring core `==0.1.0`. Native recipes use easydiffraction's own names and
 units (`setup_wavelength`, `calib_twotheta_offset`, `broad_gauss_u` in deg², …).
 There is no converter from 0.26.0 recipes (the 0.26.0 `GSASII_*` →
 easydiffraction translation path was removed with the unified schema).
@@ -461,11 +480,11 @@ easydiffraction translation path was removed with the unified schema).
   `easydiffraction_crysfml_start_dependent`. Any non-finite calculated value,
   refined value or reflection-list value is a divergence error.
 
-**Extended before its first release (re/28, P-47):** the phase block gains
+**Ionic scattering types and preferred orientation:** the phase block has
 `scattering_types` (CIF spelling), cryspy calculator only (CrysFML strips
 charges, EB-96) and only ions CrysPy has a form factor for (111, pinned by a
-test; CrysPy's silent neutral fallback for the others is EB-95). **And
-(re/29, P-48):** `preferred_orientation` — the `MarchDollase` block with a
+test; CrysPy's silent neutral fallback for the others is EB-95), and
+`preferred_orientation` — the `MarchDollase` block with a
 bounded `ratio` (> 0) plus the required `march_random_fract` ([0, 1]) —
 written as a `preferred_orientation` row of the experiment (keyed by the
 lowercase linked structure name, EB-97); cryspy calculator only (CrysFML
@@ -478,9 +497,10 @@ Dollase's times r^1.5 (EB-98), so with `march_random_fract = 0` the refined
 ## Archive: unified-schema era (0.21–0.26)
 
 The single schema shared by all engines up to PowderLine 0.1.1, kept verbatim
-(headings moved one level down). Nothing below is current policy: 1.0.0 models
-are `extra='forbid'`, parameters are engine-shaped lists, and the sequential
-and multi-strategy text describes removed code.
+(headings moved one level down). Nothing below is current policy: the current
+core and engine schema models (0.1.0) are `extra='forbid'`, parameters are
+engine-shaped lists, and the sequential and multi-strategy text describes
+removed code.
 
 This document provides a concise summary of PowderLine's schema evolution for context. For detailed commit history, see the repository's git log. Current schema: **0.26.0**
 

@@ -127,7 +127,7 @@ equatorial microstrain is stable. To eliminate the warning entirely, additionall
 fix the strain `LG_eta` (set `strain_broadening.LG_eta = [1, false]`)
 and refine only `isotropic_strain`.
 
-## Refine flags (gsasii 1.0.0)
+## Refine flags (gsasii 0.1.0)
 
 Every refinable parameter is `[value, refine_flag]` (no bounds: GSAS-II applies
 limits only after a fit); a parameter refines iff its flag is `true`. The gsasii

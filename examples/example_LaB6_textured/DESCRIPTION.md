@@ -81,7 +81,7 @@ The standard gsasii set (`refined_parameters.csv`, `LaB6_unit_cell_report.csv`,
 - Starting r at exactly 1.0 (GSAS-II aborts) or at 0.9 (non-finite) fails
   with `diverged`, at 1.2 finds the wrong minimum — see above; this is
   GSAS-II's refinement, not a PowderLine bug, and is recorded as EB-99.
-- TOPAS does not accept `preferred_orientation` in schema 1.0.0 (its
+- TOPAS does not accept `preferred_orientation` in schema 0.1.0 (its
   `PO(...)` half awaits a TOPAS 6 run, T9), so there is no topas recipe.
 - The example is simulated; no measured textured LaB6 exists here.
 

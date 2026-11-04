@@ -1,6 +1,6 @@
 """Direct tests for powderline.schema_core validators.
 
-Pure pydantic, engine-free. Tests the core schema 1.0.0 models that every
+Pure pydantic, engine-free. Tests the core schema 0.1.0 models that every
 engine schema shares (re/03).
 """
 import json
@@ -296,8 +296,8 @@ def test_chebyshev_extra_key_rejected():
 def test_core_recipe_minimal_valid():
     r = CoreRecipe(
         schema_name="gsasii.rietveld",
-        core_schema_version="1.0.0",
-        engine_schema_version="1.0.0",
+        core_schema_version="0.1.0",
+        engine_schema_version="0.1.0",
         payload={}
     )
     assert r.schema_name == "gsasii.rietveld"
@@ -318,8 +318,8 @@ def test_core_recipe_schema_name_pattern_rejected(bad_name):
     with pytest.raises(ValidationError, match="String should match pattern"):
         CoreRecipe(
             schema_name=bad_name,
-            core_schema_version="1.0.0",
-            engine_schema_version="1.0.0",
+            core_schema_version="0.1.0",
+            engine_schema_version="0.1.0",
             payload={}
         )
 
@@ -327,8 +327,8 @@ def test_core_recipe_schema_name_pattern_rejected(bad_name):
 def test_core_recipe_schema_name_pattern_ok():
     r = CoreRecipe(
         schema_name="topas.rietveld",
-        core_schema_version="1.0.0",
-        engine_schema_version="1.0.0",
+        core_schema_version="0.1.0",
+        engine_schema_version="0.1.0",
         payload={}
     )
     assert r.schema_name == "topas.rietveld"
@@ -339,7 +339,7 @@ def test_core_recipe_core_schema_version_1_1_0_rejected():
         CoreRecipe(
             schema_name="gsasii.rietveld",
             core_schema_version="1.1.0",
-            engine_schema_version="1.0.0",
+            engine_schema_version="0.1.0",
             payload={}
         )
     err_msg = str(exc_info.value)
@@ -352,7 +352,7 @@ def test_core_recipe_core_schema_version_2_0_0_rejected():
         CoreRecipe(
             schema_name="gsasii.rietveld",
             core_schema_version="2.0.0",
-            engine_schema_version="1.0.0",
+            engine_schema_version="0.1.0",
             payload={}
         )
     err_msg = str(exc_info.value)
@@ -365,7 +365,7 @@ def test_core_recipe_core_schema_version_invalid_string_rejected():
         CoreRecipe(
             schema_name="gsasii.rietveld",
             core_schema_version="abc",
-            engine_schema_version="1.0.0",
+            engine_schema_version="0.1.0",
             payload={}
         )
 
@@ -374,7 +374,7 @@ def test_core_recipe_engine_schema_version_invalid_string_rejected():
     with pytest.raises(ValidationError, match="not a valid version"):
         CoreRecipe(
             schema_name="gsasii.rietveld",
-            core_schema_version="1.0.0",
+            core_schema_version="0.1.0",
             engine_schema_version="abc",
             payload={}
         )
@@ -383,8 +383,8 @@ def test_core_recipe_engine_schema_version_invalid_string_rejected():
 def test_core_recipe_metadata_none_ok():
     r = CoreRecipe(
         schema_name="gsasii.rietveld",
-        core_schema_version="1.0.0",
-        engine_schema_version="1.0.0",
+        core_schema_version="0.1.0",
+        engine_schema_version="0.1.0",
         metadata=None,
         payload={}
     )
@@ -394,8 +394,8 @@ def test_core_recipe_metadata_none_ok():
 def test_core_recipe_metadata_nested_json_ok():
     r = CoreRecipe(
         schema_name="gsasii.rietveld",
-        core_schema_version="1.0.0",
-        engine_schema_version="1.0.0",
+        core_schema_version="0.1.0",
+        engine_schema_version="0.1.0",
         metadata={"user": "test", "nested": {"key": "value"}},
         payload={}
     )
@@ -406,8 +406,8 @@ def test_core_recipe_metadata_non_serializable_set_rejected():
     with pytest.raises(ValidationError, match="JSON-serializable"):
         CoreRecipe(
             schema_name="gsasii.rietveld",
-            core_schema_version="1.0.0",
-            engine_schema_version="1.0.0",
+            core_schema_version="0.1.0",
+            engine_schema_version="0.1.0",
             metadata={"bad": {1, 2, 3}},
             payload={}
         )
@@ -417,8 +417,8 @@ def test_core_recipe_metadata_non_serializable_object_rejected():
     with pytest.raises(ValidationError, match="JSON-serializable"):
         CoreRecipe(
             schema_name="gsasii.rietveld",
-            core_schema_version="1.0.0",
-            engine_schema_version="1.0.0",
+            core_schema_version="0.1.0",
+            engine_schema_version="0.1.0",
             metadata={"bad": object()},
             payload={}
         )
@@ -428,8 +428,8 @@ def test_core_recipe_metadata_nan_rejected():
     with pytest.raises(ValidationError, match="JSON-serializable"):
         CoreRecipe(
             schema_name="gsasii.rietveld",
-            core_schema_version="1.0.0",
-            engine_schema_version="1.0.0",
+            core_schema_version="0.1.0",
+            engine_schema_version="0.1.0",
             metadata={"bad": float("nan")},
             payload={}
         )
@@ -448,8 +448,8 @@ def test_core_recipe_metadata_over_size_rejected():
     with pytest.raises(ValidationError) as exc_info:
         CoreRecipe(
             schema_name="gsasii.rietveld",
-            core_schema_version="1.0.0",
-            engine_schema_version="1.0.0",
+            core_schema_version="0.1.0",
+            engine_schema_version="0.1.0",
             metadata=metadata,
             payload={}
         )
@@ -479,8 +479,8 @@ def test_core_recipe_metadata_exactly_at_limit_ok():
 
     r = CoreRecipe(
         schema_name="gsasii.rietveld",
-        core_schema_version="1.0.0",
-        engine_schema_version="1.0.0",
+        core_schema_version="0.1.0",
+        engine_schema_version="0.1.0",
         metadata=metadata,
         payload={}
     )
@@ -491,8 +491,8 @@ def test_core_recipe_unknown_key_rejected():
     with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
         CoreRecipe(
             schema_name="gsasii.rietveld",
-            core_schema_version="1.0.0",
-            engine_schema_version="1.0.0",
+            core_schema_version="0.1.0",
+            engine_schema_version="0.1.0",
             payload={},
             unknown_field="bad"
         )

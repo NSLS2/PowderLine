@@ -15,7 +15,7 @@ easydiffraction, whose instrument terms differ):
 - LG_eta: Lorentzian/Gaussian mixing (1 = Lorentzian, 0 = Gaussian)
 - Uiso: Angstrom^2
 
-The emitted recipe is a gsasii 1.0.0 recipe as the schema reads it (A115):
+The emitted recipe is a gsasii 0.1.0 recipe as the schema reads it (A115):
 one phase block per phase (A93), the instrument blocks (A103), the canonical
 space-group name (A105), occupancy and scale stated (A96), every default
 stated rather than left to the schema (A119), and exact symmetry values
@@ -146,7 +146,7 @@ def space_group_setting(symbol: str) -> tuple[str, Optional[gemmi.Op]]:
     groups, hexagonal axes for rhombohedral groups and **origin choice 1** for
     the 24 groups with two origins (verified on a diamond cell: C at 0,0,0).
     gemmi's lenient lookup picks the same defaults, so the name is its
-    ``xhm()`` — except for two-origin groups, which gsasii 1.0.0 refuses in
+    ``xhm()`` — except for two-origin groups, which gsasii 0.1.0 refuses in
     origin choice 1 (GSAS-II cannot use it, A105): there the coordinates are
     moved to origin choice 2 with gemmi's change-of-basis operators
     (``basisop`` maps the reference setting onto a setting, so origin 1 ->
@@ -340,7 +340,7 @@ class SimulationRecipeBuilder:
         }
 
     def _build_instrument(self) -> Dict[str, Any]:
-        """The gsasii 1.0.0 instrument block (A103), every term stated and fixed."""
+        """The gsasii 0.1.0 instrument block (A103), every term stated and fixed."""
         inst = self.defaults['instrument_defaults']
         wavelength = inst['wavelength']
         broadening = inst['broadening']
@@ -458,7 +458,7 @@ class SimulationRecipeBuilder:
 
         Returns:
             Complete PowderLine recipe dictionary (``gsasii.rietveld``, core
-            and engine schema 1.0.0) that validates as written (A115).
+            and engine schema 0.1.0) that validates as written (A115).
 
         Note:
             Sample identity (name, description) is managed externally by the
@@ -469,8 +469,8 @@ class SimulationRecipeBuilder:
 
         return {
             'schema_name': 'gsasii.rietveld',
-            'core_schema_version': '1.0.0',
-            'engine_schema_version': '1.0.0',
+            'core_schema_version': '0.1.0',
+            'engine_schema_version': '0.1.0',
             'payload': {
                 # Dummy XRD data (required for GSAS-II, but not used in simulation)
                 'xrd_data': self._generate_dummy_xrd_data(),

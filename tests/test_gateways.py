@@ -464,7 +464,7 @@ assert phase.site("C").multiplicity == 6 and phase.atoms["C"].x.value == 1 / 6
 
 # The native gsasii schema validates engine-free (re/04, A39)
 native = {{
-    "schema_name": "gsasii.rietveld", "core_schema_version": "1.0.0", "engine_schema_version": "1.0.0",
+    "schema_name": "gsasii.rietveld", "core_schema_version": "0.1.0", "engine_schema_version": "0.1.0",
     "payload": {{
         "xrd_data": {{"tth": [1.0, 2.0], "Itth": [1.0, 2.0], "Itth_weights": [1.0, 1.0]}},
         "instrument": {{"radiation": {{"type": "PXC", "wavelength": p(0.1665)}},

@@ -13,8 +13,19 @@ number promises.
   refactor and a clean break (one recipe = one engine; no translation layer).
 - **The recipe schemas** are versioned separately from the package: a
   **core schema** (the shared frame and structural models) and one **engine
-  schema** per gateway (`gsasii`, `topas`, `easydiffraction`), all `1.0.0`
-  today. A recipe states both versions.
+  schema** per gateway (`gsasii`, `topas`, `easydiffraction`), all `0.1.0`
+  today (always three parts). A recipe states both versions. The schemas
+  are pre-1.0 because PowderLine is pre-production and they will still
+  evolve; they start at 0.1.0 in PowderLine 0.2.0 and are told apart from the
+  old unified schema (0.1–0.26.0, `GSASII_Rietveld` / `GSASII_SPF`) by
+  `schema_name`, not by number.
+- **Bumping a schema version (0.x).** While a schema is 0.x, a **breaking**
+  change (a recipe valid before is refused or means something else) bumps
+  the minor (0.1.0 → 0.2.0); an **additive** change or a fix bumps the patch
+  (0.1.0 → 0.1.1). Each schema (core and every engine schema) is bumped on
+  its own. The support declarations stay exact (`==`): a release that accepts
+  a second version lists it explicitly once it has been checked, never as a
+  range.
 - **Compatibility is declared, never inferred from version numbers.** Core
   declares the core-schema versions it accepts (`SUPPORTED_CORE_SCHEMAS`);
   each gateway declares `engine_schema_version`, `supported_engine_schemas`
@@ -22,7 +33,7 @@ number promises.
   `validate()` enforces the declarations, and
   `powderline.support_matrix()` lists them. The rendered matrix is on the
   [support matrix page](support-matrix.md). Every declaration today is
-  `==1.0.0`; a declaration is **widened explicitly** when a new version has
+  `==0.1.0`; a declaration is **widened explicitly** when a new version has
   been checked, never by writing a range in advance.
 - **Engine versions** are handled per engine:
   - GSAS-II and easydiffraction are **pinned by pixi** (GSAS-II as the source
@@ -31,7 +42,7 @@ number promises.
     at run time; a mismatch is a hard `EngineVersionError`.
   - TOPAS cannot be pinned by PowderLine: a `topas.*` recipe states the
     TOPAS major version it is written for (`engine_version`), the gateway
-    declares the versions it supports (`==6`: `topas.*` 1.0.0 is verified
+    declares the versions it supports (`==6`: `topas.*` 0.1.0 is verified
     against TOPAS 6 only), and the user **declares** the installed version
     (`--topas-version` or `topas.version` in `.powderline_config.yaml`),
     because `tc.exe` carries no version PowderLine could read. The check
@@ -45,8 +56,8 @@ number promises.
   change in [SCHEMA_HISTORY](SCHEMA_HISTORY.md).
 - The schema changelog ([SCHEMA_HISTORY](SCHEMA_HISTORY.md)) records every
   declaration change; the package changelog records the release that made
-  it; the [migration guide](migration-0.26-to-1.0.md) covers the 0.26.0 →
-  1.0.0 break.
+  it; the [migration guide](migration-0.1-to-0.2.md) covers the break from
+  schema 0.26.0 (PowderLine 0.1.x) to the 0.2 schemas (0.1.0).
 
 ## Deliberate behaviour changes
 

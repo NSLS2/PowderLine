@@ -35,8 +35,8 @@ from powderline.schema_core import (
 
 pytestmark = pytest.mark.core
 
-DECL = schema_declarations(engine_schema_version="1.0.0", supported_engine_schemas="==1.0.0",
-                           requires_core_schema="==1.0.0")
+DECL = schema_declarations(engine_schema_version="0.1.0", supported_engine_schemas="==0.1.0",
+                           requires_core_schema="==0.1.0")
 
 
 def _data(n=5):
@@ -76,7 +76,7 @@ class _Other(EngineRecipe):
 
 
 def _recipe(name="demo.one", **over):
-    r = {"schema_name": name, "core_schema_version": "1.0.0", "engine_schema_version": "1.0.0",
+    r = {"schema_name": name, "core_schema_version": "0.1.0", "engine_schema_version": "0.1.0",
          "payload": {"xrd_data": _data().model_dump(), "inner": {"scale": [1.0, True]}}}
     r.update(over)
     return r
@@ -162,7 +162,7 @@ def test_refined_flag_problems_one_per_flag():
 
 def test_engine_recipe_checks_versions_against_its_declarations():
     assert _Recipe.model_validate(_recipe()).gateway_name == "demo"
-    with pytest.raises(ValidationError, match="'demo' gateway of PowderLine .* accepts engine schema ==1.0.0"):
+    with pytest.raises(ValidationError, match="'demo' gateway of PowderLine .* accepts engine schema ==0.1.0"):
         _Recipe.model_validate(_recipe(engine_schema_version="2.0.0"))
 
 
@@ -205,6 +205,6 @@ def test_recipe_validator_one_model_and_vowel_article():
 
 def test_schema_declarations_keys_in_order_then_extras():
     assert tuple(DECL) == DECLARATION_KEYS
-    d = schema_declarations(engine_schema_version="1.0.0", supported_engine_schemas="==1.0.0",
-                            requires_core_schema="==1.0.0", supported_engine_versions="==6")
+    d = schema_declarations(engine_schema_version="0.1.0", supported_engine_schemas="==0.1.0",
+                            requires_core_schema="==0.1.0", supported_engine_versions="==6")
     assert tuple(d) == DECLARATION_KEYS + ("supported_engine_versions",) and d["supported_engine_versions"] == "==6"

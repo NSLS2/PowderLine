@@ -21,8 +21,8 @@ def _script():
 def test_check_reports_what_matched_on_the_committed_tables(capsys):
     assert _script().main(["--check"]) == 0
     out = capsys.readouterr().out.strip().splitlines()
-    assert len(out) == 1 and out[0].startswith("fields-check: 7 files under ") and "core 1.0.0" in out[0]
-    assert all(f"{e} 1.0.0" in out[0] for e in ("gsasii", "topas", "easydiffraction"))
+    assert len(out) == 1 and out[0].startswith("fields-check: 7 files under ") and "core 0.1.0" in out[0]
+    assert all(f"{e} 0.1.0" in out[0] for e in ("gsasii", "topas", "easydiffraction"))
 
 
 def test_check_names_the_stale_file(tmp_path, capsys):

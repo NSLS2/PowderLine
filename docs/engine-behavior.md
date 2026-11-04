@@ -166,7 +166,7 @@ call**: an out-of-range value is set to the limit with ESD 0 and frozen for
 the *next* call, while the reported values, ESDs and Rwp belong to the
 unclamped fit (EB-30); cell limits must be set on the reciprocal-metric
 terms and map onto direct-cell boxes exactly for only four of the seven
-crystal systems (EB-31). *Policy:* **gsasii 1.0.0 exposes no bounds**; a
+crystal systems (EB-31). *Policy:* **gsasii 0.1.0 exposes no bounds**; a
 4-element parameter list is a validation error (A84). Bounds may come in a
 later gsasii schema version with a clamp-freeze-refit scheme.
 
@@ -229,7 +229,7 @@ within 1e-6 of the starting value).
   `gsasii_broadening_default_applied` naming the phase and the values, so
   GSAS-II's default is never used silently (A87, A107, A119); background left
   out means **none** (one fixed Chebyshev term 0.0). These are the only
-  documented defaults in gsasii 1.0.0; state the blocks to silence the
+  documented defaults in gsasii 0.1.0; state the blocks to silence the
   warning.
 - **SH/L is floored at 0.002** in the Rietveld and Peak List profile
   calculations (and at 0.0005 in `GetFobsSq`; background peaks use it as

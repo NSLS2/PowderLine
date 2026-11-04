@@ -1,6 +1,6 @@
 """Tests for the SimulationRecipeBuilder (structure dict -> gsasii.rietveld simulation recipe).
 
-Covers the emitted ``gsasii.rietveld`` 1.0.0 shape (A93 phase block, A103
+Covers the emitted ``gsasii.rietveld`` 0.1.0 shape (A93 phase block, A103
 instrument blocks, A105 canonical space group, A96/A119 everything stated,
 A120/A121 exact symmetry values; validates as written with no warnings,
 A115), config handling (instrument_defaults/phase_defaults flow-through,
@@ -70,13 +70,13 @@ def _diamond_origin_1():
     }
 
 
-# ─── The emitted shape (gsasii 1.0.0) ────────────────────────────────────────
+# ─── The emitted shape (gsasii 0.1.0) ────────────────────────────────────────
 
 def test_builder_recipe_passes_schema_validation(lab6_structure_data):
     """Builder output validates as written (A115) with no structured warning: every default is stated.
 
     This is the primary regression guard — it would have caught every known
-    breakage introduced between schema 0.21 and 0.26, and now the 1.0.0 rules.
+    breakage introduced between schema 0.21 and 0.26, and now the 0.1.0 rules.
     """
     recipe = SimulationRecipeBuilder().build_recipe_from_structure(lab6_structure_data)
     result = _validate(recipe)
@@ -85,12 +85,12 @@ def test_builder_recipe_passes_schema_validation(lab6_structure_data):
 
 
 def test_builder_recipe_top_level_fields(lab6_structure_data):
-    """Top level: schema_name and the two 1.0.0 versions, payload, metadata; no 0.26.0 keys."""
+    """Top level: schema_name and the two 0.1.0 versions, payload, metadata; no 0.26.0 keys."""
     recipe = SimulationRecipeBuilder().build_recipe_from_structure(lab6_structure_data)
 
     assert recipe["schema_name"] == "gsasii.rietveld"
-    assert recipe["core_schema_version"] == "1.0.0"
-    assert recipe["engine_schema_version"] == "1.0.0"
+    assert recipe["core_schema_version"] == "0.1.0"
+    assert recipe["engine_schema_version"] == "0.1.0"
     assert "payload" in recipe
     assert recipe["metadata"]["materials_project"] == {
         "material_id": "mp-2680", "formula": "LaB6", "space_group_as_stated": "Pm-3m"}
@@ -100,7 +100,7 @@ def test_builder_recipe_top_level_fields(lab6_structure_data):
 
 
 def test_builder_payload_blocks(lab6_structure_data):
-    """The payload is the 1.0.0 layout: instrument blocks (A103), background, one phase block (A93), controls."""
+    """The payload is the 0.1.0 layout: instrument blocks (A103), background, one phase block (A93), controls."""
     recipe = SimulationRecipeBuilder().build_recipe_from_structure(lab6_structure_data)
     payload = recipe["payload"]
     assert set(payload) == {"xrd_data", "instrument", "fit_range", "background", "phases", "refinement_controls"}

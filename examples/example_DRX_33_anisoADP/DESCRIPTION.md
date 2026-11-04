@@ -103,7 +103,7 @@ The `ADP` field is a **type indicator**, not a refinement flag:
 - `"ADP": "Uaniso"` → the atom carries a `Uaniso` dict with U11-U23 parameters
 - **Refinement is controlled** by the flag in each `[value, refine_flag]`
 
-### Phase block (gsasii 1.0.0):
+### Phase block (gsasii 0.1.0):
 Each atom states its values and flags in one place. Li4MgWO6_SG12's O1 declares
 anisotropic displacement with every component refined; Li1 stays isotropic and fixed:
 ```json
@@ -209,7 +209,7 @@ If anisotropic refinement fails to converge or produces unphysical Uij values:
 - Early refinement stages (converge structure first, then add anisotropy)
 - Highly disordered materials (anisotropy not physically meaningful)
 
-## Refine flags (gsasii 1.0.0)
+## Refine flags (gsasii 0.1.0)
 
 Every refinable parameter is `[value, refine_flag]` (no bounds: GSAS-II applies
 limits only after a fit); a parameter refines iff its flag is `true`. The gsasii

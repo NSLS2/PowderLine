@@ -1,4 +1,4 @@
-"""The 0.26.0 -> gsasii 1.0.0 converter (``scripts/convert_recipe_026.py``; re/04 subplan §3, A95, A101, A124).
+"""The 0.26.0 -> gsasii 0.1.0 converter (``scripts/convert_recipe_026.py``; re/04 subplan §3, A95, A101, A124).
 
 One test per rule, a synthetic ADP switch in both directions (no committed
 example has one), and every 0.26.0 example converted: the result validates,
@@ -57,7 +57,7 @@ def _convert(r: dict):
 def test_top_level_and_metadata():
     new, report = _convert(_lab6())
     assert (new["schema_name"], new["core_schema_version"], new["engine_schema_version"]) == \
-        ("gsasii.rietveld", "1.0.0", "1.0.0")
+        ("gsasii.rietveld", "0.1.0", "0.1.0")
     assert "schema_version" not in new
     assert new["metadata"] == {"xrd_data": {"UID": _lab6()["payload"]["xrd_data"]["UID"]}}
     assert set(new["payload"]["xrd_data"]) <= {"tth", "Itth", "Itth_weights", "filename"}
@@ -392,7 +392,7 @@ def test_cli_writes_utf8_lf(tmp_path):
 
 def test_a_gsasii_spelled_ion_becomes_neutral_element_plus_scattering_types():
     """re/28 (P-47): v0.1.1 passed GSAS-II's own ion spelling through unchecked; the converter maps it onto the
-    1.0.0 shape (neutral element, the ion in the recipe spelling under scattering_types) and notes it."""
+    0.1.0 shape (neutral element, the ion in the recipe spelling under scattering_types) and notes it."""
     r = copy.deepcopy(_lab6())
     phase = next(iter(r["payload"]["phases"].values()))
     phase["structure"]["atoms"]["La"]["element"] = "La+3"

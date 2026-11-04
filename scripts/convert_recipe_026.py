@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Convert a 0.26.0 recipe (``GSASII_Rietveld`` / ``GSASII_SPF``) to gsasii 1.0.0.
+"""Convert a 0.26.0 recipe (``GSASII_Rietveld`` / ``GSASII_SPF``) to gsasii 0.1.0.
 
 The converted recipe states explicitly what v0.1.1 effectively refined (master
 plan A95, A101, re/04 subplan §3): structure and parameterization merge into one
 phase block, every refinable becomes ``[value, refine_flag]``, refine flags are
 expanded to the groups GSAS-II refined together, and GSAS-II's own silent
 defaults are written out. Every change is reported. Nothing is fixed silently:
-a value the gsasii 1.0.0 schema rejects stops the conversion with every
+a value the gsasii 0.1.0 schema rejects stops the conversion with every
 problem listed (e.g. a background peak below GSAS-II's floor, an ambiguous
 special position, a name outside the A112 rule).
 
@@ -155,10 +155,10 @@ class _Conversion:
             raise ConversionError([f"schema_name: {name!r} is not a 0.26.0 GSAS-II workflow ({', '.join(SCHEMA_NAMES)})"])
         new_name = SCHEMA_NAMES[name]
         payload = old.get("payload") or {}
-        out: dict[str, Any] = {"schema_name": new_name, "core_schema_version": "1.0.0",
-                               "engine_schema_version": "1.0.0"}
+        out: dict[str, Any] = {"schema_name": new_name, "core_schema_version": "0.1.0",
+                               "engine_schema_version": "0.1.0"}
         self.note("schema_name", f"{name} -> {new_name}; schema_version {old.get('schema_version')!r} -> "
-                                 "core_schema_version 1.0.0, engine_schema_version 1.0.0")
+                                 "core_schema_version 0.1.0, engine_schema_version 0.1.0")
         if payload.get("asset_path") is not None:
             self.note("payload.asset_path", f"dropped ({payload['asset_path']!r}; not a gateway input, A50)")
         new: dict[str, Any] = {}
@@ -227,13 +227,13 @@ class _Conversion:
         missing = sorted((set(IPARM1) | set(IPARM1_PLAIN)) - set(iparm1))
         if extra:
             self.problems.append(f"payload.instrument.initialization[0]: GSAS-II keys {extra} are not supported "
-                                 "(e.g. a Kα doublet); gsasii 1.0.0 is single-wavelength PXC only")
+                                 "(e.g. a Kα doublet); gsasii 0.1.0 is single-wavelength PXC only")
         if missing:
             self.problems.append(f"payload.instrument.initialization[0]: missing GSAS-II keys {missing}")
         if extra or missing:
             return {}
         if iparm1["Type"][1] != "PXC":
-            self.problems.append(f"payload.instrument.initialization[0].Type: {iparm1['Type'][1]!r}; gsasii 1.0.0 "
+            self.problems.append(f"payload.instrument.initialization[0].Type: {iparm1['Type'][1]!r}; gsasii 0.1.0 "
                                  "supports 'PXC' only")
         new: dict[str, Any] = {}
         if old.get("description") is not None:
@@ -308,7 +308,7 @@ class _Conversion:
         return new
 
     def dropped_bounds(self, payload: dict) -> None:
-        """Report every populated min/max (A84: gsasii 1.0.0 has no bounds)."""
+        """Report every populated min/max (A84: gsasii 0.1.0 has no bounds)."""
         def walk(obj, path):
             if isinstance(obj, dict):
                 for k, v in obj.items():
@@ -316,7 +316,7 @@ class _Conversion:
                         walk(v, f"{path}.{k}")
             elif isinstance(obj, list):
                 if len(obj) == 4 and isinstance(obj[1], bool) and (obj[2] is not None or obj[3] is not None):
-                    self.note(path, f"bounds [{obj[2]}, {obj[3]}] dropped (gsasii 1.0.0 exposes no bounds, A84)")
+                    self.note(path, f"bounds [{obj[2]}, {obj[3]}] dropped (gsasii 0.1.0 exposes no bounds, A84)")
                 else:
                     for i, v in enumerate(obj):
                         walk(v, f"{path}[{i}]")
@@ -483,7 +483,7 @@ class _Conversion:
                                                             "(A87, A107; deliberate change)")
                 continue
             if block.get("model") != "isotropic":
-                self.problems.append(f"{path}.peak_broadening.{part}.model: {block.get('model')!r}; gsasii 1.0.0 "
+                self.problems.append(f"{path}.peak_broadening.{part}.model: {block.get('model')!r}; gsasii 0.1.0 "
                                      "supports 'isotropic' only")
                 continue
             eta = block.get("LG_eta")
@@ -498,7 +498,7 @@ def convert(recipe: dict) -> tuple[dict, list[str]]:
     """Convert a 0.26.0 recipe dict; return ``(gsasii recipe, report)``.
 
     Raises :class:`ConversionError` listing every problem, including every error
-    the gsasii 1.0.0 schema reports for the converted recipe.
+    the gsasii 0.1.0 schema reports for the converted recipe.
     """
     run = _Conversion()
     new = run.recipe(recipe)
@@ -513,7 +513,7 @@ def convert(recipe: dict) -> tuple[dict, list[str]]:
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description="Convert a 0.26.0 GSAS-II recipe to gsasii 1.0.0.")
+    parser = argparse.ArgumentParser(description="Convert a 0.26.0 GSAS-II recipe to gsasii 0.1.0.")
     parser.add_argument("input", type=Path, help="0.26.0 recipe (JSON)")
     parser.add_argument("-o", "--output", type=Path, help="write the converted recipe here (JSON)")
     args = parser.parse_args(argv)
