@@ -57,6 +57,10 @@ jobs:
         run: pixi run test
       - name: Generated field tables and support matrix are current
         run: pixi run fields-check
+      - name: EB/KI catalogue fragments are current and every cited ID has an entry
+        run: pixi run catalog-check
+      - name: Example figures are current
+        run: pixi run figures-check
 
   gsasii:
     # GSAS-II suite incl. the slow regressions against the committed references.

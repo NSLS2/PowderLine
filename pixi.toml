@@ -56,6 +56,11 @@ test = { cmd = 'pytest -m "core or topas_gen"', env = { PYTHONPATH = "$PIXI_PROJ
 # installation, so they run only on the TOPAS Windows machine. The core guard is off here.
 test-topas = { cmd = 'pytest -m "topas_gen or topas_exec"', env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
 fields-check = { cmd = "python scripts/gen_schema_field_tables.py --check", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
+# The EB/KI catalogue fragments (docs/_generated/eb_*.md, ids.md, known_issues.md) are
+# current, and every EB-/KI- id cited under src/ and docs/ has a catalogue entry.
+catalog-check = { cmd = "python scripts/gen_catalog.py --check", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
+# The example fit figures (docs/_generated/examples/*.svg) match the committed fit profiles.
+figures-check = { cmd = "python scripts/gen_example_figures.py --check" }
 
 [dependencies]
 # Core = the pyproject runtime dependencies + what the editable install and the
