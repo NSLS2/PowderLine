@@ -123,6 +123,10 @@ def test_engine_options_default_is_empty():
 def test_engine_options_gsasii_server_flags():
     assert kicker.engine_options_from_args(_args(no_server=True), "gsasii") == {"execution_mode": "subprocess"}
     assert kicker.engine_options_from_args(_args(use_server=True), "gsasii") == {"execution_mode": "server"}
+    parsed = kicker.build_parser().parse_args([str(LAB6), "--use-server", "--server-timeout", "0"])  # 0 = no limit
+    assert kicker.engine_options_from_args(parsed, "gsasii") == {"execution_mode": "server", "server_timeout": 0.0}
+    parsed = kicker.build_parser().parse_args([str(LAB6), "--server-timeout", "7200"])
+    assert kicker.engine_options_from_args(parsed, "gsasii") == {"server_timeout": 7200.0}
 
 
 def test_engine_options_topas_flags():
@@ -136,6 +140,7 @@ def test_engine_options_topas_flags():
     ({"no_server": True}, "topas"), ({"use_server": True}, "easydiffraction"),
     ({"topas_dir": Path("/t")}, "gsasii"), ({"topas_version": "6"}, "gsasii"),
     ({"topas_timeout": 0.0}, "gsasii"), ({"topas_timeout": 600.0}, "easydiffraction"),
+    ({"server_timeout": 0.0}, "topas"), ({"server_timeout": 60.0}, "easydiffraction"),
 ])
 def test_engine_options_flag_for_another_engine_is_an_error(flag, gateway):
     with pytest.raises(ValueError, match="applies to"):

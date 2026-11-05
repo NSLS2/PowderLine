@@ -41,7 +41,8 @@ Enable verbose output::
 After ``pixi reinstall powderline`` the same program is available as the
 installed command ``powderline <recipe.json> ...``. Flags: ``--output DIR``
 (default ``output/`` next to the recipe), ``--validate-only``, ``--verbose``;
-for ``gsasii.*`` recipes ``--use-server`` / ``--no-server``; for ``topas.*``
+for ``gsasii.*`` recipes ``--use-server`` / ``--no-server`` / ``--server-timeout
+SECONDS`` (how long to wait for the server's answer; default no limit); for ``topas.*``
 recipes ``--topas-dir DIR`` / ``--topas-version V`` / ``--topas-timeout
 SECONDS`` (each tc.exe run is stopped after this long; default 3600, 0 = no
 limit). A flag given for a recipe

@@ -146,12 +146,17 @@ limitations are listed in the [known-issues register](docs/known_issues.md).
 - A failed run leaves only the engine's own files and `failure.json`: a gsasii
   run no longer writes result tables before PowderLine's checks.
 - `powderline.run()` removes PowderLine's own fixed-name outputs from the output
-  directory before every run, so a reused directory holds one run's results.
+  directory before every run, so a reused directory holds one run's results;
+  only once the recipe has validated and the engine is importable, so an
+  invalid recipe or a run in an environment without the engine leaves the
+  previous results in place.
 - Every engine writes the same seven unit-cell report rows, `cell_a` …
   `cell_gamma`, `cell_volume`; a gsasii simulation writes ESD `0.0` (was empty).
 - The GSAS-II server needs no shared filesystem: output files come back inside
   the signed response (KI-12); it runs one job at a time and a stale server is
-  detected and refused.
+  detected and refused. Waiting for its answer has no time limit by default
+  (as in-process); `--server-timeout SECONDS` / the `server_timeout` option set
+  one (past it `ExecutionBackendError` `timeout`, no in-process fallback).
 - TOPAS runs only from a declared directory (`--topas-dir` or `topas.dir`);
   without one a run writes the INP and data and stops (`status: generated`).
   `topas.*` recipes state `engine_version: "6"` and the installed version is

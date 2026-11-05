@@ -60,8 +60,8 @@ Command line
 .. py:module:: powderline.kicker
 
 ``powderline <recipe.json> [--output DIR] [--validate-only] [--verbose]
-[--use-server | --no-server] [--topas-dir DIR] [--topas-version V]
-[--topas-timeout SECONDS]`` (the pixi
+[--use-server | --no-server] [--server-timeout SECONDS] [--topas-dir DIR]
+[--topas-version V] [--topas-timeout SECONDS]`` (the pixi
 task ``kicker`` runs the same ``main``), and ``powderline --doctor`` (the pixi
 task ``doctor``): what this environment can do — the gateways the registry
 finds, each engine's installed version against its requirement, the GSAS-II

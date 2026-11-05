@@ -183,7 +183,7 @@ each name; the recipe-path view of the same values is `parameter_dispositions`.
 | `server_unavailable` | backend | server mode: no GSAS-II server and none could be started |
 | `server_disabled` | backend | `POWDERLINE_NO_SERVER` with `execution_mode='server'` |
 | `communication_failed` | backend | an HTTP/transport error after a server was found |
-| `timeout` | backend | GSAS-II server mode: the request timed out; **no in-process fallback** (the job is still running on the server; a second run would double the work). TOPAS: `tc.exe` outlived `topas_timeout` (default 3600 s) and was stopped (the background-only run stopped at the limit is not a failure: `y_bkg` empty with `topas_background_not_calculated`) |
+| `timeout` | backend | GSAS-II server mode: the server's answer outlived `server_timeout` / `--server-timeout` (no limit unless one is set); **no in-process fallback** (the job is still running on the server; a second run would double the work). TOPAS: `tc.exe` outlived `topas_timeout` (default 3600 s) and was stopped (the background-only run stopped at the limit is not a failure: `y_bkg` empty with `topas_background_not_calculated`) |
 | `backend_error` | backend | anything else on the execution path before the engine ran (e.g. a recipe the server could not validate) |
 
 With `validate_only=True` the result is a slim summary with the same keys on
