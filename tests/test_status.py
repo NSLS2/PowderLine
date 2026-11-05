@@ -9,6 +9,8 @@ import pytest
 
 from powderline import _status
 
+pytestmark = pytest.mark.core
+
 
 class _FakeStdout:
     """Minimal stdout stand-in exposing only an ``encoding`` attribute."""

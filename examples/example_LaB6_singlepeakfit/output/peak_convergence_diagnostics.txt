@@ -1,2 +1,0 @@
-peak_index	position_2theta	final_sigma_sq	final_gamma	status	notes
-35	14.91829414	2.96326927	0.00100000	negative_gamma_warning	

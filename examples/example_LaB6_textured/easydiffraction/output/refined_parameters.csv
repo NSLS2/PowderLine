@@ -1,0 +1,15 @@
+parameter_name,descriptive_name,phase_name,phase_idx,atom_name,atom_idx,value,esd,category
+broad_gauss_u,broad_gauss_u,,,,,0.005440091182853497,0.005761757224948214,instrument_broadening
+broad_gauss_v,broad_gauss_v,,,,,0.0014822500781551972,0.0007212845521614166,instrument_broadening
+broad_gauss_w,broad_gauss_w,,,,,0.0005922229289069411,1.974438033985195e-05,instrument_broadening
+broad_lorentz_x,broad_lorentz_x,,,,,-0.00753450149062567,0.0058860872511244,instrument_broadening
+broad_lorentz_y,broad_lorentz_y,,,,,0.003186420130251972,0.0002410477333841966,instrument_broadening
+background_coefficient_0,Chebyshev coefficient 0,,,,,28.731012491194598,0.1315482234767104,background
+background_coefficient_1,Chebyshev coefficient 1,,,,,1.2993871309887972,0.21377471943225293,background
+background_coefficient_2,Chebyshev coefficient 2,,,,,0.7052924182376953,0.19151092446455356,background
+background_coefficient_3,Chebyshev coefficient 3,,,,,-1.6178779369284624,0.18503002239356328,background
+background_coefficient_4,Chebyshev coefficient 4,,,,,0.3840472632535656,0.16182803036974963,background
+background_coefficient_5,Chebyshev coefficient 5,,,,,0.3486706690002906,0.16082718337024238,background
+LaB6_scale,LaB6 scale,LaB6,0,,,1.1355826856461678e-05,4.7210199047862355e-08,scale
+LaB6_march_r,LaB6 March-Dollase r,LaB6,0,,,0.5976013861796954,0.0014078020522264166,preferred_orientation
+LaB6_a,LaB6 a,LaB6,0,,,4.1570637845322445,2.7220435680099755e-05,unit_cell

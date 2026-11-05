@@ -1,0 +1,205 @@
+{
+  "schema_name": "topas.rietveld",
+  "core_schema_version": "0.1.0",
+  "engine_schema_version": "0.1.0",
+  "engine_version": "6",
+  "payload": {
+    "xrd_data": {
+      "tth": [],
+      "Itth": [],
+      "Itth_weights": [],
+      "filename": "your_data_file.xy"
+    },
+    "fit_range": [
+      null,
+      null
+    ],
+    "instrument": {
+      "description": "Your beamline or lab instrument",
+      "radiation": {
+        "ymin_on_ymax": 0.0001,
+        "la": [
+          1.0,
+          false,
+          null,
+          null
+        ],
+        "lo": [
+          0.0,
+          false,
+          null,
+          null
+        ],
+        "lh": [
+          0.0001,
+          false,
+          null,
+          null
+        ]
+      },
+      "corrections": {
+        "LP_Factor": {
+          "monochromator_angle": [
+            90.0,
+            false,
+            null,
+            null
+          ]
+        }
+      },
+      "broadening": {
+        "peak_type": "TCHZ_Peak_Type",
+        "parameters": {
+          "U": [
+            0.0,
+            false,
+            null,
+            null
+          ],
+          "V": [
+            0.0,
+            false,
+            null,
+            null
+          ],
+          "W": [
+            0.0,
+            false,
+            null,
+            null
+          ],
+          "Z": [
+            0.0,
+            false,
+            null,
+            null
+          ],
+          "X": [
+            0.0,
+            false,
+            null,
+            null
+          ],
+          "Y": [
+            0.0,
+            false,
+            null,
+            null
+          ]
+        }
+      }
+    },
+    "background": {
+      "chebyshev": {
+        "num_coefficients": 3,
+        "coefficients": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "refine_flag": false
+      }
+    },
+    "phases": {
+      "YourPhaseName": {
+        "space_group": "P 1",
+        "unit_cell": {
+          "a": [
+            1.0,
+            false,
+            null,
+            null
+          ],
+          "b": [
+            1.0,
+            false,
+            null,
+            null
+          ],
+          "c": [
+            1.0,
+            false,
+            null,
+            null
+          ],
+          "alpha": [
+            90.0,
+            false,
+            null,
+            null
+          ],
+          "beta": [
+            90.0,
+            false,
+            null,
+            null
+          ],
+          "gamma": [
+            90.0,
+            false,
+            null,
+            null
+          ]
+        },
+        "atoms": {
+          "Atom1": {
+            "element": "X",
+            "x": [
+              0.0,
+              false,
+              null,
+              null
+            ],
+            "y": [
+              0.0,
+              false,
+              null,
+              null
+            ],
+            "z": [
+              0.0,
+              false,
+              null,
+              null
+            ],
+            "occupancy": [
+              1.0,
+              false,
+              null,
+              null
+            ],
+            "ADP": "Uiso",
+            "Uiso": [
+              0.01,
+              false,
+              null,
+              null
+            ]
+          }
+        },
+        "scale": [
+          1.0,
+          false,
+          null,
+          null
+        ],
+        "peak_broadening": {
+          "size_broadening": {
+            "model": "isotropic",
+            "CS_L": [
+              10000.0,
+              false,
+              null,
+              null
+            ]
+          }
+        }
+      }
+    },
+    "refinement_controls": {
+      "iters": 1000,
+      "chi2_convergence_criteria": 0.001,
+      "x_calculation_step": 0.001
+    }
+  }
+}

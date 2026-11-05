@@ -22,17 +22,17 @@ This example validates PowderLine's ability to refine structural parameters in m
 ### Atom Parameters Being Refined:
 
 **DRX_33 Phase (cubic):**
-- **Coordinates (x, y, z)**: Li, Mg, Mn1, O1, W atoms all have x=y=z=true
-  - Since schema 0.26, each coordinate flag is honored individually (a false or
-    absent flag holds that coordinate). These atoms sit on special positions, so
-    only the site-symmetry-allowed components actually vary.
+- **Coordinates (x, y, z)**: the DRX_33 atoms sit on the fixed special position 4a
+  (0, 0, 0), so their coordinate flags are `false` in the gsasii recipe (the
+  converter wrote the flags v0.1.1 effectively refined: a symmetry-fixed
+  coordinate cannot carry `true`)
 - **Isotropic displacement (Uiso)**: Li, Mg, Mn1, O1, W atoms all have Uiso=true
 - **Occupancies**: Li, Mg, Mn1, O1, W atoms all have occupancy=true
 
 **Li4MgWO6_SG12 Phase (monoclinic):**
-- **Coordinates (x, y, z)**: Li1, Li2, Li3, Mg, O1, O2, O3, W atoms all have x=y=z=true
-  - Explicit flags state the full intent; site symmetry still fixes the
-    components that are not free to vary.
+- **Coordinates (x, y, z)**: the free components of Li1, Li2, Li3, Mg, O1, O2, W
+  are refined (`true`); the components fixed by site symmetry (e.g. x and z of
+  the 4g/4h sites) are `false`, as the schema requires
 - **Isotropic displacement (Uiso)**: All atoms locked (Uiso=false)
 - **Occupancies**: All atoms locked (occupancy=false)
 
@@ -44,7 +44,7 @@ This example validates PowderLine's ability to refine structural parameters in m
 - **Phase scale factors**: Both phases
 - **Peak broadening**: Size and strain for both phases
 - **Background**: Chebyshev with 6 terms
-- **Atomic coordinates**: Both phases (x, y, z all explicitly set to refine; site symmetry limits which components actually vary)
+- **Atomic coordinates**: Li4MgWO6_SG12 (the symmetry-free components); DRX_33's atoms are on a fixed position
 - **Displacement parameters**: DRX_33 phase only (isotropic Uiso for all 5 atoms)
 - **Occupancies**: DRX_33 phase only (all 5 atoms)
 
@@ -60,8 +60,9 @@ This example validates PowderLine's ability to refine structural parameters in m
 - Coordinate refinement is sensitive to starting values
 
 ### Fit Quality:
-- **Expected Rwp**: ~19.35% (39 refined parameters)
+- **Expected Rwp**: 15.06% (39 refined parameters; GSAS-II's own wR in `dummy.lst`, PowderLine's uniform `rwp` 15.059)
 - Higher Rwp than base example_DRX_33 (10.83%) due to increased parameter count and model complexity
+- This 39-parameter refinement is sensitive to the fit window: with v0.1.1's window (one data point more at the high end, EB-54) it converged to another minimum at Rwp 19.35%; the native path fits exactly 1 ≤ 2θ ≤ 15
 - χ² should still be reasonable given the added structural freedom
 
 ### Typical Runtime:
@@ -94,56 +95,45 @@ This example highlights the schema's **required ADP specification** and the dist
 ### Understanding ADP:
 
 The `ADP` field serves two purposes:
-1. **Type Indicator**: Tells kicker which displacement parameter to use ("Uiso" or "Uaniso")
-2. **NOT a refinement flag**: The `ADP` string itself doesn't control whether parameters are refined
+1. **Type Indicator**: which displacement parameter the atom carries ("Uiso" or "Uaniso")
+2. **NOT a refinement flag**: the `ADP` string itself doesn't control whether parameters are refined
 
-**Refinement is controlled by the `refine_flag`** (second element in `[value, refine_flag, min, max]`):
+**Refinement is controlled by the `refine_flag`** (second element in `[value, refine_flag]`):
 
-### Structure Section:
-Each atom explicitly declares its ADP type:
+### Phase block (gsasii 0.1.0):
+Each atom states its values and flags together. DRX_33's Li (fixed position 4a)
+refines occupancy and Uiso; Li4MgWO6_SG12's Li1 (site 4g: x and z fixed by
+symmetry) refines only y:
 ```json
 "atoms": {
   "Li": {
-    "ADP": "Uiso",  // Type indicator - use Uiso for this atom
-    "Uiso": 0.0051,
     "element": "Li",
-    "x": 0.0, "y": 0.0, "z": 0.0
-  }
-}
-```
-
-### Parameterization Section:
-Refinement flags control what's actually refined:
-```json
-"parameterization": {
-  "atoms": {
-    "Li": {
-      "ADP": "Uiso",  // Type indicator - look for "Uiso" key
-      "x": [null, true, null, null],      // REFINED (true)
-      "Uiso": [null, true, null, null],   // REFINED (true)
-      "occupancy": [null, true, null, null]  // REFINED (true)
-    },
-    "Li1": {
-      "ADP": "Uiso",  // Type indicator - look for "Uiso" key
-      "x": [null, true, null, null],       // REFINED (true)
-      "Uiso": [null, false, null, null],   // NOT refined (false)
-      "occupancy": [null, false, null, null]  // NOT refined (false)
-    }
+    "x": [0.0, false], "y": [0.0, false], "z": [0.0, false],  // 4a: fixed by symmetry
+    "occupancy": [0.6, true],                                  // REFINED
+    "ADP": "Uiso",
+    "Uiso": [0.0051, true]                                     // REFINED
+  },
+  "Li1": {
+    "element": "Li",
+    "x": [0.0, false], "y": [0.33, true], "z": [0.5, false],   // only y is free on 4g
+    "occupancy": [1.0, false],
+    "ADP": "Uiso",
+    "Uiso": [0.0, false]
   }
 }
 ```
 
 **Key Points:**
-- `ADP` is **required** in both sections
-- `ADP` value indicates which parameter key to look for ("Uiso" or "Uaniso")
-- Actual refinement controlled by `refine_flag` in the RefinementParameter list
-- Structure ADP can differ from parameterization ADP (allows flexibility)
+- `ADP` is **required** for every atom and names the parameter the atom carries
+- Actual refinement is controlled by the flag of each `[value, refine_flag]`
+- The schema validates the flags against the site symmetry: a `true` on a
+  symmetry-fixed coordinate is an error, so the recipe states what GSAS-II varies
 
 ## Output Files
 
 This two-phase Rietveld refinement produces:
 
-- **dummy.gpx** - GSAS-II project file (reopenable in GUI)
+- **dummy.gpx** - GSAS-II project file (reopenable in the GUI; gitignored)
 - **dummy.lst** - Human-readable refinement log with Rwp and parameter tables
 - **refined_parameters.csv** - All refined parameters with ESDs (9 columns: parameter_name, descriptive_name, phase_name, phase_idx, atom_name, atom_idx, value, esd, category)
 - **DRX_33_unit_cell_report.csv** - Phase 1 unit cell parameters with ESDs (3 columns: parameter, value, esd)
@@ -155,7 +145,13 @@ This two-phase Rietveld refinement produces:
 
 ## Known Issues
 
-None.
+**The output recipe of this example is not valid as posed** (`output_recipe_valid:
+false`, warning `output_recipe_not_valid`; KI-04): the committed reference
+refines the DRX_33 Li occupancy to about −0.35 and the Li4MgWO6 crystallite size to
+about −8 µm, which the schema refuses; the output recipe is written and returned with
+those values and the warning names them. Holding the sizes at 10 µm does not rescue
+this posing (GSAS-II then fails with an invalid metric tensor); the reference is kept
+as posed.
 
 ## Comparison to Related Examples
 
@@ -163,18 +159,22 @@ None.
 |---------|------------------------|--------------------------|-------------|
 | example_DRX_33 | ❌ None | ❌ None | Base multi-phase refinement |
 | example_DRX_33_atomrefine | ✅ x, Uiso, occupancy (all 5 atoms) | ✅ x only (7 atoms) | Demonstrate comprehensive atom parameter refinement |
-| example_DRX_33_anisoADP | ✅ Uaniso (Li only, 6 components) | ❌ None | Demonstrate anisotropic displacement parameters |
+| example_DRX_33_anisoADP | ❌ None | ✅ Uaniso (O1 only, 6 components) | Demonstrate anisotropic displacement parameters |
 | example_DRX_33_simulation | ❌ All locked | ❌ All locked | Validate forward calculation only |
 
-## Schema 0.26 note: explicit per-parameter refine flags
+## Refine flags (gsasii 0.1.0)
 
-Since schema 0.26, PowderLine honors each refinement flag individually: a
-parameter refines iff it is present with `refine_flag=true`; absent or `false`
-means fixed (internally enforced with GSAS-II "Hold" constraints).
-Symmetry-linked parameters (e.g. cubic a=b=c) refine together if any member is
-requested. This example uses the **explicit style** - every parameter is listed
-with a symmetry-consistent flag so the recipe states its full intent. Listing
-only the parameters you wish to refine (absence = fixed) is equally valid.
+Every refinable parameter is `[value, refine_flag]` (no bounds: GSAS-II applies
+limits only after a fit); a parameter refines iff its flag is `true`. The gsasii
+schema checks the flags against the symmetry and GSAS-II's own parameter groups
+when the recipe is validated: a refined strict subset of a tie group (e.g. only
+`a` of a cubic cell) or a refined symmetry-fixed parameter is an error, so the
+recipe states exactly what GSAS-II refines. This example uses the **explicit
+style** - every parameter is listed with a symmetry-consistent flag.
+
+The recipe was converted from its schema-0.26.0 form with
+`scripts/convert_recipe_026.py` at PowderLine 0.2.0; the converter's
+notes for each example are in `docs/SCHEMA_HISTORY.md`'s gsasii section.
 
 ## Data citation
 

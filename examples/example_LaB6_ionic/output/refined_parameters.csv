@@ -1,0 +1,14 @@
+parameter_name,descriptive_name,phase_name,phase_idx,atom_name,atom_idx,value,esd,category
+:0:Back;0,background_coefficient_0,,,,,3.002740e+01,6.72144039e-02,background
+:0:Back;1,background_coefficient_1,,,,,1.358378e+00,1.07509136e-01,background
+:0:Back;2,background_coefficient_2,,,,,1.195326e+00,9.78855827e-02,background
+:0:Back;3,background_coefficient_3,,,,,-1.437168e+00,9.58741243e-02,background
+:0:Back;4,background_coefficient_4,,,,,5.201945e-01,8.36865731e-02,background
+:0:Back;5,background_coefficient_5,,,,,3.335819e-01,8.26051383e-02,background
+:0:U,instrument_broadening_U,,,,,4.803522e+01,8.34196812e+00,instrument_broadening
+:0:V,instrument_broadening_V,,,,,1.124362e+01,9.55231166e-01,instrument_broadening
+:0:W,instrument_broadening_W,,,,,7.052874e-01,2.56741940e-02,instrument_broadening
+:0:X,instrument_broadening_X,,,,,6.179952e-01,8.55559209e-03,instrument_broadening
+:0:Y,instrument_broadening_Y,,,,,-1.016991e+01,3.93851515e-01,instrument_broadening
+:0:Z,instrument_broadening_Z,,,,,3.408031e-01,8.65375397e-03,instrument_broadening
+0:0:Scale,phase_0_scale_factor,LaB6,0,,,3.773926e-02,7.15602720e-05,scale

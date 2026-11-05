@@ -4,178 +4,144 @@ Getting Started
 Installation
 ------------
 
-PowderLine uses `pixi <https://pixi.sh>`_ for reproducible conda environments::
+PowderLine uses `pixi <https://pixi.sh>`_ for reproducible conda environments.
+The **default environment is core-only**: it validates recipes for every
+engine and runs none. Each engine has its own environment::
 
-    # Install dependencies (first time)
-    pixi install
+    pixi install                      # core only (validation, the CLI)
+    pixi install -e gsasii            # + GSAS-II (conda package built by pixi-build)
+    pixi install -e easydiffraction   # + easydiffraction (Python >= 3.12)
+    pixi install -e all               # every engine
+    pixi install -e dev               # all engines + docs/test tooling (contributors)
 
-    # Activate environment
-    pixi shell
+TOPAS has no Python package: ``topas.*`` recipes validate and write their input
+files in any environment; running them needs a Windows machine with TOPAS 6
+(``tc.exe``).
 
-Basic Usage
+Basic usage
 -----------
 
-Run a refinement from a JSON recipe::
+One command serves every engine; the recipe's ``schema_name`` names the engine
+that runs it (``gsasii.rietveld``, ``gsasii.spf``, ``topas.rietveld``,
+``topas.spf``, ``easydiffraction.rietveld``)::
 
-    pixi run kicker examples/example_LaB6/input.json
+    pixi run -e gsasii kicker examples/example_LaB6/input.json             # GSAS-II
+    pixi run -e easydiffraction kicker examples/example_LaB6/easydiffraction/input.json
+    pixi run kicker examples/example_LaB6/topas/input.json --topas-dir C:/TOPAS6 --topas-version 6   # TOPAS (tc.exe on Windows)
 
-Validate a recipe without running refinement::
+Validate a recipe without running anything — no engine needed, so the default
+environment suffices::
 
     pixi run kicker --validate-only examples/example_LaB6/input.json
 
 Enable verbose output::
 
-    pixi run kicker --verbose examples/example_LaB6/input.json
+    pixi run -e gsasii kicker --verbose examples/example_LaB6/input.json
 
-Running a recipe through TOPAS v7 instead of GSAS-II
-----------------------------------------------------
+After ``pixi reinstall powderline`` the same program is available as the
+installed command ``powderline <recipe.json> ...``. Flags: ``--output DIR``
+(default ``output/`` next to the recipe), ``--validate-only``, ``--verbose``;
+for ``gsasii.*`` recipes ``--use-server`` / ``--no-server`` / ``--server-timeout
+SECONDS`` (how long to wait for the server's answer; default no limit); for ``topas.*``
+recipes ``--topas-dir DIR`` / ``--topas-version V`` / ``--topas-timeout
+SECONDS`` (each tc.exe run is stopped after this long; default 3600, 0 = no
+limit). A flag given for a recipe
+of another engine exits with an error. Exit status is 0 on success, 1
+otherwise.
 
-The same JSON recipe can be driven through TOPAS v7 (Bruker), not just GSAS-II.
-The TOPAS path imports **zero** GSAS-II, so it runs with no GSAS-II installed at
-all. Translate a ``GSASII_Rietveld`` or ``GSASII_SPF``
-recipe into a TOPAS v7 ``.inp`` + ``.xye`` pair::
-
-    pixi run topas-kicker examples/example_LaB6/input.json
-
-This writes ``<name>.inp`` and ``<name>.xye`` under
-``examples/<name>/output/topas/``; if ``tc.exe`` is discoverable it also runs the
-refinement and parses the results into the same standardized reports the GSAS-II
-path produces. Use ``--output DIR`` to choose a directory, ``--validate-only`` to
-check translatability without writing files, and ``--topas-dir`` /
-``--topas-version`` to locate ``tc.exe``.
-
-From Python, select the engine with a single flag::
-
-    import powderline
-    result = powderline.run(recipe, output_dir, engine="topas")   # vs engine="gsasii"
-
-A third engine, open-source `easydiffraction
-<https://easydiffraction.org>`_, is available as
-``engine="easydiffraction"`` after installing the optional pixi environment
-(``pixi install -e easydiff``; easydiffraction needs Python ≥3.12, the default
-environment is untouched). It consumes the same recipes and returns the same
-result dictionary — see the integration guide's easydiffraction section for
-its v1 capability list.
-
-``engine="topas"`` returns the same result dictionary as the GSAS-II engine
-(plus ``rwp``/``r_exp``/``gof``). The bundled ``GSASII_Rietveld`` / ``GSASII_SPF``
-example recipes translate to TOPAS, and the committed golden set has been
-validated against a real ``tc.exe`` run on Windows (``example_template`` is a
-fill-in-the-blanks skeleton and is rejected with a clear error by design).
-Refined **lattice parameters agree with GSAS-II to
-sub-percent** across the example set; correlated profile terms (instrument
-U..Z, size vs. strain) are not individually comparable between engines, but
-cell, scale, and occupancy are reliable.
-
-Running Tests
+Running tests
 -------------
 
-Execute the test suite::
+Execute the engine-free test suite (core and TOPAS input generation; any
+environment)::
 
     pixi run test
 
-Or with pytest directly::
+The per-engine suites are ``pixi run -e gsasii test-gsasii`` and
+``pixi run -e easydiffraction test-easydiffraction``; ``pixi run test-all``
+runs everything in the ``dev`` environment.
 
-    pixi run pytest -v
+Or a selection, in one engine's environment::
 
-Recipe Structure
+    pixi run -e gsasii pytest tests/test_example_LaB6_regression.py -q
+
+Recipe structure
 ----------------
 
-A PowderLine recipe is a JSON file describing refinement parameters (Schema 0.26.0).
-All examples use schema 0.26.0 file-less payloads with embedded data.
+A recipe is a JSON file with a fixed frame — ``schema_name``,
+``core_schema_version``, ``engine_schema_version``, optional ``metadata``, and
+``payload`` — whose payload is written in the named engine's own terms. Data
+are embedded (no external files). A minimal ``gsasii.rietveld`` recipe (three
+data points are shown; a real pattern has thousands, and ``fit_range`` must lie
+inside them):
 
 .. code-block:: json
 
     {
-      "schema_name": "GSASII_Rietveld",
-      "schema_version": "0.26.0",
+      "schema_name": "gsasii.rietveld",
+      "core_schema_version": "0.1.0",
+      "engine_schema_version": "0.1.0",
       "payload": {
         "xrd_data": {
-          "tth": [10.0, 10.5, 11.0],
-          "Itth": [1234.5, 1230.2, 1228.9],
-          "Itth_weights": [1.0, 1.0, 1.0]
+          "tth": [1.0, 1.0036, 1.0071],
+          "Itth": [30.6, 30.9, 30.2],
+          "Itth_weights": [0.0327, 0.0324, 0.0331]
         },
+        "fit_range": [1.0, 1.0071],
         "instrument": {
           "description": "28-ID-2",
-          "initialization": [
-            {
-              "Type": ["PXC", "PXC", false],
-              "Bank": [1, 1, false],
-              "Lam": [0.45236, 0.45236, false],
-              "Zero": [0.0, 0.0, false],
-              "Polariz.": [0.99, 0.99, false],
-              "U": [2.0, 2.0, false],
-              "V": [-2.0, -2.0, false],
-              "W": [5.0, 5.0, false],
-              "X": [0.0, 0.0, false],
-              "Y": [0.0, 0.0, false],
-              "Z": [0.0, 0.0, false],
-              "SH/L": [0.002, 0.002, false]
-            },
-            {}
-          ],
-          "parameterization": {
-            "wavelength": [0.45236, false, null, null],
-            "broadening": {
-              "U": [null, true, null, null],
-              "V": [null, true, null, null],
-              "W": [null, true, null, null]
-            },
-            "corrections": {
-              "zero_shift": null,
-              "axial_divergence": null
-            }
+          "radiation": {"type": "PXC", "wavelength": [0.1665, false]},
+          "geometry": {"bank": 1, "azimuth": 0.0},
+          "corrections": {
+            "zero_shift": [0.0, false],
+            "polarization": [0.99, false],
+            "axial_divergence": [0.002, false]
+          },
+          "broadening": {
+            "U": [1.163, true], "V": [-0.126, true], "W": [0.063, true],
+            "X": [0.0, false], "Y": [0.0, false], "Z": [0.0, false]
           }
+        },
+        "background": {
+          "chebyshev": {"num_coefficients": 6, "coefficients": [30, 0.6, 0.7, -0.4, -0.8, 0.9], "refine_flag": true}
         },
         "phases": {
-          "MyPhase": {
-            "structure": {
-              "phase_name": "MyPhase",
-              "space_group": "P m -3 m",
-              "unit_cell": {
-                "a": 4.157,
-                "b": 4.157,
-                "c": 4.157,
-                "alpha": 90.0,
-                "beta": 90.0,
-                "gamma": 90.0,
-                "volume": 71.83
-              },
-              "atoms": {
-                "La": {
-                  "element": "La",
-                  "x": 0.0,
-                  "y": 0.0,
-                  "z": 0.0,
-                  "occupancy": 1.0,
-                  "ADP": "Uiso",
-                  "Uiso": 0.008,
-                  "Multiplicity": 1
-                }
-              }
+          "LaB6": {
+            "space_group": "P m -3 m",
+            "unit_cell": {
+              "a": [4.15682, false], "b": [4.15682, false], "c": [4.15682, false],
+              "alpha": [90.0, false], "beta": [90.0, false], "gamma": [90.0, false]
             },
-            "parameterization": {
-              "scale": [1.0, true, null, null]
-            }
+            "atoms": {
+              "La": {"element": "La", "x": [0.0, false], "y": [0.0, false], "z": [0.0, false],
+                     "occupancy": [1.0, false], "ADP": "Uiso", "Uiso": [0.0086, false]},
+              "B":  {"element": "B",  "x": [0.2021, false], "y": [0.5, false], "z": [0.5, false],
+                     "occupancy": [1.0, false], "ADP": "Uiso", "Uiso": [0.0092, false]}
+            },
+            "scale": [1.0, true]
           }
         },
-        "refinement_controls": {
-          "refinement_cycles": 5
-        }
+        "refinement_controls": {"refinement_cycles": 5}
       }
     }
 
-``initialization`` holds the GSAS-II instrument parameters (the contents of a
-``.instprm`` file) as ``[value, value, refine_flag]`` lists; ``parameterization``
-lists what to refine, with ``null`` values meaning "start from the
-``initialization`` value". See ``examples/`` for complete working recipes, and
-:doc:`building-recipes` for every section, how to validate a recipe, and how to
-build one from your own CIF, instrument, and data files.
+Every refinable quantity is a list: ``[value, refine_flag]`` in ``gsasii.*``
+(no bounds), ``[value, refine_flag, min, max]`` in ``topas.*`` and
+``easydiffraction.*``. The structural block (``space_group``, ``unit_cell``,
+``atoms``) is the same in every engine and is checked against the symmetry at
+validation; the instrument, background and controls are the engine's own, with
+its units (GSAS-II's ``U, V, W`` in centidegree², TOPAS's and easydiffraction's
+in degree², for instance). Unknown keys are errors.
 
-Output Files
+See :doc:`schemas` for the five schemas and their minimum inputs,
+:doc:`fields` for every field with its unit, :doc:`input-guidance` for how to
+fill the data, structure and instrument blocks, and ``examples/`` for complete
+working recipes (``examples/<case>/input.json`` for GSAS-II,
+``examples/<case>/topas/`` and ``examples/<case>/easydiffraction/`` for the
+other engines).
+
+Output files
 ------------
-
-After refinement, PowderLine generates standardized outputs with fixed filenames (Schema 0.26.0):
 
 .. note::
 
@@ -184,109 +150,141 @@ After refinement, PowderLine generates standardized outputs with fixed filenames
    engines it drives. The quantity reported is what is now called the
    *standard uncertainty* (s.u.): the IUCr recommends "standard uncertainty"
    in place of "estimated standard deviation" (Schwarzenbach et al., `Acta
-   Cryst. A51, 565 (1995) <https://doi.org/10.1107/S0108767395002340>`_), in
+   Cryst. A 51, 565-569 (1995) <https://doi.org/10.1107/S0108767395002340>`_), in
    line with `NIST Technical Note 1297
    <https://www.nist.gov/pml/nist-technical-note-1297>`_ (Taylor & Kuyatt,
    1994).
 
-**GSAS-II files:**
+Every engine writes the same standardized reports, with fixed filenames, into
+the output directory:
 
-- ``dummy.gpx`` - GSAS-II project file (reopenable in GUI)
-- ``dummy.lst`` - Human-readable refinement log with Rwp and parameter tables
+- ``refined_parameters.csv`` — all refined parameters with ESDs (9 columns):
 
-**Refinement results:**
+  - ``parameter_name``: the engine's identifier (GSAS-II's ``::0:Scale``, a
+    TOPAS parameter name, an easydiffraction path)
+  - ``descriptive_name``: human-readable description
+  - ``phase_name``, ``phase_idx``: phase associations (empty for non-phase parameters)
+  - ``atom_name``, ``atom_idx``: atom associations (empty for non-atom parameters)
+  - ``value``: refined value
+  - ``esd``: estimated standard deviation
+  - ``category``: parameter classification (instrument, background, cell, atom_position, …)
 
-- ``refined_parameters.csv`` - All refined parameters with ESDs (9 columns):
+- ``<phase>_unit_cell_report.csv`` — unit cell parameters with ESDs (``parameter``,
+  ``value``, ``esd``; a, b, c, alpha, beta, gamma, volume)
+- ``<phase>_peak_list_report.csv`` — reflection list per phase (not written with
+  easydiffraction's CrysFML calculator, which reports none)
+- ``fit_profile.txt`` — ``two_theta, y_obs, y_weights, y_calc, y_diff, y_bkg, q_values, d_spacings``
 
-  - ``parameter_name``: GSAS-II internal identifier
-  - ``descriptive_name``: Human-readable description
-  - ``phase_name``, ``phase_idx``: Phase associations (null for non-phase parameters)
-  - ``atom_name``, ``atom_idx``: Atom associations (null for non-atom parameters)
-  - ``value``: Refined parameter value
-  - ``esd``: Estimated standard deviation from covariance matrix
-  - ``category``: Parameter classification (instrument, background, cell, atom_position, etc.)
+- ``output_recipe.json`` and ``parameter_dispositions.csv`` — the recipe with the
+  refined values written back, and each parameter's disposition (refinement runs)
 
-- ``<phase>_unit_cell_report.csv`` - Unit cell parameters with ESDs (3 columns per phase):
+Before every run ``powderline.run()`` removes its own fixed-name files from the
+output directory (never the engine's), so a reused directory holds one run's
+results. A failed run raises and writes none of them; the directory then holds
+the engine's own files and ``failure.json`` (the failed envelope: reason,
+message, traceback, the engine's last console lines).
 
-  - ``parameter``: a, b, c, alpha, beta, gamma, volume
-  - ``value``: Refined unit cell parameter
-  - ``esd``: Estimated standard deviation
+**Native artifacts, always kept alongside:**
 
-- ``<phase>_peak_list_report.csv`` - Reflection list (hkl, d-spacing, 2θ, intensities per phase)
-- ``fit_profile.txt`` - Observed/calculated/background/difference intensities
+- gsasii: ``dummy.gpx`` (the GSAS-II project, reopenable in the GUI) and
+  ``dummy.lst`` (GSAS-II's refinement log with its own Rwp and parameter tables)
+- topas: ``<base>.inp`` and ``<base>.xye`` (what TOPAS was given) and what TOPAS
+  wrote (``<base>_results.csv``, ``<base>_profile.txt``, per-phase peak lists,
+  the background-only run ``<base>_bkg.inp`` / ``<base>_bkg_profile.txt``)
+- easydiffraction: none beyond the reports
 
-**Single peak fitting (SPF) mode additional files:**
+**Single peak fitting (``gsasii.spf``, ``topas.spf``) additional files:**
 
-- ``single_peaks_report.txt`` - Peak fit results (position, width, intensity)
-- ``peak_convergence_diagnostics.txt`` - Convergence warnings
+- ``single_peaks_report.txt`` (gsasii) / ``single_peaks_report.csv`` (topas) —
+  per-peak position, intensity, widths
+- ``peak_convergence_diagnostics.txt`` (gsasii) — only when a peak did not converge
 
-**Note:** Simulation mode (``refinement_cycles=1`` with all ``refine_flag=false``) does not generate ``refined_parameters.csv`` since no parameters are refined.
+**Note:** a simulation (nothing refined) writes no ``refined_parameters.csv``
+for ``gsasii.*`` (there is nothing to list), while ``topas.*`` and
+``easydiffraction.*`` write one with no rows; unit cell reports are generated
+in every case, and in a simulation every ``esd`` is ``0.0`` (nothing was
+refined, so every value is exact as stated).
 
 Programmatic API
 ----------------
 
 ``powderline.run()`` is the main Python entry point. It validates the recipe,
-dispatches to the GSAS-II server (or falls back to in-process execution), and
-returns results as pandas DataFrames.
+hands it to the gateway its ``schema_name`` names, and returns results with the
+tables as pandas DataFrames.
 
 .. code-block:: python
 
-   import json
    from pathlib import Path
    import powderline
 
-   recipe_path = Path("examples/example_LaB6/input.json")
-   recipe = json.loads(recipe_path.read_text())
+   recipe = powderline.load_recipe_asset(Path("examples/example_LaB6/input.json"))
    output_dir = Path("/tmp/powderline_out")
-   output_dir.mkdir(exist_ok=True)
 
-   result = powderline.run(recipe, output_dir)
+   result = powderline.run(recipe, output_dir)        # needs the gsasii environment for this recipe
 
-**Normal refinement — result keys:**
+**Result keys (every engine):**
 
-- ``result['success']`` (bool): True if refinement converged
-- ``result['rwp']`` (float): Weighted profile R-factor
-- ``result['elapsed_time']`` (float): Wall-clock seconds
-- ``result['fit_profile']`` (DataFrame): Observed/calculated/background/difference intensity columns
-- ``result['unit_cell_data']`` (dict[str, DataFrame]): Per-phase unit cell parameters and ESDs, keyed by phase name
-- ``result['peak_list_data']`` (dict[str, DataFrame]): Per-phase hkl reflection lists, keyed by phase name
-- ``result['refined_parameters']`` (DataFrame): 9-column parameter table with ESDs
-- ``result['spf_peaks']`` (DataFrame): SPF peak positions, widths, intensities; empty for Rietveld
-- ``result['spf_convergence_diagnostics']`` (DataFrame): SPF convergence warnings; empty for Rietveld
-- ``result['output_files']`` (list[str]): Paths of all written output files
+- ``result['status']`` (``"ok"``, or ``"generated"`` for a TOPAS run without a declared ``tc.exe``) and
+  ``result['converged']`` (``True`` / ``False`` / ``None``); a failed run **raises**
+  ``EngineExecutionError`` (the engine ran and failed) or ``ExecutionBackendError`` (it did not run),
+  each with ``.reason`` and ``.result``
+- ``result['rwp']``, ``result['r_exp']``, ``result['gof']``, ``result['chi2_red']`` — PowderLine's
+  uniform statistics over the fit window (percent / dimensionless; ``None`` where undefined)
+- ``result['simulation_mode']`` (bool)
+- ``result['engine_details']`` (dict) — the engine's own statistics, ``parameters_requested``
+  vs ``parameters_varied``, ``n_points``, and per engine ``converged`` / ``calculator`` / ``engine_version``
+- ``result['warnings']`` (list of ``{code, message, field_path[, level]}``)
+- ``result['elapsed_time']`` (float), ``result['method']`` (which execution path ran), ``result['run_id']``
+- ``result['fit_profile']`` (DataFrame)
+- ``result['unit_cell_data']`` (dict[str, DataFrame]) — per phase, keyed by phase name
+- ``result['peak_list_data']`` (dict[str, DataFrame]) — per phase, keyed by phase name
+- ``result['refined_parameters']`` (DataFrame) — the 9-column table
+- ``result['spf_peaks']``, ``result['spf_convergence_diagnostics']`` (DataFrame) — single peak fitting; empty otherwise
+- ``result['output_files']`` (list[str])
 
-**Validate-only mode (no refinement executed):**
-
-.. code-block:: python
-
-   result = powderline.run(recipe, output_dir, validate_only=True)
-   # result keys: success, rwp (None), elapsed_time, method ('validate_only'),
-   #              schema_name, schema_version, phases, refinement_cycles, simulation_mode
-
-**SPF DataFrame example:**
+**Validate without running** (engine-free; works in the default environment):
 
 .. code-block:: python
 
-   result = powderline.run(spf_recipe, output_dir)
-   df = result['spf_peaks']
-   # Columns: position_2theta, intensity, sigma, sigma_squared, gamma,
-   #          fwhm_gaussian, fwhm_lorentzian, fwhm_pseudovoigt,
-   #          integral_breadth_gaussian, integral_breadth_lorentzian,
-   #          integral_breadth_pseudovoigt, fwhm_gsas_verification,
-   #          converged, convergence_detail
+   checked = powderline.validate(recipe)        # -> ValidationResult
+   checked.recipe                               # the gateway's validated model (e.g. GsasiiRietveldRecipe)
+   checked.warnings                             # structured warnings, e.g. a default applied
 
-**Execution mode control:**
+   # or the run()-style summary dict (status, schema_name, core/engine schema
+   # versions, phases, simulation_mode, warnings, the engine's controls):
+   summary = powderline.run(recipe, output_dir, validate_only=True)
+
+An invalid recipe raises pydantic's ``ValidationError`` listing every problem
+with its field path.
+
+**Engine options** are keyword arguments of ``run()``, forwarded to the gateway;
+an option another engine does not take is a ``TypeError``:
 
 .. code-block:: python
 
-   result = powderline.run(recipe, output_dir, execution_mode='auto')         # default: try server, fall back to subprocess
-   result = powderline.run(recipe, output_dir, execution_mode='server')       # require the HTTP server
-   result = powderline.run(recipe, output_dir, execution_mode='subprocess')   # in-process execution
+   result = powderline.run(recipe, output_dir, execution_mode='auto')         # gsasii: try the server, fall back to in-process (default)
+   result = powderline.run(recipe, output_dir, execution_mode='server')       # gsasii: require the server
+   result = powderline.run(recipe, output_dir, execution_mode='subprocess')   # gsasii: in-process only
+   result = powderline.run(topas_recipe, output_dir, topas_version="6")       # topas: the installed TOPAS version (required to run)
+   result = powderline.run(topas_recipe, output_dir, topas_dir=Path(r"C:\TOPAS6"), topas_version="6")
 
-Next Steps
+The GSAS-II server and client live at ``powderline.gateways.gsasii.server`` /
+``powderline.gateways.gsasii.client`` (``GSASClient``); ``run()`` uses the
+client internally for ``execution_mode='auto'`` / ``'server'``.
+
+**Errors:** ``powderline.PowderLineError`` is the base of every PowderLine
+error; ``GatewayNotInstalledError`` (no gateway of that name),
+``EngineNotAvailableError`` (the gateway exists but its engine is not in this
+environment — the message names the environment and the install command),
+``EngineVersionError`` (installed engine outside the supported version),
+``EngineExecutionError`` (the engine ran and failed, including a diverged
+refinement).
+
+Next steps
 ----------
 
-- Read :doc:`DEVELOPMENT` for comprehensive project understanding
-- Explore examples in ``examples/`` directory
-- Consult :doc:`TROUBLESHOOTING` if you encounter issues
-- See :doc:`api` for detailed function documentation
+- :doc:`schemas`, :doc:`fields`, :doc:`input-guidance` — the recipe contract
+- :doc:`engine-behavior` — what each engine does with your recipe
+- :doc:`DEVELOPMENT` — architecture and development workflow
+- :doc:`TROUBLESHOOTING` — if you encounter issues
+- :doc:`api` — the public API reference

@@ -1,7 +1,0 @@
-parameter_name,descriptive_name,phase_name,phase_idx,atom_name,atom_idx,value,esd,category
-chebyshev_bkg_bkg0__,background_coefficient_0,,,,,29.247608,0.038015495,background
-chebyshev_bkg_bkg1__,background_coefficient_1,,,,,-0.23596324,0.06842118,background
-chebyshev_bkg_bkg2__,background_coefficient_2,,,,,1.316066,0.059996659,background
-chebyshev_bkg_bkg3__,background_coefficient_3,,,,,-0.53755086,0.055812668,background
-chebyshev_bkg_bkg4__,background_coefficient_4,,,,,-0.089670457,0.046578655,background
-chebyshev_bkg_bkg5__,background_coefficient_5,,,,,0.91717316,0.041845143,background

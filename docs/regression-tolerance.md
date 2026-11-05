@@ -13,7 +13,7 @@ reference (which was generated on Linux). This document tabulates that delta.
 ## Method
 
 For each example with a committed `refined_parameters.csv`, run
-`pixi run kicker --no-server examples/<name>/input.json --output out_drift/<name>`
+`pixi run -e gsasii kicker --no-server examples/<name>/input.json --output out_drift/<name>`
 and compare the generated `refined_parameters.csv` to the committed reference,
 per-parameter, grouped by the `category` column. Metric: relative difference
 `|gen - ref| / max(|ref|, 1e-30)` on the `value` and `esd` columns.
@@ -98,15 +98,16 @@ recipe + `other → loose_rtol=1e-2` is kept. Evidence (all variants run on linu
 | Refine size, fix strain | Converges but Rwp degrades to **14.2%** and `Size;mx` stays pathological (−1352 ± 100) |
 | Fix only the `;mx` LG-mix terms, keep size+strain | Converges, Rwp **11.25%** (fit preserved), worst mix terms gone — but size+strain remain co-refined (still needs *some* tolerance, unverifiable cross-build from Linux alone) |
 
-Additionally, **any** edit to this recipe breaks two committed TOPAS goldens —
-`test_declarative_examples_inp_and_xye_match_golden[atomrefine]` (golden INP,
-regenerable on Linux) and `test_declarative_examples_roundtrip_reproduce_committed[atomrefine]`,
-which round-trips against a **real Windows TOPAS** `_results.csv`
-under `output/topas/` (**not** regenerable on Linux — needs `tc.exe`). Since the
-candidate change diverges and every variant entangles the Windows-only TOPAS path
-while not cleanly achieving tight-and-good-fit, the design decision is to keep the
-baseline recipe and the scoped loose tolerance. Caveat: re-attempting this change
-requires a Windows TOPAS session to regenerate the roundtrip reference end-to-end.
+Additionally, at the time **any** edit to this recipe broke two committed TOPAS
+goldens of the then-existing unified-schema TOPAS path (a golden INP and a
+round-trip against a real Windows TOPAS `_results.csv` under `output/topas/`).
+Since the candidate change diverges and every variant entangled the
+Windows-only TOPAS path while not cleanly achieving tight-and-good-fit, the
+design decision was to keep the baseline recipe and the scoped loose tolerance.
+*(Historical note: that TOPAS path and its goldens were removed in 0.2.0; the
+native `topas.*` recipes have their own fixtures and TOPAS 6 goldens under
+`tests/data/topas/native/`, and the examples carry no TOPAS output. The
+tolerance decision stands on the GSAS-II evidence alone.)*
 
 ## Linux results (Python 3.13.14, GSASII 5.7.9, linux-64 conda-build)
 

@@ -1,6 +1,6 @@
 # ⚠️ **This is a Template File**
 
-**This template is NOT meant to be run directly.** Copy this directory and fill in your refinement details to create a working example.
+**This template is NOT meant to be run directly.** Copy this directory and fill in your refinement details to create a working example. `input.json` is the `gsasii.rietveld` skeleton; `topas/input.json` and `easydiffraction/input.json` are the per-engine skeletons (delete the ones you do not fill in). Validate your copy with `powderline <your_dir>/input.json --validate-only` (or `pixi run kicker ... --validate-only`); the element `X` and the empty data arrays are the blanks you must fill.
 
 ---
 
@@ -17,8 +17,8 @@ Describe what you are trying to refine and what scientific question you are answ
 
 List the schema features this example demonstrates:
 - **[Feature category]**: Brief description (e.g., "Multi-phase refinement", "Anisotropic ADPs", "Simulation mode")
-- **[Workflow type]**: Which schema_name is used? (`GSASII_Rietveld` for structural refinement or `GSASII_SPF` for single peak fitting)
-- **[Parameter patterns]**: Key refinement parameter patterns demonstrated (`[value, refine_flag, min, max]`)
+- **[Workflow type]**: Which schema_name is used? (`gsasii.rietveld` for structural refinement or `gsasii.spf` for single peak fitting; `topas.*` / `easydiffraction.*` for the per-engine recipes in `topas/` and `easydiffraction/`)
+- **[Parameter patterns]**: Key refinement parameter patterns demonstrated (gsasii `[value, refine_flag]`; topas and easydiffraction `[value, refine_flag, min, max]`)
 - **[Special capabilities]**: File-less payload? Background modeling? Single peak fitting?
 - **[Data format]**: XRD data embedded or referenced? CIF structures?
 - **[Validation]**: Expected Rwp range, convergence behavior
@@ -74,12 +74,14 @@ Document any quirks, edge cases, or special considerations:
 
 ## Reference Files
 
-After running this example successfully with `pixi run kicker input.json`, the `output/` directory should contain:
+After running this example successfully with `powderline input.json` (or `pixi run -e gsasii kicker input.json` for a gsasii recipe), the `output/` directory should contain:
 - `.gpx`: GSAS-II project file (can be reopened in GUI)
 - `.lst`: Refinement log with final parameters and Rwp
+- `refined_parameters.csv`: every refined parameter with its ESD (9 columns); absent for a simulation
 - `*_unit_cell_report.csv`: Refined unit cell parameters
 - `*_peak_list_report.csv`: Reflection list with intensities
 - `fit_profile.txt`: Observed/calculated/difference profile data
+- `output_recipe.json` and `parameter_dispositions.csv`: the resolved recipe with the refined values written back, and each parameter's disposition (refinement runs)
 
 These files (except `.gpx`, which is gitignored) are committed to git and used for regression testing to ensure code changes don't affect results.
 

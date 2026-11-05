@@ -12,6 +12,7 @@ Import note: gsas_server.py does NOT import GSAS-II at module top (only stdlib
 request handlers. A plain module import is therefore safe without GSAS-II.
 """
 import json
+from pathlib import Path
 import os
 import secrets
 import signal
@@ -21,9 +22,11 @@ import time
 
 import pytest
 
+pytestmark = pytest.mark.core
+
 pytest.importorskip("pydantic")
 
-from powderline import gsas_server
+from powderline.gateways.gsasii import server as gsas_server
 
 
 # The ProcessLookupError/PermissionError semantics below are specific to the
@@ -243,6 +246,25 @@ def test_stop_server_force_kill_never_dies_returns_false(isolated_pid_files, mon
     assert result is False
     assert calls["signals"] == [(4242, signal.SIGTERM), (4242, _FORCE_SIGNAL)]
     assert "failed to stop" in capsys.readouterr().out.lower()
+
+
+def test_response_model_keeps_native_result_keys():
+    """A native gsasii.* result crosses the server with its standard statistics and warnings (re/04, A125)."""
+    native = {"status": "ok", "converged": False, "envelope_version": "1",
+              "rwp": 6.53, "r_exp": 12.4, "gof": 0.52, "chi2_red": 0.27,
+              "engine_details": {"engine": "GSAS-II", "parameters_varied": 13},
+              "warnings": [{"code": "c", "message": "m", "field_path": None}],
+              "peak_fit": {"parameters": [{"name": "Back;0", "value": 27.2, "esd": 0.31}, {"name": "pos0", "value": 2.3, "esd": None}]}}
+    dumped = gsas_server.SimulationResponse(**native).model_dump()
+    assert {k: dumped[k] for k in native} == native
+
+
+def test_response_model_carries_a_failed_envelope():
+    """re/12: a failed envelope (no `success` key) crosses the response model with its failure record."""
+    from powderline import results
+    env = results.failure_envelope("engine", "diverged", "m", run_id="r", method="server")
+    dumped = gsas_server.SimulationResponse(**env).model_dump()
+    assert dumped["status"] == "failed" and dumped["failure"]["reason"] == "diverged" and "success" not in dumped
 
 
 # --- POWDERLINE_NO_SERVER ---
@@ -553,6 +575,7 @@ def app_client():
     server.request_count = 0
     server.start_time = None
     server.token = TOKEN
+    server.code_hash = gsas_server.source_tree_hash()
     server.logger = logging.getLogger("powderline.server.test")
     calls = []
     server._run_simulation = lambda req: calls.append(req) or {
@@ -561,7 +584,7 @@ def app_client():
 
 
 def _job_body(out):
-    return json.dumps({"recipe_data": {}, "output_dir": str(out)}).encode()
+    return json.dumps({"recipe_data": {}}).encode()  # no output_dir since re/19 (KI-12); `out` unused
 
 
 @pytest.mark.parametrize("case", [
@@ -584,7 +607,7 @@ def test_unauthenticated_requests_rejected(app_client, case, tmp_path):
         _, headers = _signed_headers("POST", "/simulate", body, ts=str(int(time.time()) + 3600))
     elif case == "tampered_body":
         _, headers = _signed_headers("POST", "/simulate", body)
-        body = _job_body(tmp_path / "elsewhere")
+        body = json.dumps({"recipe_data": {"tampered": True}}).encode()  # signed one body, sent another
     elif case == "wrong_path":
         _, headers = _signed_headers("POST", "/health", body)
     elif case == "non_hex_nonce":
@@ -710,3 +733,345 @@ def test_state_dir_uncreatable_raises_state_error(monkeypatch, tmp_path):
     monkeypatch.setattr(gsas_server.tempfile, "gettempdir", lambda: str(readonly))
     with pytest.raises(gsas_server.ServerStateError, match="Cannot create"):
         gsas_server.state_dir()
+
+
+def test_response_model_keeps_warning_level():
+    """P-34: an info-level warning crosses the server round trip with its level intact."""
+    native = {"success": True, "warnings": [
+        {"code": "symmetry_value_derived", "message": "m", "field_path": "payload.phases.P.atoms.A.y", "level": "info"},
+        {"code": "gsasii_background_default_applied", "message": "n", "field_path": "payload.background"}]}
+    dumped = gsas_server.SimulationResponse(**native).model_dump()
+    assert dumped["warnings"] == native["warnings"]
+
+
+# --- re/14: one refinement at a time -----------------------------------------------------------------
+
+def test_simulate_requests_are_serialized(app_client, tmp_path):
+    """Two concurrent /simulate requests run strictly one after another: GSAS-II's module-level state is
+    not thread-safe, and the module docstring promises sequential processing (re/14 item 1)."""
+    import threading
+    import time as _time
+    from powderline import results
+    client, calls = app_client
+    windows = []
+
+    def slow_run(req):
+        start = _time.monotonic()
+        _time.sleep(0.3)
+        windows.append((start, _time.monotonic()))
+        return results.failure_envelope("backend", "backend_error", "stub", method="server")
+
+    # the fixture installed a stub on the GSASServer instance captured by the app's closures; replace it
+    import inspect
+    simulate_route = next(r for r in client.app.app.routes if getattr(r, "path", None) == "/simulate")
+    srv = inspect.getclosurevars(simulate_route.endpoint).nonlocals["server"]
+    srv._run_simulation = slow_run
+
+    body = _job_body(tmp_path / "out")
+
+    def post():
+        _, headers = _signed_headers("POST", "/simulate", body)
+        client.post("/simulate", content=body, headers=headers)
+
+    threads = [threading.Thread(target=post) for _ in range(2)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=10)
+    assert len(windows) == 2
+    (s1, e1), (s2, e2) = sorted(windows)
+    assert s2 >= e1, f"the two refinements overlapped: {windows}"
+
+
+# --- re/14 item 2: port problems are reported, not crashed -------------------------------------------
+
+def test_requested_port_values(monkeypatch):
+    monkeypatch.delenv("POWDERLINE_SERVER_PORT", raising=False)
+    assert gsas_server._requested_port() == 0
+    monkeypatch.setenv("POWDERLINE_SERVER_PORT", "19472")
+    assert gsas_server._requested_port() == 19472
+
+
+@pytest.mark.parametrize("value", ["auto", "70000", "-1", "19 472"])
+def test_requested_port_rejects_bad_values(monkeypatch, value):
+    monkeypatch.setenv("POWDERLINE_SERVER_PORT", value)
+    with pytest.raises(gsas_server.ServerStateError, match="POWDERLINE_SERVER_PORT"):
+        gsas_server._requested_port()
+
+
+def test_main_start_with_bad_port_exits_before_the_lock(monkeypatch, capsys):
+    monkeypatch.delenv("POWDERLINE_NO_SERVER", raising=False)
+    monkeypatch.setenv("POWDERLINE_SERVER_PORT", "auto")
+    monkeypatch.setattr(sys, "argv", ["gsas_server.py", "start"])
+    monkeypatch.setattr(gsas_server, "_claim_server_lock", lambda *a, **k: pytest.fail("the lock must not be taken"))
+    monkeypatch.setattr(gsas_server, "GSASServer", lambda *a, **k: pytest.fail("server must not be created"))
+    with pytest.raises(SystemExit) as e:
+        gsas_server.main()
+    assert e.value.code == 1 and "POWDERLINE_SERVER_PORT" in capsys.readouterr().out
+
+
+def test_bind_failure_is_a_state_error_before_the_endpoint_is_written(monkeypatch):
+    import logging
+    server = gsas_server.GSASServer.__new__(gsas_server.GSASServer)
+    server.request_count = 0
+    server.start_time = None
+    server.token = TOKEN
+    server.code_hash = gsas_server.source_tree_hash()
+    server.logger = logging.getLogger("powderline.server.test")
+
+    def refuse(port):
+        raise OSError(98, "Address already in use")
+    monkeypatch.setattr(gsas_server, "_bind_listener", refuse)
+    monkeypatch.setattr(gsas_server, "_write_private",
+                        lambda *a, **k: pytest.fail("no endpoint for a server that could not bind"))
+    with pytest.raises(gsas_server.ServerStateError, match="Address already in use"):
+        server.start()
+
+
+# --- re/14 item 4: nothing but /simulate may carry a large body; unknown paths are refused unread --------
+
+def test_body_limit_per_path():
+    assert gsas_server._body_limit("/simulate") == gsas_server.MAX_BODY_BYTES
+    assert gsas_server._body_limit("/health") == gsas_server.MAX_HEALTH_BODY_BYTES
+    assert gsas_server._body_limit("/anything-else") == gsas_server.MAX_HEALTH_BODY_BYTES  # small, then a signed 404
+
+
+def test_unknown_path_with_an_oversized_body_is_refused(app_client, tmp_path):
+    client, calls = app_client
+    body = b"x" * (gsas_server.MAX_HEALTH_BODY_BYTES + 1)
+    _, headers = _signed_headers("POST", "/unknown", body)
+    resp = client.post("/unknown", content=body, headers=headers)
+    assert resp.status_code == 413 and calls == []
+
+
+def test_health_with_an_oversized_body_is_refused(app_client):
+    client, calls = app_client
+    body = b"x" * (gsas_server.MAX_HEALTH_BODY_BYTES + 1)
+    _, headers = _signed_headers("GET", "/health", body)
+    resp = client.request("GET", "/health", content=body, headers=headers)
+    assert resp.status_code == 413
+
+
+# --- re/14 item 5: Windows file races are retried, then reported ------------------------------------------
+
+def test_retry_on_sharing_violation_retries_then_succeeds():
+    attempts = []
+
+    def op():
+        attempts.append(1)
+        if len(attempts) < 3:
+            raise PermissionError("[WinError 32] The process cannot access the file")
+        return "ok"
+    assert gsas_server._retry_file_op(op, "replace server.json", delay=0.0) == "ok"
+    assert len(attempts) == 3
+
+
+def test_retry_on_sharing_violation_gives_up_as_a_state_error():
+    def op():
+        raise PermissionError("[WinError 32] The process cannot access the file")
+    with pytest.raises(gsas_server.ServerStateError, match="replace server.json"):
+        gsas_server._retry_file_op(op, "replace server.json", attempts=3, delay=0.0)
+
+
+# --- re/14 item 6: status while starting; log tail ----------------------------------------------------
+
+def test_status_while_starting_says_so(monkeypatch, capsys):
+    monkeypatch.setattr(gsas_server, "is_server_running", lambda: True)
+    monkeypatch.setattr(gsas_server, "read_pid", lambda: None)
+    monkeypatch.setattr(gsas_server, "_server_url", lambda: "(not listening yet)")
+    monkeypatch.setattr(gsas_server, "log_file", lambda: "server.log")
+    info = gsas_server.get_server_info()
+    assert info["pid"] is None and info["starting"] is True
+    gsas_server._run_action("status")
+    out = capsys.readouterr().out
+    assert "starting" in out.lower() and "PID: None" not in out
+
+
+def test_tail_lines_reads_only_the_end(tmp_path):
+    p = tmp_path / "server.log"
+    p.write_text("".join(f"line {i}\n" for i in range(1000)), encoding="utf-8")
+    with open(p, "rb") as f:
+        tail = gsas_server._tail_lines(f, 50)
+    assert len(tail) == 50 and tail[-1] == "line 999" and tail[0] == "line 950"
+    with open(p, "rb") as f:
+        assert gsas_server._tail_lines(f, 5000)[0] == "line 0"
+
+
+def test_health_is_served_while_a_job_holds_the_lock(app_client):
+    """The lock serializes /simulate only; /health keeps answering (re/14 review)."""
+    import threading
+    import time as _time
+    import inspect
+    client, calls = app_client
+    simulate_route = next(r for r in client.app.app.routes if getattr(r, "path", None) == "/simulate")
+    srv = inspect.getclosurevars(simulate_route.endpoint).nonlocals["server"]
+    started = threading.Event()
+
+    def slow_run(req):
+        started.set()
+        _time.sleep(0.6)
+        return {"status": "failed", "failure": {"kind": "backend", "reason": "backend_error", "message": "stub",
+                                                "traceback": None, "engine_details": None}}
+    srv._run_simulation = slow_run
+    body = _job_body("out")
+    _, headers = _signed_headers("POST", "/simulate", body)
+    t = threading.Thread(target=lambda: client.post("/simulate", content=body, headers=headers))
+    t.start()
+    assert started.wait(5)
+    t0 = _time.monotonic()
+    _, h = _signed_headers("GET", "/health", b"")
+    resp = client.get("/health", headers=h)
+    elapsed = _time.monotonic() - t0
+    t.join(10)
+    assert resp.status_code == 200 and elapsed < 0.4, f"/health waited {elapsed:.2f}s behind a job"
+
+
+# --- re/17 H7: /health reports the code the server loaded ---------------------------------------------
+
+def test_source_tree_hash_is_stable_and_follows_the_source(tmp_path):
+    (tmp_path / "a.py").write_text("x = 1\n")
+    (tmp_path / "sub").mkdir()
+    (tmp_path / "sub" / "b.py").write_text("y = 2\n")
+    (tmp_path / "notes.txt").write_text("ignored\n")
+    first = gsas_server.source_tree_hash(tmp_path)
+    assert first == gsas_server.source_tree_hash(tmp_path) and len(first) == 32
+    (tmp_path / "notes.txt").write_text("still ignored\n")
+    assert gsas_server.source_tree_hash(tmp_path) == first
+    (tmp_path / "sub" / "b.py").write_text("y = 3\n")
+    assert gsas_server.source_tree_hash(tmp_path) != first
+
+
+def test_source_tree_hash_default_is_the_installed_package():
+    import powderline
+    assert gsas_server.source_tree_hash() == gsas_server.source_tree_hash(Path(powderline.__file__).parent)
+
+
+def test_health_reports_version_and_code_hash(app_client):
+    import powderline
+    client, _ = app_client
+    nonce, headers = _signed_headers("GET", "/health")
+    resp = client.get("/health", headers=headers)
+    assert resp.status_code == 200 and _response_signed(resp, nonce)
+    body = resp.json()
+    assert body["powderline_version"] == powderline.__version__
+    assert body["code_hash"] == gsas_server.source_tree_hash()
+
+
+# --- re/19 (KI-12, P-42): the server runs each job in a private scratch dir and ships its files ------------
+
+import base64  # noqa: E402
+
+OK_RESULT = {"run_id": "r1", "rwp": 1.0, "r_exp": 1.0, "gof": 1.0, "chi2_red": 1.0, "elapsed_time": 0.1,
+             "method": "server", "warnings": [], "simulation_mode": False, "engine_details": {"converged": True},
+             "fit_profile": {}, "unit_cell_data": {}, "peak_list_data": {}, "refined_parameters": [],
+             "spf_peaks": {}, "spf_convergence_diagnostics": {}}
+JOB_FILES = ["dummy.gpx", "dummy.bak0.gpx", "dummy.lst", "fit_profile.txt", "LaB6_unit_cell_report.csv"]
+SHIPPED = {"dummy.gpx", "dummy.lst", "fit_profile.txt", "LaB6_unit_cell_report.csv"}
+
+
+def _real_app(monkeypatch, tmp_path, run_stub):
+    """A TestClient on the real ``_run_simulation`` with ``routing.run_refinement`` replaced by ``run_stub``."""
+    pytest.importorskip("fastapi")
+    import logging
+    from fastapi.testclient import TestClient
+    from powderline.gateways.gsasii import routing
+
+    state = tmp_path / "state"
+    state.mkdir()
+    monkeypatch.setattr(gsas_server, "state_dir", lambda: state)
+    monkeypatch.setattr(routing, "run_refinement", run_stub)
+    server = gsas_server.GSASServer.__new__(gsas_server.GSASServer)
+    server.request_count = 0
+    server.start_time = None
+    server.token = TOKEN
+    server.code_hash = gsas_server.source_tree_hash()
+    server.logger = logging.getLogger("powderline.server.test")
+    return TestClient(server.create_app()), state
+
+
+def _simulate(client, recipe, **extra):
+    body = json.dumps({"recipe_data": recipe, **extra}).encode()
+    _, headers = _signed_headers("POST", "/simulate", body)
+    return client.post("/simulate", content=body, headers=headers)
+
+
+def _writes(names, result=None, raise_=None):
+    """A run_refinement stand-in that writes ``names`` into the directory it is given, then returns or raises."""
+    def stub(recipe, output_dir, verbose=False, method="server"):
+        for n in names:
+            (Path(output_dir) / n).write_bytes(f"content of {n}".encode())
+        if raise_ is not None:
+            raise raise_
+        return dict(result or {}, output_files=[str(Path(output_dir) / n) for n in names])
+    return stub
+
+
+def test_simulate_returns_files_in_band(monkeypatch, tmp_path, recipe_LaB6_dict):
+    client, state = _real_app(monkeypatch, tmp_path, _writes(JOB_FILES, OK_RESULT))
+    body = _simulate(client, recipe_LaB6_dict).json()
+    assert body["status"] == "ok"
+    assert set(body["files"]) == SHIPPED  # GSAS-II's backup copies are not shipped
+    assert base64.b64decode(body["files"]["dummy.lst"]) == b"content of dummy.lst"
+    assert body["output_files"] == sorted(SHIPPED)  # bare names on the wire
+    assert not list(state.glob("job-*")), "the scratch dir must be gone"
+
+
+def test_simulate_failure_ships_files_too(monkeypatch, tmp_path, recipe_LaB6_dict):
+    from powderline.exceptions import EngineExecutionError
+    err = EngineExecutionError("the pattern diverged", reason="diverged")
+    client, state = _real_app(monkeypatch, tmp_path, _writes(["dummy.lst", "dummy.bak0.gpx"], raise_=err))
+    body = _simulate(client, recipe_LaB6_dict).json()
+    assert body["status"] == "failed" and body["failure"]["reason"] == "diverged"
+    assert set(body["files"]) == {"dummy.lst"} and body["output_files"] == ["dummy.lst"]
+    assert not list(state.glob("job-*"))
+
+
+def test_simulate_legacy_failure_ships_files(monkeypatch, tmp_path, recipe_LaB6_dict):
+    client, state = _real_app(monkeypatch, tmp_path, _writes(["dummy.lst"], {"success": False, "error": "x",
+                                                                                 "method": "server"}))
+    body = _simulate(client, recipe_LaB6_dict).json()
+    assert body["status"] == "failed" and body["failure"]["reason"] == "engine_crashed"
+    assert set(body["files"]) == {"dummy.lst"}
+    assert not list(state.glob("job-*"))
+
+
+def test_simulate_with_output_dir_is_refused(monkeypatch, tmp_path, recipe_LaB6_dict):
+    """The request no longer names a directory: the server's filesystem is not the client's (KI-12)."""
+    client, _ = _real_app(monkeypatch, tmp_path, _writes([], OK_RESULT))
+    assert _simulate(client, recipe_LaB6_dict, output_dir=str(tmp_path)).status_code == 422
+
+
+def test_leftover_job_dirs_are_swept(monkeypatch, tmp_path):
+    state = tmp_path / "state"
+    (state / "job-old").mkdir(parents=True)
+    (state / "job-old" / "dummy.gpx").write_text("x")
+    (state / "keep").mkdir()
+    monkeypatch.setattr(gsas_server, "state_dir", lambda: state)
+    assert gsas_server.sweep_job_dirs() == 1
+    assert not (state / "job-old").exists() and (state / "keep").exists()
+
+
+def test_simulate_unexpected_exception_is_an_engine_crashed_envelope_with_files(monkeypatch, tmp_path, recipe_LaB6_dict):
+    """A crash inside run_refinement that is not an EngineExecutionError still answers an envelope (not a 500)
+    and still ships what the job wrote, so the diagnostics survive the scratch dir's removal (re/19 review)."""
+    client, state = _real_app(monkeypatch, tmp_path, _writes(["dummy.lst"], raise_=RuntimeError("boom")))
+    resp = _simulate(client, recipe_LaB6_dict)
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["status"] == "failed" and body["failure"]["reason"] == "engine_crashed" and "boom" in body["failure"]["message"]
+    assert set(body["files"]) == {"dummy.lst"} and not list(state.glob("job-*"))
+
+
+def test_simulate_failure_carries_the_console_tail(monkeypatch, tmp_path, recipe_LaB6_dict):
+    """re/27 (KI-05): what the engine printed during a failed job comes back in failure.console_tail."""
+    from powderline.exceptions import EngineExecutionError
+
+    def stub(recipe, output_dir, verbose=False, method="server"):
+        print("Removing parameter: 0::A0")
+        print("**** Refinement failed - singular matrix ****")
+        raise EngineExecutionError("diverged", reason="diverged")
+    client, _ = _real_app(monkeypatch, tmp_path, stub)
+    body = _simulate(client, recipe_LaB6_dict).json()
+    assert body["status"] == "failed" and body["failure"]["reason"] == "diverged"
+    assert body["failure"]["console_tail"].rstrip().endswith("singular matrix ****")
+    assert "Removing parameter: 0::A0" in body["failure"]["console_tail"]

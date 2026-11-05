@@ -1,0 +1,46 @@
+{
+ "what": "GSAS-II 5.7.9 LaB6 calculation (example_LaB6_simulation recipe, one cycle, nothing refined): per-reflection net peak area with La3+ (scattering_types) over neutral La; resolved reflections 1.5-14.5 deg (neighbours >= 0.3 deg away), +-0.12 deg windows (tests/intensity_ratio.py). The gate for the other engines (P-47).",
+ "generated": "2026-10-20",
+ "hkl": [
+  "100",
+  "110",
+  "111",
+  "200",
+  "210",
+  "211",
+  "220",
+  "310",
+  "311",
+  "222",
+  "320",
+  "321"
+ ],
+ "two_theta": [
+  2.2951,
+  3.246,
+  3.9758,
+  4.5912,
+  5.1334,
+  5.6237,
+  6.4946,
+  7.2622,
+  7.6171,
+  7.9564,
+  8.2818,
+  8.595
+ ],
+ "ratio_ion_over_neutral": [
+  0.9854327784150866,
+  1.0035478141076277,
+  1.0049059766213622,
+  1.0044680839644204,
+  1.0042096707791839,
+  1.0039205240685214,
+  1.0016100328492994,
+  0.9999349664613708,
+  0.9992804944904646,
+  0.9984005137853951,
+  0.9982005964076127,
+  0.9979999284365552
+ ]
+}

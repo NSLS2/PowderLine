@@ -1,4 +1,4 @@
-"""Integration tests: per-parameter refine flags honored end-to-end (schema 0.26).
+"""Integration tests: per-parameter refine flags honored end-to-end (gsasii.rietveld).
 
 A recipe that requests a subset of a lumped GSAS-II parameter class must
 refine exactly that subset — verified against the actual post-refinement
@@ -6,58 +6,55 @@ varyList and the held values in the saved project.
 
 These tests run real GSAS-II refinements on small synthetic patterns; the fit
 quality is irrelevant (the data are featureless), only the constraint
-machinery is under test.
+machinery is under test. The recipes are native ``gsasii.rietveld`` 0.1.0
+(re/07 H; until then the same probes ran on the 0.26.0 path): a cell flag is
+stated per GSAS-II cell group (A95: tetragonal ``a`` and ``b`` refine together),
+every value is stated with its flag.
 """
 import numpy as np
 import pytest
 
-from GSASII import GSASIIscriptable as G2
-from powderline.kicker import run_refinement
-from powderline.schema import RecipeModel, EXPECTED_SCHEMA_VERSION
+pytestmark = [pytest.mark.gsasii, pytest.mark.slow]
 
-ON = [None, True, None, None]
-OFF = [None, False, None, None]
+G2 = pytest.importorskip("GSASII.GSASIIscriptable")
+from powderline.gateways.gsasii.routing import run_refinement  # noqa: E402
+from powderline.gateways.gsasii.schema import validate_recipe  # noqa: E402
 
 
-def make_recipe(space_group, cell, atoms_structure, parameterization):
-    """Minimal valid GSASII_Rietveld recipe around a synthetic pattern."""
+def P(value, flag=False):
+    return [value, flag]
+
+
+def make_recipe(space_group, cell, atoms, cell_flags=None):
+    """Minimal valid gsasii.rietveld recipe around a synthetic pattern.
+
+    ``cell`` = (a, b, c, alpha, beta, gamma); ``cell_flags`` names the cell
+    parameters to refine; ``atoms`` is the native atoms block.
+    """
     tth = np.arange(5.0, 90.0, 0.05)
     y = 100.0 + 10.0 * np.sin(tth / 5.0)
     w = 1.0 / np.sqrt(np.maximum(y, 1.0))
-    a, b, c, alpha, beta, gamma = cell
+    names = ("a", "b", "c", "alpha", "beta", "gamma")
+    flags = set(cell_flags or ())
     return {
-        "schema_name": "GSASII_Rietveld",
-        "schema_version": EXPECTED_SCHEMA_VERSION,
+        "schema_name": "gsasii.rietveld",
+        "core_schema_version": "0.1.0",
+        "engine_schema_version": "0.1.0",
         "payload": {
-            "xrd_data": {
-                "tth": tth.tolist(),
-                "Itth": y.tolist(),
-                "Itth_weights": w.tolist(),
-            },
+            "xrd_data": {"tth": tth.tolist(), "Itth": y.tolist(), "Itth_weights": w.tolist()},
             "instrument": {
                 "description": "synthetic CW instrument",
-                "initialization": [
-                    {
-                        "Type": "PXC", "Bank": 1, "Lam": 1.5406, "Zero": 0.0,
-                        "Polariz.": 0.7, "Azimuth": 0.0,
-                        "U": 2.0, "V": -2.0, "W": 5.0,
-                        "X": 0.0, "Y": 0.0, "Z": 0.0, "SH/L": 0.002,
-                    },
-                    {},
-                ],
+                "radiation": {"type": "PXC", "wavelength": P(1.5406)},
+                "geometry": {"bank": 1, "azimuth": 0.0},
+                "corrections": {"zero_shift": P(0.0), "polarization": P(0.7), "axial_divergence": P(0.002)},
+                "broadening": {"U": P(2.0), "V": P(-2.0), "W": P(5.0), "X": P(0.0), "Y": P(0.0), "Z": P(0.0)},
             },
             "phases": {
                 "P": {
-                    "structure": {
-                        "phase_name": "P",
-                        "space_group": space_group,
-                        "unit_cell": {
-                            "a": a, "b": b, "c": c,
-                            "alpha": alpha, "beta": beta, "gamma": gamma,
-                        },
-                        "atoms": atoms_structure,
-                    },
-                    "parameterization": parameterization,
+                    "space_group": space_group,
+                    "unit_cell": {name: P(value, name in flags) for name, value in zip(names, cell)},
+                    "atoms": atoms,
+                    "scale": P(1.0),
                 }
             },
             "refinement_controls": {"refinement_cycles": 2},
@@ -65,22 +62,25 @@ def make_recipe(space_group, cell, atoms_structure, parameterization):
     }
 
 
+def uiso_atom(element, x, y, z, refine=()):
+    """A Uiso atom; ``refine`` names the coordinates flagged for refinement."""
+    return {"element": element, "x": P(x, "x" in refine), "y": P(y, "y" in refine), "z": P(z, "z" in refine),
+            "occupancy": P(1.0), "ADP": "Uiso", "Uiso": P(0.01)}
+
+
 def run(recipe_dict, tmp_path):
-    model = RecipeModel.model_validate(recipe_dict)
+    model = validate_recipe(recipe_dict)
     result = run_refinement(model, tmp_path, verbose=False, method="subprocess")
-    assert result["success"], f"refinement failed: {result.get('error')}"
+    assert result["success"], f"refinement failed: {result.get('error')}"  # the frozen executor's own dict (run_refinement directly)
     gpx = G2.G2Project(str(tmp_path / "dummy.gpx"))
     vary = list(gpx.data["Covariance"]["data"].get("varyList", []))
     return result, gpx, vary
 
 
 def test_tetragonal_refine_a_hold_c(tmp_path):
-    """Recipe-level probe2: a=true, c=false -> A0 varies, A2 held, c unchanged."""
-    atoms = {"Ba": {"element": "Ba", "x": 0.0, "y": 0.0, "z": 0.0,
-                    "occupancy": 1.0, "ADP": "Uiso", "Uiso": 0.01}}
-    param = {"unit_cell": {"a": ON, "b": OFF, "c": OFF,
-                           "alpha": OFF, "beta": OFF, "gamma": OFF}}
-    recipe = make_recipe("P 4/m m m", (3.90, 3.90, 4.50, 90, 90, 90), atoms, param)
+    """Recipe-level probe2: a (with its tied b) true, c false -> A0 varies, A2 held, c unchanged."""
+    atoms = {"Ba": uiso_atom("Ba", 0.0, 0.0, 0.0)}
+    recipe = make_recipe("P 4/m m m", (3.90, 3.90, 4.50, 90, 90, 90), atoms, cell_flags=("a", "b"))
     result, gpx, vary = run(recipe, tmp_path)
 
     assert "0::A0" in vary
@@ -92,11 +92,8 @@ def test_tetragonal_refine_a_hold_c(tmp_path):
 
 def test_tetragonal_refine_c_hold_a(tmp_path):
     """Holding the equivalence-independent A0 cascades to A1; only c refines."""
-    atoms = {"Ba": {"element": "Ba", "x": 0.0, "y": 0.0, "z": 0.0,
-                    "occupancy": 1.0, "ADP": "Uiso", "Uiso": 0.01}}
-    param = {"unit_cell": {"a": OFF, "b": OFF, "c": ON,
-                           "alpha": OFF, "beta": OFF, "gamma": OFF}}
-    recipe = make_recipe("P 4/m m m", (3.90, 3.90, 4.50, 90, 90, 90), atoms, param)
+    atoms = {"Ba": uiso_atom("Ba", 0.0, 0.0, 0.0)}
+    recipe = make_recipe("P 4/m m m", (3.90, 3.90, 4.50, 90, 90, 90), atoms, cell_flags=("c",))
     result, gpx, vary = run(recipe, tmp_path)
 
     assert "0::A2" in vary
@@ -108,13 +105,10 @@ def test_tetragonal_refine_c_hold_a(tmp_path):
 def test_p1_refine_x_only(tmp_path):
     """Recipe-level probe3: x=true, y/z=false -> only dAx varies; y,z unchanged."""
     atoms = {
-        "Na": {"element": "Na", "x": 0.111, "y": 0.222, "z": 0.333,
-               "occupancy": 1.0, "ADP": "Uiso", "Uiso": 0.01},
-        "Cl": {"element": "Cl", "x": 0.611, "y": 0.522, "z": 0.733,
-               "occupancy": 1.0, "ADP": "Uiso", "Uiso": 0.01},
+        "Na": uiso_atom("Na", 0.111, 0.222, 0.333, refine=("x",)),
+        "Cl": uiso_atom("Cl", 0.611, 0.522, 0.733),
     }
-    param = {"atoms": {"Na": {"x": ON, "y": OFF, "z": OFF, "ADP": "Uiso"}}}
-    recipe = make_recipe("P 1", (5.0, 6.0, 7.0, 88.0, 92.0, 95.0), atoms, param)
+    recipe = make_recipe("P 1", (5.0, 6.0, 7.0, 88.0, 92.0, 95.0), atoms)
     result, gpx, vary = run(recipe, tmp_path)
 
     assert "0::dAx:0" in vary
@@ -127,23 +121,12 @@ def test_p1_refine_x_only(tmp_path):
 
 def test_p1_refine_single_uij_component(tmp_path):
     """Recipe-level probe5: U11=true, others=false -> only AU11 varies."""
-    uaniso_vals = {"U11": 0.011, "U22": 0.012, "U33": 0.013,
-                   "U12": 0.001, "U13": 0.002, "U23": 0.003}
     atoms = {
-        "W": {"element": "W", "x": 0.2, "y": 0.3, "z": 0.4,
-              "occupancy": 1.0, "ADP": "Uaniso", "Uiso": None,
-              "Uaniso": uaniso_vals},
+        "W": {"element": "W", "x": P(0.2), "y": P(0.3), "z": P(0.4), "occupancy": P(1.0), "ADP": "Uaniso",
+              "Uaniso": {"U11": P(0.011, True), "U22": P(0.012), "U33": P(0.013),
+                         "U12": P(0.001), "U13": P(0.002), "U23": P(0.003)}},
     }
-    param = {"atoms": {"W": {
-        "ADP": "Uaniso",
-        "Uaniso": {"U11": [0.011, True, None, None],
-                   "U22": [0.012, False, None, None],
-                   "U33": [0.013, False, None, None],
-                   "U12": [0.001, False, None, None],
-                   "U13": [0.002, False, None, None],
-                   "U23": [0.003, False, None, None]},
-    }}}
-    recipe = make_recipe("P 1", (5.0, 6.0, 7.0, 88.0, 92.0, 95.0), atoms, param)
+    recipe = make_recipe("P 1", (5.0, 6.0, 7.0, 88.0, 92.0, 95.0), atoms)
     result, gpx, vary = run(recipe, tmp_path)
 
     au_varied = [v for v in vary if "::AU" in v]
@@ -158,12 +141,9 @@ def test_p1_refine_single_uij_component(tmp_path):
 
 
 def test_uniform_flags_unchanged_behavior(tmp_path):
-    """All symmetry-linked flags true -> whole cell refines, no holds (legacy path)."""
-    atoms = {"Ba": {"element": "Ba", "x": 0.0, "y": 0.0, "z": 0.0,
-                    "occupancy": 1.0, "ADP": "Uiso", "Uiso": 0.01}}
-    param = {"unit_cell": {"a": ON, "b": ON, "c": ON,
-                           "alpha": OFF, "beta": OFF, "gamma": OFF}}
-    recipe = make_recipe("P 4/m m m", (3.90, 3.90, 4.50, 90, 90, 90), atoms, param)
+    """All symmetry-linked flags true -> whole cell refines, no holds."""
+    atoms = {"Ba": uiso_atom("Ba", 0.0, 0.0, 0.0)}
+    recipe = make_recipe("P 4/m m m", (3.90, 3.90, 4.50, 90, 90, 90), atoms, cell_flags=("a", "b", "c"))
     result, gpx, vary = run(recipe, tmp_path)
 
     assert "0::A0" in vary and "0::A2" in vary

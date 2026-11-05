@@ -1,0 +1,565 @@
+{
+ "easydiffraction": "0.21.1",
+ "versions": {
+  "easydiffraction": "0.21.1",
+  "cryspy": "0.13.0",
+  "crysfml": "0.8.0",
+  "lmfit": "1.3.4",
+  "numpy": "2.4.6",
+  "scipy": "1.18.0"
+ },
+ "fixture": "lab6_crysfml_tch.json",
+ "built_parameters": {
+  "lab6.atom_site.B.adp_iso": {
+   "value": 0.009,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.atom_site.B.fract_x": {
+   "value": 0.2021,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.atom_site.B.fract_y": {
+   "value": 0.5,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.atom_site.B.fract_z": {
+   "value": 0.5,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.atom_site.B.multiplicity": {
+   "value": 6,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.atom_site.B.occupancy": {
+   "value": 1.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.atom_site.La.adp_iso": {
+   "value": 0.00858,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.atom_site.La.fract_x": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.atom_site.La.fract_y": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.atom_site.La.fract_z": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.atom_site.La.multiplicity": {
+   "value": 1,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.atom_site.La.occupancy": {
+   "value": 1.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.cell.angle_alpha": {
+   "value": 90.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.cell.angle_beta": {
+   "value": 90.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.cell.angle_gamma": {
+   "value": 90.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.cell.length_a": {
+   "value": 4.15682,
+   "free": true,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.cell.length_b": {
+   "value": 4.15682,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.cell.length_c": {
+   "value": 4.15682,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.geom.bond_distance_inc": {
+   "value": 0.25,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.geom.min_bond_distance_cutoff": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.space_group_Wyckoff.12h.multiplicity": {
+   "value": 12,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.space_group_Wyckoff.12i.multiplicity": {
+   "value": 12,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.space_group_Wyckoff.12j.multiplicity": {
+   "value": 12,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.space_group_Wyckoff.1a.multiplicity": {
+   "value": 1,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.space_group_Wyckoff.1b.multiplicity": {
+   "value": 1,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.space_group_Wyckoff.24k.multiplicity": {
+   "value": 24,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.space_group_Wyckoff.24l.multiplicity": {
+   "value": 24,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.space_group_Wyckoff.24m.multiplicity": {
+   "value": 24,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.space_group_Wyckoff.3c.multiplicity": {
+   "value": 3,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.space_group_Wyckoff.3d.multiplicity": {
+   "value": 3,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.space_group_Wyckoff.48n.multiplicity": {
+   "value": 48,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.space_group_Wyckoff.6e.multiplicity": {
+   "value": 6,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.space_group_Wyckoff.6f.multiplicity": {
+   "value": 6,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "lab6.space_group_Wyckoff.8g.multiplicity": {
+   "value": 8,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.background.0.coef": {
+   "value": 30.0,
+   "free": true,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.background.0.order": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.background.1.coef": {
+   "value": 0.6,
+   "free": true,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.background.1.order": {
+   "value": 1,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.background.2.coef": {
+   "value": 0.7,
+   "free": true,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.background.2.order": {
+   "value": 2,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.background.3.coef": {
+   "value": -0.4,
+   "free": true,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.background.3.order": {
+   "value": 3,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.background.4.coef": {
+   "value": -0.8,
+   "free": true,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.background.4.order": {
+   "value": 4,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.background.5.coef": {
+   "value": 0.9,
+   "free": true,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.background.5.order": {
+   "value": 5,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.data.0.d_spacing": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.data.0.intensity_bkg": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.data.0.intensity_calc": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.data.0.intensity_meas": {
+   "value": 29.800086975097656,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.data.0.intensity_meas_su": {
+   "value": 5.458945591879228,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.data.0.two_theta": {
+   "value": 14.997603894670918,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.data_range.two_theta_inc": {
+   "value": null,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.data_range.two_theta_max": {
+   "value": null,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.data_range.two_theta_min": {
+   "value": null,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.instrument.monochromator_twotheta": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.instrument.polarization_coefficient": {
+   "value": 0.01,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.instrument.sample_displacement": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.instrument.sample_transparency": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.instrument.twotheta_offset": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.instrument.wavelength": {
+   "value": 0.1665,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.instrument.wavelength_2": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.instrument.wavelength_2_to_1_ratio": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.linked_structure.lab6.scale": {
+   "value": 5.4e-06,
+   "free": true,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.peak.asym_fcj_1": {
+   "value": 0.001,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.peak.asym_fcj_2": {
+   "value": 0.001,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.peak.broad_gauss_u": {
+   "value": 0.010379135146427253,
+   "free": true,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.peak.broad_gauss_v": {
+   "value": 0.0003328998068853359,
+   "free": true,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.peak.broad_gauss_w": {
+   "value": 0.0006360390661515072,
+   "free": true,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.peak.broad_lorentz_x": {
+   "value": 1e-05,
+   "free": true,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.peak.broad_lorentz_y": {
+   "value": 0.0028143034323339765,
+   "free": true,
+   "fit_min": null,
+   "fit_max": null
+  },
+  "powderline.peak.cutoff_fwhm": {
+   "value": 0.0,
+   "free": false,
+   "fit_min": null,
+   "fit_max": null
+  }
+ },
+ "run": {
+  "rwp": 6.7647887198484895,
+  "r_exp": 12.456374491687894,
+  "gof": 0.5430784635097969,
+  "chi2_red": 0.2949342175281619,
+  "simulation_mode": false,
+  "engine_details": {
+   "engine": "easydiffraction",
+   "engine_version": "0.21.1",
+   "calculator": "crysfml",
+   "peak_type": "cwl-thompson-cox-hastings",
+   "minimizer": "lmfit (leastsq)",
+   "rwp": 6.7647887198484895,
+   "r_exp": 12.456374491687894,
+   "reduced_chi_square": 0.29493415758358,
+   "n_points": 3767,
+   "parameters_requested": 13,
+   "parameters_varied": 13,
+   "fit_success": true,
+   "fit_message": "Fit succeeded."
+  },
+  "refined": {
+   "broad_gauss_u": [
+    0.016687510600865468,
+    0.002638118093252609
+   ],
+   "broad_gauss_v": [
+    0.0023412494892984907,
+    0.0003109154737596501
+   ],
+   "broad_gauss_w": [
+    0.0005545367297279119,
+    9.429769715878341e-06
+   ],
+   "broad_lorentz_x": [
+    -5.412145754924389e-05,
+    0.00017169648403614517
+   ],
+   "broad_lorentz_y": [
+    0.005790558417248212,
+    8.942850756355362e-05
+   ],
+   "background_coefficient_0": [
+    29.826257237701014,
+    0.06818249320902713
+   ],
+   "background_coefficient_1": [
+    1.0782618731890101,
+    0.11072746838224024
+   ],
+   "background_coefficient_2": [
+    1.6065891112937494,
+    0.10044428779598452
+   ],
+   "background_coefficient_3": [
+    -1.1593244298676928,
+    0.09940596601152134
+   ],
+   "background_coefficient_4": [
+    0.22449958024560515,
+    0.08644306051659581
+   ],
+   "background_coefficient_5": [
+    0.4745771622424904,
+    0.08580740687360401
+   ],
+   "LaB6_scale": [
+    5.561019209432878e-06,
+    1.0520438285946316e-08
+   ],
+   "LaB6_a": [
+    4.15717525296477,
+    1.777125055302559e-05
+   ]
+  },
+  "unit_cell": {
+   "LaB6": [
+    {
+     "parameter": "cell_a",
+     "value": 4.15717525296477,
+     "esd": 1.777125055302559e-05
+    },
+    {
+     "parameter": "cell_b",
+     "value": 4.15717525296477,
+     "esd": 1.777125055302559e-05
+    },
+    {
+     "parameter": "cell_c",
+     "value": 4.15717525296477,
+     "esd": 1.777125055302559e-05
+    },
+    {
+     "parameter": "cell_alpha",
+     "value": 90.0,
+     "esd": 0.0
+    },
+    {
+     "parameter": "cell_beta",
+     "value": 90.0,
+     "esd": 0.0
+    },
+    {
+     "parameter": "cell_gamma",
+     "value": 90.0,
+     "esd": 0.0
+    },
+    {
+     "parameter": "cell_volume",
+     "value": 71.8447437309459,
+     "esd": NaN
+    }
+   ]
+  },
+  "warnings": [
+   "easydiffraction_crysfml_start_dependent",
+   "easydiffraction_reflections_not_available"
+  ]
+ }
+}

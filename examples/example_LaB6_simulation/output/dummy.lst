@@ -84,10 +84,10 @@
  Extinction coeff:     0.0000 Refine? False
  March-Dollase PO:     1.0000 Refine? False Axis: 0 0 1
 
- Size model    : isotropic equatorial:       1.000 Refine? False
+ Size model    : isotropic equatorial:      10.000 Refine? False
 	 LG mixing coeff.:       1.0000 Refine? False
 
- Mustrain model: isotropic equatorial:      1000.0 Refine? False
+ Mustrain model: isotropic equatorial:         0.0 Refine? False
 	 LG mixing coeff.:      1.0000 Refine? False
 
  Hydrostatic/elastic strain:
@@ -108,7 +108,7 @@
 
  Instrument Parameters:
  name  :     Azimuth         Lam    Polariz.        SH/L           U           V           W           X           Y
- value :    0.000000    0.166500    0.990000    0.000500   18.717409    0.600341    1.147013    0.281430    0.001000
+ value :    0.000000    0.166500    0.990000    0.002000   18.717409    0.600341    1.147013    0.281430    0.001000
  refine:                   False       False       False       False       False       False       False       False
 
  name  :           Z        Zero
@@ -117,14 +117,10 @@
 
  Background function: chebyschev-1 Refine? False
  Coefficients:     10.000     5.000     1.000     0.000     0.000     0.000
-
- Single peak coefficients
- names :   BkPkpos refine? BkPkint refine? BkPksig refine? BkPkgam refine?
- peak 0:       1.500 False       1.000 False    1000.000 False       0.000 False
  Fixed background file: ; mult: 1.000  Refine? False
 
  Refinement results:
 ---------------------------------------------------------------------------------------------------------------------------------------
- Number of function calls: 1 No. of observations: 3768 No. of parameters: 0 User rejected: 0 Sp. gp. extinct: 0
- Refinement time =    0.025s,    0.025s/cycle, for 1 cycles
- wR = 1701.00%, chi**2 =  7.00117e+07, GOF = 136.31
+ Number of function calls: 1 No. of observations: 3767 No. of parameters: 0 User rejected: 0 Sp. gp. extinct: 0
+ Refinement time =    0.023s,    0.023s/cycle, for 1 cycles
+ wR = 1787.01%, chi**2 =  7.72617e+07, GOF = 143.21

@@ -8,7 +8,7 @@ build-backend = "hatchling.build"
 name = "powderline"
 dynamic = ["version"]
 requires-python = ">=3.10"
-description = "Automated powder X-ray diffraction refinement from a declarative JSON recipe — runs GSAS-II (default), TOPAS v7, or easydiffraction"
+description = "Automated powder X-ray diffraction refinement from a declarative JSON recipe, on GSAS-II, TOPAS 6 or easydiffraction, with standardized results"
 readme = "README.md"
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
@@ -45,14 +45,27 @@ dependencies = [
     "scipy>=1.15",
     "pyyaml>=6.0",
     "pandas>=2.0",
-    "pybaselines>=1.2",
-    "xmltodict>=0.14",
-    "h5py>=3.12",
     "fastapi>=0.115",
     "uvicorn>=0.34",
     "httpx>=0.28",
-    "gemmi>=0.7,<0.8",
+    "gemmi==0.7.5",  # exact: the space-group names and symmetry rules depend on it (pixi.toml)
+    "packaging>=22",
 ]
+
+# Gateway plugins: each entry targets an engine-free factory
+# module. Entry-point metadata is written at install time -- after editing this
+# table, re-install the editable package (`pixi reinstall powderline`) or the
+# registry finds no gateways.
+# The one CLI: ``powderline <recipe.json>``; ``pixi run kicker`` runs the
+# same ``main`` (task names are pixi.toml's). Console scripts are written at install
+# time too (``pixi reinstall powderline``).
+[project.scripts]
+powderline = "powderline.kicker:main"
+
+[project.entry-points."powderline.gateways"]
+gsasii = "powderline.gateways.gsasii.gateway:get_gateway"
+topas = "powderline.gateways.topas.gateway:get_gateway"
+easydiffraction = "powderline.gateways.easydiffraction.gateway:get_gateway"
 
 [project.urls]
 Homepage = "https://github.com/NSLS2/PowderLine"
@@ -75,3 +88,18 @@ only-include = ["src/powderline", "LICENSE", "README.md", "pyproject.toml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Suite markers. Every test carries
+# exactly ONE suite marker -- tests/conftest.py refuses to run otherwise -- plus
+# the optional `slow`. The pixi tasks select on them (`test`, `test-gsasii`,
+# `test-easydiffraction`, `test-topas`, `test-all`; see pixi.toml), and a run
+# restricted to core/topas_gen installs the core guard (conftest.py) that
+# blocks every engine import.
+addopts = "--strict-markers"
+markers = [
+    "core: imports no engine and runs no engine subprocess; the no-plugin suite of the default env",
+    "gsasii: imports GSAS-II or runs `pixi run kicker` / a GSAS-II refinement; needs the gsasii env",
+    "topas_gen: TOPAS input generation, goldens, schema -- engine-free (gemmi only); runs in the default env",
+    "topas_exec: executes tc.exe -- the TOPAS Windows machine only; skips with a reason unless POWDERLINE_TOPAS_DIR and POWDERLINE_TOPAS_VERSION are set",
+    "easydiffraction: imports easydiffraction/cryspy/CrysFML; needs the easydiffraction env",
+    "slow: a full refinement runs (kicker subprocess, execution_mode='subprocess', the GSAS-II server, the easydiffraction goldens)",
+]

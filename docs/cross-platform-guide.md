@@ -15,17 +15,32 @@ to follow so pixi tasks and code stay portable.
 >   from-source pip build. Windows installs and runs GSAS-II directly. The
 >   win-64 TOPAS path imports zero GSAS-II by design. Section 2 covers the
 >   build-from-source background for reference.
-> - **PYTHONPATH in pixi tasks**: `mp-simulate` uses a cross-platform
->   task-level `env` dict (`{ cmd = "python -m powderline.mp_simulate",
->   env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }`); some other tasks
->   (`kicker`, `topas-kicker`, `gsas-server`, `test`) still use the inline
->   `PYTHONPATH=$PWD/src:` (Unix) form. See Section 3 for the portable pattern.
-> - **Signal handling**: `gsas_server.py` uses `SIGTERM`/`SIGINT`/`SIGKILL` +
+> - **PYTHONPATH in pixi tasks**: every task (`kicker`, `gsas-server`,
+>   `test`) uses the cross-platform task-level `env` dict
+>   (`{ cmd = "python -m powderline.kicker", env = { PYTHONPATH =
+>   "$PIXI_PROJECT_ROOT/src" } }`); no task uses the inline
+>   `PYTHONPATH=$PWD/src:` (Unix) form any more. Section 3 records the
+>   analysis behind that pattern. The engine tasks live in their engine's
+>   pixi feature (`-e gsasii`), see `pixi.toml`.
+> - **Signal handling**: the GSAS-II server
+>   (`src/powderline/gateways/gsasii/server.py`) uses `SIGTERM`/`SIGINT`/`SIGKILL` +
 >   `os.kill` (`psutil` is used in `get_server_info`). The concrete win-64
 >   breakage this implies (`signal.SIGKILL` `AttributeError` in the
 >   `stop_server` force-kill escalation) is fixed with
 >   `getattr(signal, "SIGKILL", signal.SIGTERM)`; a broader platform
 >   abstraction remains future work. See Section 4.
+> - **TOPAS**: writing `topas.*` input files works on every platform; running
+>   `tc.exe` is Windows-only by nature. The default environment is core-only;
+>   GSAS-II is in the `gsasii` environment (`pixi install -e gsasii`).
+>   On a fresh checkout install with `pixi install --frozen -e <env>`: a plain
+>   `pixi install` re-evaluates the pixi-build GSAS-II package's hash and
+>   re-locks every platform (seen on the 2026-10-16 Windows run); the frozen
+>   install uses the committed lock as is (KI-13).
+>
+> Sections 2–4 and 6 are the original analysis, kept as the reference for the
+> patterns; the module paths they quote (`gsas_server.py`, `mp_simulate.py`)
+> are the pre-refactor ones: now `gateways/gsasii/server.py`; the `mp-simulate`
+> tool left PowderLine in 0.2.0.
 
 ---
 
@@ -50,7 +65,7 @@ part of the codebase.
 |---|---|---|---|
 | A | `pixi.toml` — GSAS-II dependency | No Fortran compiler in the pixi environment | Windows, macOS |
 | B | `pixi.toml` — task definitions | `PYTHONPATH=$PWD/src:$PYTHONPATH` uses Unix path separator and shell syntax | Windows |
-| C | `src/powderline/gsas_server.py` | `os.kill(pid, signal.SIGTERM/SIGKILL)` not supported on Windows | Windows |
+| C | the GSAS-II server (then `src/powderline/gsas_server.py`, now `gateways/gsasii/server.py`) | `os.kill(pid, signal.SIGTERM/SIGKILL)` not supported on Windows | Windows |
 
 Issues A, B, and C are independent and can be implemented in any order.
 Issue A is the one that surfaces immediately when running
@@ -187,7 +202,15 @@ Two specific problems:
    cross-platform), prepending to an existing variable with `:` is
    Unix-specific syntax.
 
-### Fix: Use pixi activation.env with platform-specific targets (recommended)
+### What was done
+
+Every task in the current `pixi.toml` uses the task-level `env` dict
+(`{ cmd = "...", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }`), which
+pixi expands on every platform; `docs-clean` is written in Python and `ui`
+uses the `env` dict. The two alternatives analysed below were not adopted;
+they are kept for reference.
+
+### Alternative analysed: pixi activation.env with platform-specific targets
 
 Pixi supports `[target.unix.activation.env]` and `[target.win.activation.env]`
 for platform-specific environment variable configuration. Setting `PYTHONPATH`
@@ -293,6 +316,13 @@ Windows does not support `SIGTERM` or `SIGKILL`. Specifically:
 
 > Note: `psutil` is already imported optionally in `get_server_info()` (inside
 > a `try/except`) but it is **not** a declared dependency in `pixi.toml`.
+
+> **Superseded (v0.1.2 / 0.2.0).** The fix below was written against the
+> PID-file server of v0.1.1. The current server (`gateways/gsasii/server.py`)
+> holds a kernel lock on `server.lock` for its lifetime and `status`/`stop`
+> consult that lock, so none of the PID-file code shown here exists any more;
+> see the last section of this page and KI-14 in the known issues. Kept as the
+> record of the analysis.
 
 ### Fix: Platform-conditional process management (recommended)
 
@@ -539,10 +569,10 @@ Edit `src/powderline/gsas_server.py`:
 ## 7. Viewing Server Logs
 
 The GSAS-II server writes to a log file. The portable way to follow it on any
-platform is the built-in command:
+platform is the built-in command (the task lives in the `gsasii` feature):
 
 ```
-pixi run gsas-server logs
+pixi run -e gsasii gsas-server logs
 ```
 
 If you prefer native tools, the platform equivalents are:

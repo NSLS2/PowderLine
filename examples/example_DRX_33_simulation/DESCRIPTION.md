@@ -23,7 +23,7 @@ This example demonstrates multi-phase simulation capabilities:
 - **Phase-specific outputs**: Separate reports for each phase (unit cell, peak lists)
 - **Combined pattern calculation**: Theoretical pattern from superposition of both phases
 - **Scale factor control**: Fixed relative phase intensities (both set to 1.0)
-- **Meaningless Rwp**: Expected ~100% or higher (pure forward calculation, no fitting)
+- **Meaningless fit statistics**: `rwp` compares the simulated pattern with the placeholder data (pure forward calculation, no fitting); GSAS-II's own 100 % is under `engine_details`
 
 ## Key Differences from Refinement
 
@@ -31,7 +31,7 @@ This example demonstrates multi-phase simulation capabilities:
 |--------|-----------------|-----------------|
 | `refine_flag` values | `true` for parameters to fit | `false` for all parameters |
 | `refinement_cycles` | 5 (typical value) | 1 (all params locked, no optimization) |
-| Output $R_{wp}$ | Quality of fit to data | 100% (no fit performed, meaningless; note y_calc ≠ y_obs) |
+| Output $R_{wp}$ | Quality of fit to data | meaningless (no fit performed; y_calc ≠ the placeholder y_obs) |
 | Processing time | Minutes (GSAS-II iteration) | Seconds (single calculation) |
 | Purpose | Parameter extraction | Pattern prediction |
 | **Multi-phase focus** | Both phases refined | Both phases locked at fixed scales |
@@ -56,7 +56,7 @@ With all parameters locked and `refinement_cycles = 1`:
 - GSAS-II performs no iteration (all parameters frozen)
 - Only calculates theoretical pattern ($y_{calc}$)
 - Result is deterministic and reproducible
-- Rwp = 100% because a fit is not done. (Note: Ycalc != yobs. If that were the case, Rwp would be 0 %.)
+- The result says `simulation_mode: true`; its `rwp` is the uniform statistic against the placeholder data and means nothing (GSAS-II's own 100 % is under `engine_details`)
 - Runs in < 2 seconds
 
 **Multi-Phase Mechanics:**
@@ -69,13 +69,13 @@ With all parameters locked and `refinement_cycles = 1`:
 
 ```bash
 # Run simulation
-pixi run kicker examples/example_DRX_33_simulation/input.json
+pixi run -e gsasii kicker examples/example_DRX_33_simulation/input.json
 
 # Validate without running
 pixi run kicker examples/example_DRX_33_simulation/input.json --validate-only
 
 # Verbose output (see all GSAS-II logs)
-pixi run kicker examples/example_DRX_33_simulation/input.json --verbose
+pixi run -e gsasii kicker examples/example_DRX_33_simulation/input.json --verbose
 ```
 
 Expected runtime: **~1 second** (single cycle, all phases locked)
@@ -84,15 +84,17 @@ Expected runtime: **~1 second** (single cycle, all phases locked)
 
 This two-phase simulation produces:
 
-- **dummy.gpx** - GSAS-II project file
+- **dummy.gpx** - GSAS-II project file (gitignored)
 - **dummy.lst** - Log file (shows 1 cycle with no parameter changes)
-- **DRX_33_unit_cell_report.csv** - Phase 1 unit cell parameters (unchanged from input, ESDs are null/NaN)
+- **DRX_33_unit_cell_report.csv** - Phase 1 unit cell parameters (unchanged from input; every `esd` is `0.0` — nothing refined, no covariance)
 - **DRX_33_peak_list_report.csv** - Phase 1 reflection list (hkl, d-spacing, 2θ, intensities)
-- **Li4MgWO6_SG12_unit_cell_report.csv** - Phase 2 unit cell parameters (unchanged from input, ESDs are null/NaN)
+- **Li4MgWO6_SG12_unit_cell_report.csv** - Phase 2 unit cell parameters (unchanged from input; every `esd` is `0.0` — nothing refined, no covariance)
 - **Li4MgWO6_SG12_peak_list_report.csv** - Phase 2 reflection list (hkl, d-spacing, 2θ, intensities)
 - **fit_profile.txt** - Calculated pattern (2θ, Iobs, Iweight, Icalc, Ibackground, Idifference)
+- **output_recipe.json** - The resolved recipe of the run (KI-04; nothing refined, so the values are the input's); `metadata.powderline_provenance` names the run
+- **parameter_dispositions.csv** - One row per refinable value: path, value, esd, disposition (`varied`, `held_by_user`, `held_by_symmetry`, `default_applied`, ...), at_limit
 
-**Note**: Simulation mode does NOT produce `refined_parameters.csv` because no parameters are refined (all `refine_flag: false`). The $R_{wp}$ value will be ~100% because the calculated pattern is not optimized to the observed data—this metric is meaningless in simulation mode.
+**Note**: Simulation mode does NOT produce `refined_parameters.csv` because no parameters are refined (all `refine_flag: false`). The reported `rwp` is PowderLine's uniform statistic of the calculated pattern against the placeholder data and is meaningless in simulation mode; the result carries `simulation_mode: true`.
 
 ## Data Source
 
@@ -111,14 +113,10 @@ To study phase fractions, modify the scale factors in `input.json`:
 
 ```json
 "DRX_33": {
-  "parameterization": {
-    "scale": [0.7, false, null, null]  // 70% relative phase fraction by mass
-  }
+  "scale": [0.7, false]  // 70% relative phase fraction by mass
 },
 "Li4MgWO6_SG12": {
-  "parameterization": {
-    "scale": [0.3, false, null, null]  // 30% relative phase fraction by mass
-  }
+  "scale": [0.3, false]  // 30% relative phase fraction by mass
 }
 ```
 

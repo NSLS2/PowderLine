@@ -1,4 +1,10 @@
 {
-  "schema_version": "0.26.0",
-  "kicker_hash": "c5e25670cb609186fedd6ac2e2401b9e"
+  "gsasii_gateway_hashes": {
+    "constraints.py": "32a1eee3520839c326d593e20e647443",
+    "executors.py": "fc8fc17d8d2eea41207369bd5d76d4e6",
+    "extractors.py": "26fd3e1519cea71472111a248e4c633d",
+    "helpers.py": "710ec848fb95ced92a99895d6da579f8",
+    "project.py": "68dfd3b2842133cd3fc9b7c1df64a868",
+    "setters.py": "cd87da58ec4d96074ea694fb588b4db8"
+  }
 }

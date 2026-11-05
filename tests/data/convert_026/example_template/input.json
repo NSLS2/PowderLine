@@ -1,0 +1,98 @@
+{
+  "schema_name": "GSASII_Rietveld",
+  "schema_version": "0.26.0",
+  "payload": {
+    "refinement_controls": {
+      "refinement_cycles": 5
+    },
+    "xrd_data": {
+      "tth": [],
+      "Itth": [],
+      "Itth_weights": []
+    },
+    "instrument": {
+      "description": "Your beamline or lab instrument",
+      "initialization": [
+        {
+          "Type": ["PXC", "PXC", false],
+          "Lam": [0.0, 0.0, false]
+        },
+        {}
+      ],
+      "parameterization": null
+    },
+    "fit_range": [null, null],
+    "background": {
+      "chebyshev": {
+        "num_coefficients": 3,
+        "coefficients": [0.0, 0.0, 0.0],
+        "refine_flag": false
+      },
+      "single_peaks": null
+    },
+    "phases": {
+      "YourPhaseName": {
+        "structure": {
+          "phase_name": "YourPhaseName",
+          "space_group": "P 1",
+          "unit_cell": {
+            "a": 1.0,
+            "b": 1.0,
+            "c": 1.0,
+            "alpha": 90.0,
+            "beta": 90.0,
+            "gamma": 90.0,
+            "volume": 1.0
+          },
+          "atoms": {
+            "Atom1": {
+              "element": "X",
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "occupancy": 1.0,
+              "Multiplicity": 1,
+              "ADP": "Uiso",
+              "Uiso": 0.01,
+              "Uaniso": null
+            }
+          }
+        },
+        "parameterization": {
+          "scale": [1.0, false, null, null],
+          "unit_cell": {
+            "a": [null, false, null, null],
+            "b": [null, false, null, null],
+            "c": [null, false, null, null],
+            "alpha": [null, false, null, null],
+            "beta": [null, false, null, null],
+            "gamma": [null, false, null, null]
+          },
+          "peak_broadening": {
+            "size_broadening": {
+              "model": "isotropic",
+              "isotropic_size": [1.0, false, null, null],
+              "LG_eta": [1.0, false, null, null]
+            },
+            "strain_broadening": {
+              "model": "isotropic",
+              "isotropic_strain": [0.0, false, null, null],
+              "LG_eta": [1.0, false, null, null]
+            }
+          },
+          "atoms": {
+            "Atom1": {
+              "ADP": "Uiso",
+              "x": [null, false, null, null],
+              "y": [null, false, null, null],
+              "z": [null, false, null, null],
+              "occupancy": [null, false, null, null],
+              "Uiso": [null, false, null, null],
+              "Uaniso": null
+            }
+          }
+        }
+      }
+    }
+  }
+}

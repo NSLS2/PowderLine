@@ -1,37 +1,44 @@
-"""PowderLine: Automated powder diffraction analysis using GSAS-II."""
+"""PowderLine: automated powder diffraction refinement from a JSON recipe, on interchangeable engines.
 
-__version__ = "0.1.2"
+The public API (v0.2.0, P-06) is the names in ``__all__``:
 
-# The GSAS-II-backed public API is imported eagerly when GSAS-II is available,
-# preserving the original behaviour exactly (including `powderline.kicker` being
-# registered as a submodule attribute). When GSAS-II is absent -- on Windows, or
-# on a TOPAS-only dev box -- these imports are skipped so that the GSAS-II-free
-# TOPAS path (`powderline.topas`) still imports cleanly. `powderline.schema` is
-# GSAS-II-free and always loaded, so `RecipeModel` is available either way.
+- :func:`run` -- run a recipe with the engine its ``schema_name`` names;
+- :func:`validate` -- validate a recipe engine-free, returning a :class:`ValidationResult`;
+- :func:`load_recipe_asset` -- read a recipe file (JSON / YAML) into a dict;
+- :func:`support_matrix` -- the schema versions every installed gateway declares;
+- the exceptions (:class:`PowderLineError` and its gateway subclasses; a failed run raises
+  :class:`EngineExecutionError` or :class:`ExecutionBackendError`, each with ``.reason`` and ``.result``).
 
-# `run` is the GSAS-II-free engine dispatcher (engine="gsasii"|"topas"); it loads
-# the GSAS-II backend lazily only for engine="gsasii", so it imports here without
-# requiring GSAS-II. The remaining GSAS-II-backed helpers are imported eagerly
-# when GSAS-II is available and skipped otherwise (the TOPAS path stays usable).
-from powderline.engine import run
+``import powderline`` imports no engine: GSAS-II, TOPAS and easydiffraction
+are imported by their gateways, lazily, when a recipe runs. Engine-specific
+helpers live under ``powderline.gateways.<engine>`` (e.g.
+``powderline.gateways.gsasii.client.GSASClient``).
+"""
 
-try:  # GSAS-II-backed helpers + client (require the GSAS-II package)
-    from powderline.kicker import (
-        validate,
-        load_recipe_asset,
-        validate_simulation_mode_parameters,
-    )
-    from powderline.gsas_client import GSASClient
-except ImportError:  # pragma: no cover - exercised only where GSAS-II is absent
-    pass
+__version__ = "0.2.0"
 
-from powderline.schema import RecipeModel
+from powderline.api import run, validate, ValidationResult
+from powderline.recipes import load_recipe_asset
+from powderline.compat import support_matrix
+from powderline.exceptions import (
+    PowderLineError,
+    GatewayNotInstalledError,
+    EngineNotAvailableError,
+    EngineVersionError,
+    EngineExecutionError,
+    ExecutionBackendError,
+)
 
 __all__ = [
     "run",
     "validate",
+    "ValidationResult",
     "load_recipe_asset",
-    "validate_simulation_mode_parameters",
-    "RecipeModel",
-    "GSASClient",
+    "support_matrix",
+    "PowderLineError",
+    "GatewayNotInstalledError",
+    "EngineNotAvailableError",
+    "EngineVersionError",
+    "EngineExecutionError",
+    "ExecutionBackendError",
 ]

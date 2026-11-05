@@ -6,7 +6,7 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Least-privilege default: neither job here needs to write anything.
+# Least-privilege default: no job here needs to write anything.
 permissions:
   contents: read
 
@@ -19,11 +19,30 @@ defaults:
   run:
     shell: bash
 
+# Test matrix: one job per pixi environment x (linux, windows). The
+# suites are pytest marker selections (pyproject.toml) bound to pixi tasks
+# (pixi.toml): `core` runs the engine-free suites in the default env with the
+# core guard on (tests/conftest.py), `gsasii` and `easydiffraction` run their
+# engine's suite in its env. Only `topas_exec` is absent: it needs tc.exe and
+# stays a manual gate step on the TOPAS machine. Every job is gated to the
+# upstream repository: CI runs with the PR to NSLS2/PowderLine, not on
+# forks, and each job's command is proven locally first:
+#   pixi run test · pixi run -e gsasii test-gsasii · pixi run -e easydiffraction test-easydiffraction · pixi run docs
+# setup-pixi caches .pixi/envs per lock-file hash and environment; the cache
+# is written only on pushes to main so PRs read it and the gsasii env (the
+# slow pixi-build one) is built once per lock change.
+
 jobs:
-  test:
-    # Run on pull requests, direct pushes to main, and manual dispatch in the upstream repository.
+  core:
+    # The no-plugin guarantee: schema layer, registry, CLI, TOPAS input generation,
+    # without any engine installed or importable.
     if: github.repository == 'NSLS2/PowderLine'
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,8 +50,57 @@ jobs:
       - uses: prefix-dev/setup-pixi@a0af7a228712d6121d37aba47adf55c1332c9c2e  # v0.9.4
         with:
           pixi-version: v0.83.0
-      - name: Run tests
+          environments: default
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+      - name: Engine-free suites (core + topas_gen, core guard on)
         run: pixi run test
+      - name: Generated field tables and support matrix are current
+        run: pixi run fields-check
+
+  gsasii:
+    # GSAS-II suite incl. the slow regressions against the committed references.
+    if: github.repository == 'NSLS2/PowderLine'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: prefix-dev/setup-pixi@a0af7a228712d6121d37aba47adf55c1332c9c2e  # v0.9.4
+        with:
+          pixi-version: v0.83.0
+          environments: gsasii
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+      - name: GSAS-II suite
+        run: pixi run -e gsasii test-gsasii
+
+  easydiffraction:
+    # easydiffraction suite (native runs and goldens; no GSAS-II in this env).
+    if: github.repository == 'NSLS2/PowderLine'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: prefix-dev/setup-pixi@a0af7a228712d6121d37aba47adf55c1332c9c2e  # v0.9.4
+        with:
+          pixi-version: v0.83.0
+          environments: easydiffraction
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+      - name: easydiffraction suite
+        run: pixi run -e easydiffraction test-easydiffraction
 
   docs:
     # Build-only check that the docs still compile warning-free

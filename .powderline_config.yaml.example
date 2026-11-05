@@ -1,16 +1,22 @@
 # PowderLine Configuration File
-# Copy this file to .powderline_config.yaml and add your API keys
-# The actual config file (.powderline_config.yaml) is not tracked by git
+# Copy this file to .powderline_config.yaml. It is not tracked by git.
 
-# Materials Project API Configuration
-materials_project:
-  api_key: "YOUR_API_KEY_HERE"
-  # Get your free API key at: https://next-gen.materialsproject.org/api
-  # Alternatively, set the MP_API_KEY environment variable
-  # (a real key set here takes precedence over the environment variable)
+# ─── TOPAS (topas.* recipes) ────────────────────────────────────────────────
+# A run that executes TOPAS needs both values declared, here or with the CLI's
+# --topas-dir / --topas-version: `dir` is the folder holding tc.exe and
+# `version` the installed TOPAS version, which must equal the recipe's
+# engine_version (TOPAS 6 is the supported version). PowderLine never guesses
+# where TOPAS is: with no `dir` it only writes the INP (generate-only).
+# Uncomment to use.
+# `timeout` stops a tc.exe run after that many seconds (default 3600; 0 = no
+# limit), so a TOPAS waiting for input (a licence dialog) cannot hang a run.
+# topas:
+#   dir: "C:/TOPAS6"
+#   version: 6
+#   timeout: 3600
 
 # ─── GSAS-II simulation defaults ─────────────────────────────────────────────
-# Simulations (mp-simulate) run through the GSAS-II engine: all parameters
+# Simulation recipes built by SimulationRecipeBuilder run through the GSAS-II engine: all parameters
 # below follow GSAS-II conventions and units. TOPAS is NOT used here — it has
 # different conventions for polarization, axial divergence, and the
 # instrumental broadening parameters.
@@ -24,8 +30,9 @@ simulation_defaults:
   instrument_defaults:
     wavelength: 0.4133       # Angstroms (lambda = 12.398 / E[keV]; 0.4133 A = 30 keV)
     polarization: 0.99       # GSAS-II 'Polariz.'
-    zero_shift: 0.0          # degrees 2theta (GSAS-II 'Zero')
-    axial_divergence: 0.001  # GSAS-II 'SH/L'
+    zero_shift: 0.0          # centidegrees 2theta (GSAS-II 'Zero')
+    axial_divergence: 0.002  # GSAS-II 'SH/L'; 0.002 is GSAS-II's own floor
+                             # (smaller values are rejected)
 
     # Thompson-Cox-Hastings pseudo-Voigt instrumental broadening
     # (GSAS-II U, V, W, X, Y, Z; reasonable high-resolution synchrotron values)
@@ -41,8 +48,8 @@ simulation_defaults:
   phase_defaults:
     scale: 1.0
 
-    # Structural fallbacks — applied ONLY when the structure source (e.g.
-    # Materials Project, CIF) does not provide a value; a warning is printed
+    # Structural fallbacks — applied ONLY when the structure source (the
+    # structure dict given to the builder) does not provide a value; a warning is printed
     # whenever a fallback is used
     Uiso: 0.01      # isotropic displacement, Angstrom^2
     occupancy: 1.0  # site occupancy fraction

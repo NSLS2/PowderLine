@@ -1,0 +1,11 @@
+parameter_name,descriptive_name,phase_name,phase_idx,atom_name,atom_idx,value,esd,category
+0::AUiso:0,phase_0_atom_0_isotropic_displacement,LaB6,0,B,0,1.948124e-02,1.71752430e-03,atom_displacement_isotropic
+0::AUiso:1,phase_0_atom_1_isotropic_displacement,LaB6,0,La,1,1.936423e-02,2.40140467e-04,atom_displacement_isotropic
+:0:Back;0,background_coefficient_0,,,,,2.879121e+01,1.15472532e-01,background
+:0:Back;1,background_coefficient_1,,,,,1.356229e+00,1.98916377e-01,background
+:0:Back;2,background_coefficient_2,,,,,7.714115e-01,1.77160305e-01,background
+:0:Back;3,background_coefficient_3,,,,,-1.249593e+00,1.74751488e-01,background
+:0:Back;4,background_coefficient_4,,,,,3.800979e-01,1.53892053e-01,background
+:0:Back;5,background_coefficient_5,,,,,3.799687e-01,1.53188836e-01,background
+0::A0,phase_0_reciprocal_metric_tensor_A11,LaB6,0,,,5.757227e-02,1.50606110e-06,reciprocal_metric_tensor
+0:0:Scale,phase_0_scale_factor,LaB6,0,,,3.778004e-02,1.77730283e-04,scale

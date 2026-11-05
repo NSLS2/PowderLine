@@ -119,7 +119,7 @@
  O       Nat. Abund.     15.999    0.580
  W       Nat. Abund.    183.850    0.475
 
- Space Group: C 2/m
+ Space Group: C 1 2/m 1
  The lattice is centrosymmetric C-centered monoclinic
  The Laue symmetry is 2/m
  The lattice point group is 2/m
@@ -194,7 +194,7 @@
 
  Instrument Parameters:
  name  :     Azimuth         Lam    Polariz.        SH/L           U           V           W           X           Y
- value :    0.000000    0.166500    0.990000    0.000500   18.717409    0.600341    1.147013    0.281430    0.001000
+ value :    0.000000    0.166500    0.990000    0.002000   18.717409    0.600341    1.147013    0.281430    0.001000
  refine:                   False       False       False       False       False       False       False       False
 
  name  :           Z        Zero
@@ -207,6 +207,6 @@
 
  Refinement results:
 ---------------------------------------------------------------------------------------------------------------------------------------
- Number of function calls: 1 No. of observations: 3768 No. of parameters: 0 User rejected: 0 Sp. gp. extinct: 0
- Refinement time =    0.162s,    0.162s/cycle, for 1 cycles
- wR = 6819.26%, chi**2 =  1.80882e+09, GOF = 692.85
+ Number of function calls: 1 No. of observations: 3767 No. of parameters: 0 User rejected: 0 Sp. gp. extinct: 0
+ Refinement time =    0.146s,    0.146s/cycle, for 1 cycles
+ wR = 6819.92%, chi**2 =  1.80882e+09, GOF = 692.95

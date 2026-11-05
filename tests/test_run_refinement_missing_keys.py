@@ -4,12 +4,22 @@ GSAS-II doesn't always populate all keys in its data structures for certain
 crystal structures (e.g. missing 'wR' residual, missing 'RefList', missing
 'Cell'). These tests verify that run_refinement() handles these cases
 gracefully instead of raising KeyError.
+
+The function under test is ``powderline.gateways.gsasii.executors.run_refinement``
+(the ``gsasii.rietveld`` / ``gsasii.spf`` executor); the GSAS-II setters,
+extractors and ``G2Project`` are patched on that module. (Until re/07 the
+same tests also ran the pre-refactor copy of the executor, since deleted.)
 """
 
 import numpy as np
 import pytest
+
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+pytestmark = pytest.mark.gsasii
+
+pytest.importorskip("GSASII.GSASIIscriptable")  # the mocked run imports the frozen executors, which import GSAS-II
 
 
 def _make_mock_hist(hist_name, residuals=None, has_reflection_lists=True,
@@ -85,11 +95,10 @@ def mock_recipe():
 
     Updated for schema 0.25: Payload-based structure with all recipe fields under payload.
     Added schema_name field (required for SCHEMA_EXECUTORS dispatch).
-    Using 'structural_only' strategy to preserve legacy test behavior (traditional Rietveld refinement).
+
     """
     recipe = MagicMock()
-    recipe.schema_name = "GSASII_Rietveld"  # Schema 0.25: Required for executor dispatch
-    recipe.schema_version = "0.26.0"  # Schema 0.25: Required field
+    recipe.schema_name = "gsasii.rietveld"
 
     # Schema 0.25: All recipe fields under payload
     recipe.payload = MagicMock()
@@ -103,8 +112,11 @@ def mock_recipe():
     recipe.payload.instrument.initialization = [{}]
     recipe.payload.instrument.parameterization = None
 
+    # instrument must work with model_dump(mode='json')
+    recipe.payload.instrument.model_dump = MagicMock(return_value={})
+
     recipe.payload.background = None
-    recipe.payload.fit_range = None
+    recipe.payload.fit_range = None  # Native executor checks truthiness then .min/.max
 
     # refinement_controls under payload
     recipe.payload.refinement_controls = MagicMock()
@@ -119,29 +131,56 @@ def mock_recipe():
     # Phases dict under payload (required for CSV report generation)
     recipe.payload.phases = {"TestPhase": MagicMock()}
 
+    # payload must work with model_dump(mode='json')
+    recipe.payload.model_dump = MagicMock(return_value={"phases": []})
+
     recipe.model_dump.return_value = {"phases": []}
     return recipe
 
 
 def _run_with_mocked_gsas(mock_recipe, tmp_path, proj, hist):
-    """Patch GSAS-II internals and run run_refinement() with provided mocks."""
+    """Patch GSAS-II internals and run run_refinement() with provided mocks.
+
+    Args:
+        mock_recipe: Recipe mock (schema_name gsasii.rietveld)
+        tmp_path: pytest tmp_path fixture
+        proj: Mocked GSAS-II project
+        hist: Mocked histogram
+    """
     output_dir = tmp_path / "output"
     output_dir.mkdir()
 
-    with patch("powderline.kicker.G2.G2Project", return_value=proj), \
-         patch("powderline.kicker.add_powder_histogram_from_arrays", return_value=hist), \
-         patch("powderline.kicker.set_hist_scale"), \
-         patch("powderline.kicker.set_fit_range_hist"), \
-         patch("powderline.kicker.set_chebyshev_background"), \
-         patch("powderline.kicker.set_single_peak_background"), \
-         patch("powderline.kicker.add_phases_from_dict"), \
-         patch("powderline.kicker.set_phase_parameterization"), \
-         patch("powderline.kicker.set_instrument_parameterization"), \
-         patch("powderline.kicker.set_refinement_cycles"), \
-         patch("powderline.kicker.calculate_cell_esds_from_A_matrix",
-               return_value=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]):
-        from powderline.kicker import run_refinement
-        result = run_refinement(mock_recipe, output_dir, verbose=False, method='test')
+    module_path = "powderline.gateways.gsasii.executors"
+    from powderline.gateways.gsasii.executors import run_refinement as native_run_refinement
+    call_fn = lambda: native_run_refinement(mock_recipe, output_dir, verbose=False, method='test')
+
+    patches_list = [
+        patch("powderline.gateways.gsasii.executors.G2.G2Project", return_value=proj),
+        patch(f"{module_path}.add_powder_histogram_from_arrays", return_value=hist),
+        patch(f"{module_path}.set_hist_scale"),
+        patch(f"{module_path}.set_fit_range_hist"),
+        patch(f"{module_path}.set_chebyshev_background"),
+        patch(f"{module_path}.set_single_peak_background"),
+        patch(f"{module_path}.add_phases_from_dict"),
+        patch(f"{module_path}.set_phase_parameterization"),
+        patch(f"{module_path}.set_instrument_parameterization"),
+        patch(f"{module_path}.set_refinement_cycles"),
+        patch("powderline.gateways.gsasii.extractors.calculate_cell_esds_from_A_matrix",
+              return_value=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+    ]
+
+    patches_list.append(patch(f"{module_path}.gsasii_iparm1", return_value={}))
+    # the native run's site check and fit report read real GSAS-II data (tested in
+    # test_gsasii_native_run); these mocks test missing-key handling only
+    patches_list.append(patch(f"{module_path}.check_sites"))
+    patches_list.append(patch(f"{module_path}.fit_report", return_value={}))
+
+    # Apply all patches and call
+    from contextlib import ExitStack
+    with ExitStack() as stack:
+        for p in patches_list:
+            stack.enter_context(p)
+        result = call_fn()
 
     return result, output_dir
 
@@ -166,9 +205,11 @@ class TestMissingResiduals:
         assert "Rwp" in result["error"]
 
     def test_missing_wR_executor_directly_returns_failure(self, mock_recipe, tmp_path):
-        """execute_rietveld_refinement returns success=False when wR is absent."""
-        from powderline.kicker import execute_rietveld_refinement
+        """execute_rietveld_refinement returns success=False when wR is absent.
+
+        """
         from unittest.mock import MagicMock
+        from powderline.gateways.gsasii.executors import execute_rietveld_refinement
 
         proj = MagicMock()
         hist = MagicMock()
@@ -276,11 +317,26 @@ class TestHistogramLoadFailure:
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
-        with patch("powderline.kicker.G2.G2Project", return_value=proj), \
-             patch("powderline.kicker.add_powder_histogram_from_arrays",
-                   side_effect=ValueError("bad instrument params")):
-            from powderline.kicker import run_refinement
-            result = run_refinement(mock_recipe, output_dir, verbose=False, method='test')
+        module_path = "powderline.gateways.gsasii.executors"
+        from powderline.gateways.gsasii.executors import run_refinement as native_run_refinement
+        call_fn = lambda: native_run_refinement(mock_recipe, output_dir, verbose=False, method='test')
+
+        patches_list = [
+            patch("powderline.gateways.gsasii.executors.G2.G2Project", return_value=proj),
+            patch(f"{module_path}.add_powder_histogram_from_arrays",
+                  side_effect=ValueError("bad instrument params")),
+        ]
+        patches_list.append(patch(f"{module_path}.gsasii_iparm1", return_value={}))
+        # the native run's site check and fit report read real GSAS-II data (tested in
+        # test_gsasii_native_run); these mocks test missing-key handling only
+        patches_list.append(patch(f"{module_path}.check_sites"))
+        patches_list.append(patch(f"{module_path}.fit_report", return_value={}))
+
+        from contextlib import ExitStack
+        with ExitStack() as stack:
+            for p in patches_list:
+                stack.enter_context(p)
+            result = call_fn()
 
         assert result["success"] is False
         assert "Failed to load XRD data or instrument parameters" in result["error"]
@@ -291,11 +347,26 @@ class TestHistogramLoadFailure:
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
-        with patch("powderline.kicker.G2.G2Project", return_value=proj), \
-             patch("powderline.kicker.add_powder_histogram_from_arrays",
-                   side_effect=IOError("file not found")):
-            from powderline.kicker import run_refinement
-            result = run_refinement(mock_recipe, output_dir, verbose=False, method='test')
+        module_path = "powderline.gateways.gsasii.executors"
+        from powderline.gateways.gsasii.executors import run_refinement as native_run_refinement
+        call_fn = lambda: native_run_refinement(mock_recipe, output_dir, verbose=False, method='test')
+
+        patches_list = [
+            patch("powderline.gateways.gsasii.executors.G2.G2Project", return_value=proj),
+            patch(f"{module_path}.add_powder_histogram_from_arrays",
+                  side_effect=IOError("file not found")),
+        ]
+        patches_list.append(patch(f"{module_path}.gsasii_iparm1", return_value={}))
+        # the native run's site check and fit report read real GSAS-II data (tested in
+        # test_gsasii_native_run); these mocks test missing-key handling only
+        patches_list.append(patch(f"{module_path}.check_sites"))
+        patches_list.append(patch(f"{module_path}.fit_report", return_value={}))
+
+        from contextlib import ExitStack
+        with ExitStack() as stack:
+            for p in patches_list:
+                stack.enter_context(p)
+            result = call_fn()
 
         assert "run_id" in result
         assert result["run_id"] is not None
@@ -307,20 +378,36 @@ class TestExecutorFailure:
     def test_executor_raises_exception_returns_failure(self, mock_recipe, tmp_path):
         proj, hist, _ = _make_mock_hist("PWDR test", residuals={"wR": 5.0})
 
-        with patch("powderline.kicker.G2.G2Project", return_value=proj), \
-             patch("powderline.kicker.add_powder_histogram_from_arrays", return_value=hist), \
-             patch("powderline.kicker.set_hist_scale"), \
-             patch("powderline.kicker.set_fit_range_hist"), \
-             patch("powderline.kicker.set_chebyshev_background"), \
-             patch("powderline.kicker.set_single_peak_background"), \
-             patch("powderline.kicker.add_phases_from_dict"), \
-             patch("powderline.kicker.set_phase_parameterization"), \
-             patch("powderline.kicker.set_instrument_parameterization"), \
-             patch("powderline.kicker.set_refinement_cycles"), \
-             patch("powderline.kicker.SCHEMA_EXECUTORS",
-                   {"GSASII_Rietveld": MagicMock(side_effect=RuntimeError("diverged"))}):
-            from powderline.kicker import run_refinement
-            result = run_refinement(mock_recipe, output_dir=tmp_path, verbose=False, method='test')
+        module_path = "powderline.gateways.gsasii.executors"
+        schema_key = "gsasii.rietveld"
+        from powderline.gateways.gsasii.executors import run_refinement as native_run_refinement
+        call_fn = lambda: native_run_refinement(mock_recipe, output_dir=tmp_path, verbose=False, method='test')
+
+        patches_list = [
+            patch("powderline.gateways.gsasii.executors.G2.G2Project", return_value=proj),
+            patch(f"{module_path}.add_powder_histogram_from_arrays", return_value=hist),
+            patch(f"{module_path}.set_hist_scale"),
+            patch(f"{module_path}.set_fit_range_hist"),
+            patch(f"{module_path}.set_chebyshev_background"),
+            patch(f"{module_path}.set_single_peak_background"),
+            patch(f"{module_path}.add_phases_from_dict"),
+            patch(f"{module_path}.set_phase_parameterization"),
+            patch(f"{module_path}.set_instrument_parameterization"),
+            patch(f"{module_path}.set_refinement_cycles"),
+            patch(f"{module_path}.SCHEMA_EXECUTORS",
+                  {schema_key: MagicMock(side_effect=RuntimeError("diverged"))}),
+        ]
+        patches_list.append(patch(f"{module_path}.gsasii_iparm1", return_value={}))
+        # the native run's site check and fit report read real GSAS-II data (tested in
+        # test_gsasii_native_run); these mocks test missing-key handling only
+        patches_list.append(patch(f"{module_path}.check_sites"))
+        patches_list.append(patch(f"{module_path}.fit_report", return_value={}))
+
+        from contextlib import ExitStack
+        with ExitStack() as stack:
+            for p in patches_list:
+                stack.enter_context(p)
+            result = call_fn()
 
         assert result["success"] is False
         assert "Refinement failed" in result["error"]
@@ -330,22 +417,38 @@ class TestExecutorFailure:
         proj, hist, _ = _make_mock_hist("PWDR test", residuals={"wR": 5.0})
         failing_executor = MagicMock(return_value={"success": False, "rwp": None})
 
-        with patch("powderline.kicker.G2.G2Project", return_value=proj), \
-             patch("powderline.kicker.add_powder_histogram_from_arrays", return_value=hist), \
-             patch("powderline.kicker.set_hist_scale"), \
-             patch("powderline.kicker.set_fit_range_hist"), \
-             patch("powderline.kicker.set_chebyshev_background"), \
-             patch("powderline.kicker.set_single_peak_background"), \
-             patch("powderline.kicker.add_phases_from_dict"), \
-             patch("powderline.kicker.set_phase_parameterization"), \
-             patch("powderline.kicker.set_instrument_parameterization"), \
-             patch("powderline.kicker.set_refinement_cycles"), \
-             patch("powderline.kicker.SCHEMA_EXECUTORS", {"GSASII_Rietveld": failing_executor}):
-            from powderline.kicker import run_refinement
-            result = run_refinement(mock_recipe, output_dir=tmp_path, verbose=False, method='test')
+        module_path = "powderline.gateways.gsasii.executors"
+        schema_key = "gsasii.rietveld"
+        from powderline.gateways.gsasii.executors import run_refinement as native_run_refinement
+        call_fn = lambda: native_run_refinement(mock_recipe, output_dir=tmp_path, verbose=False, method='test')
+
+        patches_list = [
+            patch("powderline.gateways.gsasii.executors.G2.G2Project", return_value=proj),
+            patch(f"{module_path}.add_powder_histogram_from_arrays", return_value=hist),
+            patch(f"{module_path}.set_hist_scale"),
+            patch(f"{module_path}.set_fit_range_hist"),
+            patch(f"{module_path}.set_chebyshev_background"),
+            patch(f"{module_path}.set_single_peak_background"),
+            patch(f"{module_path}.add_phases_from_dict"),
+            patch(f"{module_path}.set_phase_parameterization"),
+            patch(f"{module_path}.set_instrument_parameterization"),
+            patch(f"{module_path}.set_refinement_cycles"),
+            patch(f"{module_path}.SCHEMA_EXECUTORS", {schema_key: failing_executor}),
+        ]
+        patches_list.append(patch(f"{module_path}.gsasii_iparm1", return_value={}))
+        # the native run's site check and fit report read real GSAS-II data (tested in
+        # test_gsasii_native_run); these mocks test missing-key handling only
+        patches_list.append(patch(f"{module_path}.check_sites"))
+        patches_list.append(patch(f"{module_path}.fit_report", return_value={}))
+
+        from contextlib import ExitStack
+        with ExitStack() as stack:
+            for p in patches_list:
+                stack.enter_context(p)
+            result = call_fn()
 
         assert result["success"] is False
-        assert "GSASII_Rietveld" in result["error"]
+        assert schema_key in result["error"]
 
 
 class TestUnknownSchemaName:
@@ -353,24 +456,40 @@ class TestUnknownSchemaName:
     (the ValueError is caught by the outer except block)."""
 
     def test_unknown_schema_name_returns_failure(self, mock_recipe, tmp_path):
-        mock_recipe.schema_name = "GSASII_Unknown"
+        mock_recipe.schema_name = "gsasii.bogus"
+        expected_in_error = ["Unknown schema_name", "gsasii.bogus"]
+        module_path = "powderline.gateways.gsasii.executors"
+        from powderline.gateways.gsasii.executors import run_refinement as native_run_refinement
+        call_fn = lambda: native_run_refinement(mock_recipe, output_dir=tmp_path, verbose=False, method='test')
+
         proj, hist, _ = _make_mock_hist("PWDR test", residuals={"wR": 5.0})
 
-        with patch("powderline.kicker.G2.G2Project", return_value=proj), \
-             patch("powderline.kicker.add_powder_histogram_from_arrays", return_value=hist), \
-             patch("powderline.kicker.set_hist_scale"), \
-             patch("powderline.kicker.set_fit_range_hist"), \
-             patch("powderline.kicker.set_chebyshev_background"), \
-             patch("powderline.kicker.set_single_peak_background"), \
-             patch("powderline.kicker.add_phases_from_dict"), \
-             patch("powderline.kicker.set_phase_parameterization"), \
-             patch("powderline.kicker.set_instrument_parameterization"), \
-             patch("powderline.kicker.set_refinement_cycles"):
-            from powderline.kicker import run_refinement
-            result = run_refinement(mock_recipe, output_dir=tmp_path, verbose=False, method='test')
+        patches_list = [
+            patch("powderline.gateways.gsasii.executors.G2.G2Project", return_value=proj),
+            patch(f"{module_path}.add_powder_histogram_from_arrays", return_value=hist),
+            patch(f"{module_path}.set_hist_scale"),
+            patch(f"{module_path}.set_fit_range_hist"),
+            patch(f"{module_path}.set_chebyshev_background"),
+            patch(f"{module_path}.set_single_peak_background"),
+            patch(f"{module_path}.add_phases_from_dict"),
+            patch(f"{module_path}.set_phase_parameterization"),
+            patch(f"{module_path}.set_instrument_parameterization"),
+            patch(f"{module_path}.set_refinement_cycles"),
+        ]
+        patches_list.append(patch(f"{module_path}.gsasii_iparm1", return_value={}))
+        # the native run's site check and fit report read real GSAS-II data (tested in
+        # test_gsasii_native_run); these mocks test missing-key handling only
+        patches_list.append(patch(f"{module_path}.check_sites"))
+        patches_list.append(patch(f"{module_path}.fit_report", return_value={}))
+
+        from contextlib import ExitStack
+        with ExitStack() as stack:
+            for p in patches_list:
+                stack.enter_context(p)
+            result = call_fn()
 
         assert result["success"] is False
-        assert "Unknown schema_name" in result["error"] or "GSASII_Unknown" in result["error"]
+        assert any(expected in result["error"] for expected in expected_in_error)
 
 
 class TestCorruptCovariance:
@@ -382,22 +501,36 @@ class TestCorruptCovariance:
         # Inject a non-empty varyList into proj.data so the covariance guard triggers
         proj.data["Covariance"]["data"]["varyList"] = [":0:Back;0"]
 
-        with patch("powderline.kicker.G2.G2Project", return_value=proj), \
-             patch("powderline.kicker.add_powder_histogram_from_arrays", return_value=hist), \
-             patch("powderline.kicker.set_hist_scale"), \
-             patch("powderline.kicker.set_fit_range_hist"), \
-             patch("powderline.kicker.set_chebyshev_background"), \
-             patch("powderline.kicker.set_single_peak_background"), \
-             patch("powderline.kicker.add_phases_from_dict"), \
-             patch("powderline.kicker.set_phase_parameterization"), \
-             patch("powderline.kicker.set_instrument_parameterization"), \
-             patch("powderline.kicker.set_refinement_cycles"), \
-             patch("powderline.kicker.calculate_cell_esds_from_A_matrix",
-                   return_value=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), \
-             patch("powderline.kicker.extract_refined_params_from_project",
-                   return_value={}):
-            from powderline.kicker import run_refinement
-            result = run_refinement(mock_recipe, output_dir=tmp_path, verbose=False, method='test')
+        module_path = "powderline.gateways.gsasii.executors"
+        from powderline.gateways.gsasii.executors import run_refinement as native_run_refinement
+        call_fn = lambda: native_run_refinement(mock_recipe, output_dir=tmp_path, verbose=False, method='test')
+
+        patches_list = [
+            patch("powderline.gateways.gsasii.executors.G2.G2Project", return_value=proj),
+            patch(f"{module_path}.add_powder_histogram_from_arrays", return_value=hist),
+            patch(f"{module_path}.set_hist_scale"),
+            patch(f"{module_path}.set_fit_range_hist"),
+            patch(f"{module_path}.set_chebyshev_background"),
+            patch(f"{module_path}.set_single_peak_background"),
+            patch(f"{module_path}.add_phases_from_dict"),
+            patch(f"{module_path}.set_phase_parameterization"),
+            patch(f"{module_path}.set_instrument_parameterization"),
+            patch(f"{module_path}.set_refinement_cycles"),
+            patch("powderline.gateways.gsasii.extractors.calculate_cell_esds_from_A_matrix",
+                  return_value=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            patch(f"{module_path}.extract_refined_params_from_project", return_value={}),
+        ]
+        patches_list.append(patch(f"{module_path}.gsasii_iparm1", return_value={}))
+        # the native run's site check and fit report read real GSAS-II data (tested in
+        # test_gsasii_native_run); these mocks test missing-key handling only
+        patches_list.append(patch(f"{module_path}.check_sites"))
+        patches_list.append(patch(f"{module_path}.fit_report", return_value={}))
+
+        from contextlib import ExitStack
+        with ExitStack() as stack:
+            for p in patches_list:
+                stack.enter_context(p)
+            result = call_fn()
 
         assert result["success"] is False
         assert "covariance" in result["error"].lower() or "varyList" in result["error"] or "traceback" in result
@@ -414,11 +547,26 @@ class TestTracebackConsistency:
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
-        with patch("powderline.kicker.G2.G2Project", return_value=proj), \
-             patch("powderline.kicker.add_powder_histogram_from_arrays",
-                   side_effect=ValueError("bad instrument params")):
-            from powderline.kicker import run_refinement
-            result = run_refinement(mock_recipe, output_dir, verbose=False, method='test')
+        module_path = "powderline.gateways.gsasii.executors"
+        from powderline.gateways.gsasii.executors import run_refinement as native_run_refinement
+        call_fn = lambda: native_run_refinement(mock_recipe, output_dir, verbose=False, method='test')
+
+        patches_list = [
+            patch("powderline.gateways.gsasii.executors.G2.G2Project", return_value=proj),
+            patch(f"{module_path}.add_powder_histogram_from_arrays",
+                  side_effect=ValueError("bad instrument params")),
+        ]
+        patches_list.append(patch(f"{module_path}.gsasii_iparm1", return_value={}))
+        # the native run's site check and fit report read real GSAS-II data (tested in
+        # test_gsasii_native_run); these mocks test missing-key handling only
+        patches_list.append(patch(f"{module_path}.check_sites"))
+        patches_list.append(patch(f"{module_path}.fit_report", return_value={}))
+
+        from contextlib import ExitStack
+        with ExitStack() as stack:
+            for p in patches_list:
+                stack.enter_context(p)
+            result = call_fn()
 
         assert result["success"] is False
         assert "traceback" in result
@@ -432,20 +580,36 @@ class TestTracebackConsistency:
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
-        with patch("powderline.kicker.G2.G2Project", return_value=proj), \
-             patch("powderline.kicker.add_powder_histogram_from_arrays", return_value=hist), \
-             patch("powderline.kicker.set_hist_scale"), \
-             patch("powderline.kicker.set_fit_range_hist"), \
-             patch("powderline.kicker.set_chebyshev_background"), \
-             patch("powderline.kicker.set_single_peak_background"), \
-             patch("powderline.kicker.add_phases_from_dict"), \
-             patch("powderline.kicker.set_phase_parameterization"), \
-             patch("powderline.kicker.set_instrument_parameterization"), \
-             patch("powderline.kicker.set_refinement_cycles"), \
-             patch("powderline.kicker.SCHEMA_EXECUTORS",
-                   {"GSASII_Rietveld": MagicMock(side_effect=RuntimeError("diverged"))}):
-            from powderline.kicker import run_refinement
-            result = run_refinement(mock_recipe, output_dir=output_dir, verbose=False, method='test')
+        module_path = "powderline.gateways.gsasii.executors"
+        schema_key = "gsasii.rietveld"
+        from powderline.gateways.gsasii.executors import run_refinement as native_run_refinement
+        call_fn = lambda: native_run_refinement(mock_recipe, output_dir=output_dir, verbose=False, method='test')
+
+        patches_list = [
+            patch("powderline.gateways.gsasii.executors.G2.G2Project", return_value=proj),
+            patch(f"{module_path}.add_powder_histogram_from_arrays", return_value=hist),
+            patch(f"{module_path}.set_hist_scale"),
+            patch(f"{module_path}.set_fit_range_hist"),
+            patch(f"{module_path}.set_chebyshev_background"),
+            patch(f"{module_path}.set_single_peak_background"),
+            patch(f"{module_path}.add_phases_from_dict"),
+            patch(f"{module_path}.set_phase_parameterization"),
+            patch(f"{module_path}.set_instrument_parameterization"),
+            patch(f"{module_path}.set_refinement_cycles"),
+            patch(f"{module_path}.SCHEMA_EXECUTORS",
+                  {schema_key: MagicMock(side_effect=RuntimeError("diverged"))}),
+        ]
+        patches_list.append(patch(f"{module_path}.gsasii_iparm1", return_value={}))
+        # the native run's site check and fit report read real GSAS-II data (tested in
+        # test_gsasii_native_run); these mocks test missing-key handling only
+        patches_list.append(patch(f"{module_path}.check_sites"))
+        patches_list.append(patch(f"{module_path}.fit_report", return_value={}))
+
+        from contextlib import ExitStack
+        with ExitStack() as stack:
+            for p in patches_list:
+                stack.enter_context(p)
+            result = call_fn()
 
         assert result["success"] is False
         assert "traceback" in result
@@ -466,19 +630,35 @@ class TestTracebackConsistency:
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
-        with patch("powderline.kicker.G2.G2Project", return_value=MagicMock()), \
-             patch("powderline.kicker.add_powder_histogram_from_arrays", return_value=hist), \
-             patch("powderline.kicker.set_hist_scale"), \
-             patch("powderline.kicker.set_fit_range_hist"), \
-             patch("powderline.kicker.set_chebyshev_background"), \
-             patch("powderline.kicker.set_single_peak_background"), \
-             patch("powderline.kicker.add_phases_from_dict"), \
-             patch("powderline.kicker.set_phase_parameterization"), \
-             patch("powderline.kicker.set_instrument_parameterization"), \
-             patch("powderline.kicker.set_refinement_cycles"), \
-             patch("powderline.kicker.SCHEMA_EXECUTORS", {"GSASII_Rietveld": failing_executor}):
-            from powderline.kicker import run_refinement
-            result = run_refinement(mock_recipe, output_dir=output_dir, verbose=False, method='test')
+        module_path = "powderline.gateways.gsasii.executors"
+        schema_key = "gsasii.rietveld"
+        from powderline.gateways.gsasii.executors import run_refinement as native_run_refinement
+        call_fn = lambda: native_run_refinement(mock_recipe, output_dir=output_dir, verbose=False, method='test')
+
+        patches_list = [
+            patch("powderline.gateways.gsasii.executors.G2.G2Project", return_value=MagicMock()),
+            patch(f"{module_path}.add_powder_histogram_from_arrays", return_value=hist),
+            patch(f"{module_path}.set_hist_scale"),
+            patch(f"{module_path}.set_fit_range_hist"),
+            patch(f"{module_path}.set_chebyshev_background"),
+            patch(f"{module_path}.set_single_peak_background"),
+            patch(f"{module_path}.add_phases_from_dict"),
+            patch(f"{module_path}.set_phase_parameterization"),
+            patch(f"{module_path}.set_instrument_parameterization"),
+            patch(f"{module_path}.set_refinement_cycles"),
+            patch(f"{module_path}.SCHEMA_EXECUTORS", {schema_key: failing_executor}),
+        ]
+        patches_list.append(patch(f"{module_path}.gsasii_iparm1", return_value={}))
+        # the native run's site check and fit report read real GSAS-II data (tested in
+        # test_gsasii_native_run); these mocks test missing-key handling only
+        patches_list.append(patch(f"{module_path}.check_sites"))
+        patches_list.append(patch(f"{module_path}.fit_report", return_value={}))
+
+        from contextlib import ExitStack
+        with ExitStack() as stack:
+            for p in patches_list:
+                stack.enter_context(p)
+            result = call_fn()
 
         assert result["success"] is False
         assert result["traceback"] == sentinel_tb
@@ -490,19 +670,35 @@ class TestTracebackConsistency:
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
-        with patch("powderline.kicker.G2.G2Project", return_value=MagicMock()), \
-             patch("powderline.kicker.add_powder_histogram_from_arrays", return_value=hist), \
-             patch("powderline.kicker.set_hist_scale"), \
-             patch("powderline.kicker.set_fit_range_hist"), \
-             patch("powderline.kicker.set_chebyshev_background"), \
-             patch("powderline.kicker.set_single_peak_background"), \
-             patch("powderline.kicker.add_phases_from_dict"), \
-             patch("powderline.kicker.set_phase_parameterization"), \
-             patch("powderline.kicker.set_instrument_parameterization"), \
-             patch("powderline.kicker.set_refinement_cycles"), \
-             patch("powderline.kicker.SCHEMA_EXECUTORS", {"GSASII_Rietveld": failing_executor}):
-            from powderline.kicker import run_refinement
-            result = run_refinement(mock_recipe, output_dir=output_dir, verbose=False, method='test')
+        module_path = "powderline.gateways.gsasii.executors"
+        schema_key = "gsasii.rietveld"
+        from powderline.gateways.gsasii.executors import run_refinement as native_run_refinement
+        call_fn = lambda: native_run_refinement(mock_recipe, output_dir=output_dir, verbose=False, method='test')
+
+        patches_list = [
+            patch("powderline.gateways.gsasii.executors.G2.G2Project", return_value=MagicMock()),
+            patch(f"{module_path}.add_powder_histogram_from_arrays", return_value=hist),
+            patch(f"{module_path}.set_hist_scale"),
+            patch(f"{module_path}.set_fit_range_hist"),
+            patch(f"{module_path}.set_chebyshev_background"),
+            patch(f"{module_path}.set_single_peak_background"),
+            patch(f"{module_path}.add_phases_from_dict"),
+            patch(f"{module_path}.set_phase_parameterization"),
+            patch(f"{module_path}.set_instrument_parameterization"),
+            patch(f"{module_path}.set_refinement_cycles"),
+            patch(f"{module_path}.SCHEMA_EXECUTORS", {schema_key: failing_executor}),
+        ]
+        patches_list.append(patch(f"{module_path}.gsasii_iparm1", return_value={}))
+        # the native run's site check and fit report read real GSAS-II data (tested in
+        # test_gsasii_native_run); these mocks test missing-key handling only
+        patches_list.append(patch(f"{module_path}.check_sites"))
+        patches_list.append(patch(f"{module_path}.fit_report", return_value={}))
+
+        from contextlib import ExitStack
+        with ExitStack() as stack:
+            for p in patches_list:
+                stack.enter_context(p)
+            result = call_fn()
 
         assert result["success"] is False
         assert "traceback" in result

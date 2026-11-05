@@ -1,4 +1,9 @@
-# pixi.toml template for projects that use PowderLine for schema validation AND refinement execution.
+# pixi.toml template for projects that use PowderLine for recipe validation AND GSAS-II refinement execution.
+#
+# This mirrors PowderLine's own `gsasii` environment (pixi.toml, feature `gsasii`):
+# the core-only part plus GSAS-II. For easydiffraction add its feature instead
+# (python >=3.12, `easydiffraction ==0.21.1` from PyPI, `diffpy.pdffit2` from
+# conda-forge); TOPAS has no Python package.
 #
 # SETUP STEPS:
 #   1. Copy this file to your project root as `pixi.toml`
@@ -30,16 +35,13 @@ numpy = ">=2.0"
 scipy = ">=1.15"
 matplotlib = ">=3.10"
 pandas = ">=2.0"
-h5py = ">=3.12"
 
 # PowderLine runtime deps
 pydantic = ">=2.0"
 pyyaml = ">=6.0"
-pybaselines = ">=1.2"
-xmltodict = ">=0.14"
 requests = ">=2.32"
 
-# PowderLine server mode (GSASClient / gsas_server.py)
+# PowderLine server mode (powderline.gateways.gsasii.{server,client})
 fastapi = ">=0.115"
 uvicorn = ">=0.34"
 httpx = ">=0.28"
@@ -68,7 +70,8 @@ pip = ">=25.0"
 # recipe). Pin the same rev PowderLine uses for reproducible refinement results —
 # a GSAS-II (or scipy/BLAS) change can shift refined values. Currently resolves to
 # GSAS-II v5.7.9.
-GSAS-II = { git = "https://github.com/tacaswell/GSAS-II", rev = "enh/pixi_pkg" }
+# (commit of the fork's `enh/pixi_pkg` branch, as in PowderLine's pixi.toml feature `gsasii`)
+GSAS-II = { git = "https://github.com/tacaswell/GSAS-II", rev = "e0910fc19bdd829a10f0204e3e4f4eaa38ad5e0f" }
 
 [pypi-dependencies]
 # EDIT THIS PATH to point to your local clone of the PowderLine repository.

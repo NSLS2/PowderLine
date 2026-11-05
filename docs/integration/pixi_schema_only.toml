@@ -1,9 +1,13 @@
-# pixi.toml template for projects that only need PowderLine's schema validation.
+# pixi.toml template for projects that only need PowderLine's recipe validation.
 #
 # Use this template if your project:
 #   - Builds or validates PowderLine recipe JSON (e.g., a recipe builder or UI)
 #   - Does NOT execute refinements directly
-#   - Does NOT need GSAS-II installed
+#   - Does NOT need GSAS-II or easydiffraction installed
+#
+# This is the same split PowderLine's own default environment makes: the
+# schema layer of every gateway (gsasii.*, topas.*, easydiffraction.*) is
+# engine-free, so `powderline.validate()` works here for every schema.
 #
 # SETUP STEPS:
 #   1. Copy this file to your project root as `pixi.toml`
@@ -11,8 +15,9 @@
 #   3. Edit [workspace] fields (name, version) for your project
 #   4. Run: pixi install
 #
-# NOTE: This environment is intentionally minimal — pydantic is the only
-# non-trivial dependency required by powderline.schema. GSAS-II is NOT installed.
+# NOTE: pip installs PowderLine's own runtime dependencies from pyproject.toml
+# (pydantic, numpy, scipy, gemmi ==0.7.5, packaging, pyyaml, pandas, ...);
+# only python and pip need declaring here. No engine is installed.
 
 [workspace]
 name = "your-project-name"
@@ -22,13 +27,13 @@ platforms = ["linux-64"]  # adjust if targeting other platforms
 
 [dependencies]
 python = ">=3.10"
-pydantic = ">=2.0"
 
 # Needed to perform the editable install of PowderLine
 pip = ">=25.0"
 
 [pypi-dependencies]
 # EDIT THIS PATH to point to your local clone of the PowderLine repository.
-# Only powderline.schema (and its pydantic dependency) will be imported —
-# GSAS-II is never loaded in schema-only mode.
+# The editable install also writes the gateway entry points (powderline.gateways)
+# the registry discovers; re-run `pixi install` / `pixi reinstall powderline`
+# after pulling a PowderLine change to pyproject.toml.
 powderline = { path = "/path/to/PowderLine", editable = true }

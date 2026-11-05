@@ -1,0 +1,564 @@
+{
+ "cases": {
+  "LaB6": {
+   "rows": [
+    {
+     "engine": "GSAS-II",
+     "engine_version": "5.7.9",
+     "source": "run",
+     "model": "FCJ axial asymmetry (SH/L 0.002); no background peak; size 10 \u00b5m / strain 0 defaults, not refined",
+     "rwp": 5.999947665798629,
+     "r_exp": 12.454715300939052,
+     "gof": 0.4817410531532784,
+     "n_points": 3767,
+     "parameters_varied": 14,
+     "parameters_requested": 14,
+     "warnings": [
+      "gsasii_broadening_default_applied",
+      "gsasii_refinement_message"
+     ],
+     "cell": {
+      "LaB6": {
+       "a": [
+        4.1572165182,
+        2.13829e-05
+       ],
+       "b": [
+        4.1572165182,
+        2.13829e-05
+       ],
+       "c": [
+        4.1572165182,
+        2.13829e-05
+       ],
+       "alpha": [
+        90.0,
+        0.0
+       ],
+       "beta": [
+        90.0,
+        0.0
+       ],
+       "gamma": [
+        90.0,
+        0.0
+       ]
+      }
+     },
+     "refined_cell": {
+      "LaB6": [
+       "a",
+       "b",
+       "c"
+      ]
+     },
+     "run_date": "2026-10-13",
+     "converged": true,
+     "engine_rwp": 5.999947665798629,
+     "recipe_report": [
+      "payload.phases.LaB6.unit_cell: a, b, c freed (EB-88: every engine refines the cell)"
+     ],
+     "python": "3.13.15",
+     "powderline": "0.1.1"
+    },
+    {
+     "engine": "TOPAS",
+     "engine_version": "6 (golden)",
+     "source": "golden `lab6_cell_rietveld`",
+     "model": "TCHZ; no axial-asymmetry model; Chebyshev + one pv background peak; CS_L 10000 nm fixed; cell refined",
+     "rwp": 7.447295423560774,
+     "r_exp": 12.449736401958987,
+     "gof": 0.5981890044185136,
+     "n_points": 3767,
+     "parameters_varied": 17,
+     "parameters_requested": 17,
+     "warnings": [
+      "topas_parameter_at_limit"
+     ],
+     "cell": {
+      "LaB6": {
+       "a": [
+        4.15757873108,
+        1.90391846938e-05
+       ],
+       "b": [
+        4.15757873108,
+        1.90391846938e-05
+       ],
+       "c": [
+        4.15757873108,
+        1.90391846938e-05
+       ],
+       "alpha": [
+        90.0,
+        0.0
+       ],
+       "beta": [
+        90.0,
+        0.0
+       ],
+       "gamma": [
+        90.0,
+        0.0
+       ]
+      }
+     },
+     "refined_cell": {
+      "LaB6": [
+       "a",
+       "b",
+       "c"
+      ]
+     },
+     "golden_files": [
+      "lab6_cell_rietveld__snapped.inp",
+      "lab6_cell_rietveld__snapped_bkg.inp",
+      "lab6_cell_rietveld__snapped_bkg_profile.txt",
+      "lab6_cell_rietveld__snapped_p1_peaks.txt",
+      "lab6_cell_rietveld__snapped_profile.txt",
+      "lab6_cell_rietveld__snapped_results.csv"
+     ]
+    },
+    {
+     "engine": "easydiffraction",
+     "engine_version": "0.21.1",
+     "source": "golden `lab6_crysfml_tch`",
+     "model": "crysfml (`cwl-thompson-cox-hastings`): Thompson-Cox-Hastings + FCJ axial asymmetry (S/L = H/L = 0.001, fixed); no background peak; no sample broadening (start-dependent)",
+     "rwp": 6.7647887198484895,
+     "r_exp": 12.456374491687894,
+     "gof": 0.5430784635097969,
+     "n_points": 3767,
+     "parameters_varied": 13,
+     "parameters_requested": 13,
+     "warnings": [
+      "easydiffraction_crysfml_start_dependent",
+      "easydiffraction_reflections_not_available"
+     ],
+     "cell": {
+      "LaB6": {
+       "a": [
+        4.15717525296477,
+        1.777125055302559e-05
+       ],
+       "b": [
+        4.15717525296477,
+        1.777125055302559e-05
+       ],
+       "c": [
+        4.15717525296477,
+        1.777125055302559e-05
+       ],
+       "alpha": [
+        90.0,
+        0.0
+       ],
+       "beta": [
+        90.0,
+        0.0
+       ],
+       "gamma": [
+        90.0,
+        0.0
+       ]
+      }
+     },
+     "refined_cell": {
+      "LaB6": [
+       "a",
+       "b",
+       "c"
+      ]
+     },
+     "versions": {
+      "easydiffraction": "0.21.1",
+      "cryspy": "0.13.0",
+      "crysfml": "0.8.0",
+      "lmfit": "1.3.4",
+      "numpy": "2.4.6",
+      "scipy": "1.18.0"
+     }
+    },
+    {
+     "engine": "easydiffraction",
+     "engine_version": "0.21.1",
+     "source": "golden `lab6_cryspy_pv`",
+     "model": "cryspy (`cwl-pseudo-voigt`): pseudo-Voigt, no asymmetry; no background peak; no sample broadening",
+     "rwp": 6.814978595121291,
+     "r_exp": 12.456374491687894,
+     "gof": 0.547107715785914,
+     "n_points": 3767,
+     "parameters_varied": 13,
+     "parameters_requested": 13,
+     "warnings": [
+      "easydiffraction_negative_width",
+      "output_recipe_not_valid"
+     ],
+     "cell": {
+      "LaB6": {
+       "a": [
+        4.157495135939022,
+        1.6973461618831198e-05
+       ],
+       "b": [
+        4.157495135939022,
+        1.6973461618831198e-05
+       ],
+       "c": [
+        4.157495135939022,
+        1.6973461618831198e-05
+       ],
+       "alpha": [
+        90.0,
+        0.0
+       ],
+       "beta": [
+        90.0,
+        0.0
+       ],
+       "gamma": [
+        90.0,
+        0.0
+       ]
+      }
+     },
+     "refined_cell": {
+      "LaB6": [
+       "a",
+       "b",
+       "c"
+      ]
+     },
+     "versions": {
+      "easydiffraction": "0.21.1",
+      "cryspy": "0.13.0",
+      "crysfml": "0.8.0",
+      "lmfit": "1.3.4",
+      "numpy": "2.4.6",
+      "scipy": "1.18.0"
+     }
+    }
+   ],
+   "reference": {
+    "engine": "GSAS-II",
+    "source": "run",
+    "run_date": "2026-10-13"
+   },
+   "nist": {
+    "value": 4.156826,
+    "esd": 4e-05,
+    "label": "NIST SRM 660c",
+    "note": "certificate 2015-10-29: 0.4156826(8) nm, k = 2, 22.5 \u00b0C"
+   }
+  },
+  "DRX_33": {
+   "rows": [
+    {
+     "engine": "GSAS-II",
+     "engine_version": "5.7.9",
+     "source": "run",
+     "model": "FCJ axial asymmetry (SH/L 0.002); no background peak; isotropic size + microstrain refined per phase; not converged in 5 cycles",
+     "rwp": 10.828755586959636,
+     "r_exp": 9.814448722664777,
+     "gof": 1.1033483278538603,
+     "n_points": 3767,
+     "parameters_varied": 21,
+     "parameters_requested": 21,
+     "warnings": [
+      "gsasii_fit_not_converged",
+      "gsasii_refinement_message"
+     ],
+     "cell": {
+      "DRX_33": {
+       "a": [
+        4.1715324476,
+        0.0033018578
+       ],
+       "b": [
+        4.1715324476,
+        0.0033018578
+       ],
+       "c": [
+        4.1715324476,
+        0.0033018578
+       ],
+       "alpha": [
+        90.0,
+        0.0
+       ],
+       "beta": [
+        90.0,
+        0.0
+       ],
+       "gamma": [
+        90.0,
+        0.0
+       ]
+      },
+      "Li4MgWO6_SG12": {
+       "a": [
+        5.1240728702,
+        0.0059728779
+       ],
+       "b": [
+        8.7912324333,
+        0.0014215655
+       ],
+       "c": [
+        5.0979118065,
+        0.0056902078
+       ],
+       "alpha": [
+        90.0,
+        0.0
+       ],
+       "beta": [
+        110.70895657,
+        0.0154049044
+       ],
+       "gamma": [
+        90.0,
+        0.0
+       ]
+      }
+     },
+     "refined_cell": {
+      "DRX_33": [
+       "a",
+       "b",
+       "c"
+      ],
+      "Li4MgWO6_SG12": [
+       "a",
+       "b",
+       "c",
+       "beta"
+      ]
+     },
+     "run_date": "2026-10-13",
+     "converged": false,
+     "engine_rwp": 10.828755586959636,
+     "recipe_report": [],
+     "python": "3.13.15",
+     "powderline": "0.1.1"
+    },
+    {
+     "engine": "TOPAS",
+     "engine_version": "6 (golden)",
+     "source": "golden `drx33_rietveld`",
+     "model": "TCHZ instrument fixed; Chebyshev; Strain_L/Strain_G per phase; no size term",
+     "rwp": 7.305334825171796,
+     "r_exp": 9.819687286540685,
+     "gof": 0.7439478072977765,
+     "n_points": 3767,
+     "parameters_varied": 17,
+     "parameters_requested": 17,
+     "warnings": [],
+     "cell": {
+      "DRX_33": {
+       "a": [
+        4.18243558485,
+        0.000385631243792
+       ],
+       "b": [
+        4.18243558485,
+        0.000385631243792
+       ],
+       "c": [
+        4.18243558485,
+        0.000385631243792
+       ],
+       "alpha": [
+        90.0,
+        0.0
+       ],
+       "beta": [
+        90.0,
+        0.0
+       ],
+       "gamma": [
+        90.0,
+        0.0
+       ]
+      },
+      "Li4MgWO6_SG12": {
+       "a": [
+        5.13312045494,
+        0.000240279253322
+       ],
+       "b": [
+        8.78783217481,
+        0.000386094410707
+       ],
+       "c": [
+        5.10453206734,
+        0.000224801692722
+       ],
+       "alpha": [
+        90.0,
+        0.0
+       ],
+       "beta": [
+        110.821243319,
+        0.0038034312594
+       ],
+       "gamma": [
+        90.0,
+        0.0
+       ]
+      }
+     },
+     "refined_cell": {
+      "DRX_33": [
+       "a",
+       "b",
+       "c"
+      ],
+      "Li4MgWO6_SG12": [
+       "a",
+       "b",
+       "c",
+       "beta"
+      ]
+     },
+     "golden_files": [
+      "drx33_rietveld__snapped.inp",
+      "drx33_rietveld__snapped_bkg.inp",
+      "drx33_rietveld__snapped_bkg_profile.txt",
+      "drx33_rietveld__snapped_p1_peaks.txt",
+      "drx33_rietveld__snapped_p2_peaks.txt",
+      "drx33_rietveld__snapped_profile.txt",
+      "drx33_rietveld__snapped_results.csv"
+     ]
+    },
+    {
+     "engine": "easydiffraction",
+     "engine_version": "0.21.1",
+     "source": "golden `drx33_two_phase_cryspy`",
+     "model": "cryspy (`cwl-pseudo-voigt`): pseudo-Voigt, no asymmetry; U-V-W-X-Y refined instead of per-phase size/strain",
+     "rwp": 7.248036732101178,
+     "r_exp": 9.81837790760473,
+     "gof": 0.738211219847963,
+     "n_points": 3767,
+     "parameters_varied": 18,
+     "parameters_requested": 18,
+     "warnings": [],
+     "cell": {
+      "DRX_33": {
+       "a": [
+        4.182006026737868,
+        0.00029405213818992976
+       ],
+       "b": [
+        4.182006026737868,
+        0.00029405213818992976
+       ],
+       "c": [
+        4.182006026737868,
+        0.00029405213818992976
+       ],
+       "alpha": [
+        90.0,
+        0.0
+       ],
+       "beta": [
+        90.0,
+        0.0
+       ],
+       "gamma": [
+        90.0,
+        0.0
+       ]
+      },
+      "Li4MgWO6_SG12": {
+       "a": [
+        5.132612221007365,
+        0.00023977969715476675
+       ],
+       "b": [
+        8.7881770990685,
+        0.000384753253271482
+       ],
+       "c": [
+        5.104482953717024,
+        0.00022631546439692368
+       ],
+       "alpha": [
+        90.0,
+        0.0
+       ],
+       "beta": [
+        110.81821323480737,
+        0.0037413540981832386
+       ],
+       "gamma": [
+        90.0,
+        0.0
+       ]
+      }
+     },
+     "refined_cell": {
+      "DRX_33": [
+       "a",
+       "b",
+       "c"
+      ],
+      "Li4MgWO6_SG12": [
+       "a",
+       "b",
+       "c",
+       "beta"
+      ]
+     },
+     "versions": {
+      "easydiffraction": "0.21.1",
+      "cryspy": "0.13.0",
+      "crysfml": "0.8.0",
+      "lmfit": "1.3.4",
+      "numpy": "2.4.6",
+      "scipy": "1.18.0"
+     }
+    }
+   ],
+   "reference": {
+    "engine": "GSAS-II",
+    "source": "run",
+    "run_date": "2026-10-13"
+   },
+   "nist": null
+  }
+ },
+ "easydiffraction_reruns": [
+  {
+   "fixture": "lab6_crysfml_tch",
+   "rwp": 6.7647887198484895,
+   "golden_rwp": 6.7647887198484895,
+   "rwp_rel": 0.0,
+   "cell_worst_rel": 0.0,
+   "within_a179": true,
+   "run_date": "2026-10-13"
+  },
+  {
+   "fixture": "lab6_cryspy_pv",
+   "rwp": 6.814978595121291,
+   "golden_rwp": 6.814978595121291,
+   "rwp_rel": 0.0,
+   "cell_worst_rel": 0.0,
+   "within_a179": true,
+   "run_date": "2026-10-13"
+  },
+  {
+   "fixture": "drx33_two_phase_cryspy",
+   "rwp": 7.248036732101178,
+   "golden_rwp": 7.248036732101178,
+   "rwp_rel": 0.0,
+   "cell_worst_rel": 0.0,
+   "within_a179": true,
+   "run_date": "2026-10-13"
+  }
+ ],
+ "generated": {
+  "date": "2026-11-04",
+  "commit": "4029d22",
+  "no_run": true
+ }
+}

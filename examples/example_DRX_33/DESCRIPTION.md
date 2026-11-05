@@ -1,5 +1,10 @@
 # Fit to cathode material diffraction data with multiple phases using the file-less payload
 
+Recipe: `input.json` (`gsasii.rietveld`, GSAS-II). Per-engine recipes for the
+same case live next to it: `topas/input.json` (`topas.rietveld`, TOPAS 6) and
+`easydiffraction/input.json` (`easydiffraction.rietveld`, CrysPy); see the
+`README.md` in each directory.
+
 ## Scientific Purpose
 
 I am fitting a diffraction pattern collected on a disordered rocksalt battery material.
@@ -53,7 +58,7 @@ This example demonstrates multi-phase refinement capabilities:
 
 This two-phase Rietveld refinement produces:
 
-- **dummy.gpx** - GSAS-II project file (reopenable in GUI)
+- **dummy.gpx** - GSAS-II project file (reopenable in the GUI; gitignored)
 - **dummy.lst** - Human-readable refinement log with Rwp and parameter tables
 - **refined_parameters.csv** - All refined parameters with ESDs (9 columns: parameter_name, descriptive_name, phase_name, phase_idx, atom_name, atom_idx, value, esd, category)
 - **DRX_33_unit_cell_report.csv** - Phase 1 unit cell parameters with ESDs (3 columns: parameter, value, esd)
@@ -65,17 +70,29 @@ This two-phase Rietveld refinement produces:
 
 ## Known Issues
 
-None.
+**The output recipe of this example is not valid as posed** (`output_recipe_valid:
+false`, warning `output_recipe_not_valid`; KI-04). The committed reference
+refines both phases' isotropic crystallite size and microstrain over 1–15° 2θ, which
+is ill-conditioned (see the SVD warnings above): the Li4MgWO6 size ends at
+about −1355 µm (ESD ≈ 180 µm), which the schema refuses, so the output recipe is
+written and returned with that value and the warning names it. The reference is
+kept deliberately as the ill-conditioned posing; `example_DRX_33_strainonly` is the
+physical re-parameterisation (size held at 10 µm; Rwp 8.46 % against 10.83 % here)
+whose output recipe is valid and feeds back.
 
-## Schema 0.26 note: explicit per-parameter refine flags
+## Refine flags (gsasii 0.1.0)
 
-Since schema 0.26, PowderLine honors each refinement flag individually: a
-parameter refines iff it is present with `refine_flag=true`; absent or `false`
-means fixed (internally enforced with GSAS-II "Hold" constraints).
-Symmetry-linked parameters (e.g. cubic a=b=c) refine together if any member is
-requested. This example uses the **explicit style** - every parameter is listed
-with a symmetry-consistent flag so the recipe states its full intent. Listing
-only the parameters you wish to refine (absence = fixed) is equally valid.
+Every refinable parameter is `[value, refine_flag]` (no bounds: GSAS-II applies
+limits only after a fit); a parameter refines iff its flag is `true`. The gsasii
+schema checks the flags against the symmetry and GSAS-II's own parameter groups
+when the recipe is validated: a refined strict subset of a tie group (e.g. only
+`a` of a cubic cell) or a refined symmetry-fixed parameter is an error, so the
+recipe states exactly what GSAS-II refines. This example uses the **explicit
+style** - every parameter is listed with a symmetry-consistent flag.
+
+The recipe was converted from its schema-0.26.0 form with
+`scripts/convert_recipe_026.py` at PowderLine 0.2.0; the converter's
+notes for each example are in `docs/SCHEMA_HISTORY.md`'s gsasii section.
 
 ## Data citation
 

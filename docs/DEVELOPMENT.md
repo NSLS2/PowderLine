@@ -1,843 +1,534 @@
 # PowderLine Developer Guide
 
-This guide provides comprehensive context for developers working on PowderLine (and for AI coding assistants used alongside them). Read this first to understand the project architecture, design decisions, and development workflows.
+This guide provides context for developers working on PowderLine (and for AI
+coding assistants used alongside them). Read this first to understand the
+architecture, the design decisions, and the development workflows. The rules
+that bind every change (versioning, deliberate changes, the frozen GSAS-II
+code, the engine pins, review gates, "ask, don't assume") are on the
+[policies page](policies.md); this guide shows where things are and how to
+work on them.
 
 ## Project Overview
 
 **What is PowderLine?**
-PowderLine automates crystallographic refinement from a declarative JSON "recipe" and drives interchangeable refinement engines — GSAS-II by default, with Bruker TOPAS v7 and open-source easydiffraction as optional alternatives. It takes a recipe describing refinement parameters and produces standardized output reports. The goal is to make powder diffraction refinements reproducible, automatable, and accessible.
+PowderLine automates crystallographic refinement from a declarative JSON
+"recipe" and drives interchangeable refinement engines — GSAS-II, Bruker
+TOPAS 6 and the open-source easydiffraction — through one API and one CLI.
+A recipe names its engine and workflow in `schema_name` and is written in
+that engine's own conventions; PowderLine validates it strictly, hands it to
+the engine's **gateway**, and returns standardized result tables with uniform
+fit statistics. The goal is to make powder diffraction refinements
+reproducible, automatable, and accessible.
 
 **Scope:**
-- Command-line tool that runs refinements from JSON recipes, dispatching to interchangeable engines (GSAS-II by default; TOPAS v7 and easydiffraction optional)
-- Schema 0.26.0: Simplified two-workflow system (Rietveld refinement or single peak fitting)
-- Schema validation using Pydantic
-- Single-phase and multi-phase Rietveld refinements; phase-less single peak fitting
-- Standard output reports (fit profiles, unit cell parameters with ESDs, peak lists, `refined_parameters.csv`)
-- Programmatic Python API: `powderline.run()` with DataFrame returns
-- Example-driven design: schema evolves based on real refinement cases
+- One CLI (`powderline <recipe>`) and one Python API (`powderline.run`,
+  `powderline.validate`) for every engine; the recipe decides where it runs
+- A **core schema** (the shared frame and structural models) plus one
+  **engine schema** per gateway, all pydantic, `extra='forbid'`, engine-free
+- Three gateways under `src/powderline/gateways/`, discovered through entry
+  points, each split into an engine-free schema layer and a lazily imported
+  runtime layer
+- Single-phase and multi-phase Rietveld refinement; single peak fitting
+  (GSAS-II, TOPAS)
+- Standard output reports plus each engine's native artifacts; uniform
+  Rwp / Rexp / GoF computed once in core, the engine's own values alongside
+- Example-driven design: real refinement cases drive the schemas and are the
+  regression references
 
 **Design Philosophy:**
-- **Example-driven**: Don't build features speculatively - add them when real examples need them
-- **Schema-first**: Validate inputs before any GSAS-II operations
-- **Fail fast**: Detect errors early with helpful messages
-- **Reproducible**: Same JSON should produce identical refinement results
+- **Example-driven**: don't build features speculatively; add them when real examples need them
+- **Schema-first**: every rule a recipe must obey lives in the schema models, so validation
+  reports every problem at its field before any engine runs
+- **Honest**: an engine's silent default, floor or conversion is either refused at
+  validation (with the value to write) or reported as a structured warning; never papered over
+- **Engine-native**: no translation between engines; each recipe states the numbers its engine computes with
+- **Reproducible**: the same recipe produces the same refinement; the references are tracked
 
-## Schema Structure
+## Architecture (`src/powderline/`)
 
-**Current schema**: 0.26.0 (payload-based structure with fixed output filenames)
+### Core (engine-free)
 
-### Top-Level Structure
+| Module | Role |
+|---|---|
+| `__init__.py` | the public API, `__all__`: `run`, `validate`, `ValidationResult`, `load_recipe_asset`, `support_matrix`, the exceptions. `import powderline` imports no engine |
+| `api.py` | `validate()` and `run()`: resolve the gateway from `schema_name` (`<engine>.<workflow>`) through the registry and hand the recipe over; `ValidationResult` |
+| `kicker.py` | the one CLI (`powderline <recipe>`; `pixi run kicker` runs the same `main`): loads the recipe, refuses templates, maps the engine flags onto the gateway's run options, prints the summary and the structured warnings |
+| `registry.py` | gateway discovery from the `powderline.gateways` entry-point group, lazy loading, `Gateway` dataclass (`name`, `capabilities`, `validate`, `run`), `register_gateway` escape hatch, the engine-version check |
+| `schema_core.py` | core schema 0.1.0: `CoreRecipe` (frame), `RefinableParameter` / `BoundedRefinableParameter`, `XRDData`, `FitRange`, `ChebyshevBackground`, `UnitCell`, `Atom`, `UanisoTensor`, `Phase[P]` (the phase block with every symmetry rule), `CoreFloat`/`CoreInt`/`CoreName`, `collect_warnings`, `parameters_requested`, `fit_limits_on_data`; the engine schema building blocks: `EngineRecipe`, `recipe_validator`, `refined_flags`, `custom_error` / `raise_problems`, `omit_absent`, `absent_not_null`, `unique_phase_names`, `fit_window`, `fit_range_problems`, `outside_window_problems`, `refined_flag_problems`, `unit_schema` |
+| `symmetry.py` | gemmi-backed symmetry: canonical space-group names, cell tie groups and the cell check, special-position analysis, coupling groups for coordinates and Uij |
+| `compat.py` | declared schema-version compatibility: `check_engine_schema_version`, `support_matrix()`, `schema_declarations()` (a gateway's `DECLARATIONS`) |
+| `fitstats.py` | the uniform Rwp / Rexp / GoF / χ²_red over the fit window with positive weights |
+| `reports.py` | the standardized report writers (`refined_parameters.csv`, unit-cell and peak-list reports, `fit_profile.txt`): one column order, UTF-8, LF; the fixed-name list PowderLine owns (`FIXED_OUTPUT_NAMES` / `FIXED_OUTPUT_PATTERNS`, `FAILURE_FILE`) and `clear_fixed_outputs()` |
+| `recipes.py` | `load_recipe_asset` (JSON / YAML) |
+| `exceptions.py` | `PowderLineError`, `SymmetryError`, `GatewayNotInstalledError`, `EngineNotAvailableError`, `EngineVersionError`, `EngineExecutionError`, `ExecutionBackendError` (both with `.reason` / `.result`), the `StructuredWarning` shape; `WARNING_CODES`, the registry of every structured-warning code with its owner and level (asserted against `src/` and the engine-behaviour table) |
+| `results.py` | the run-result envelope: `ENVELOPE_VERSION`, the reason-code sets, `failure_envelope`, `generated_envelope`, `with_status_fields`, `raise_if_failed` |
+| `config_loader.py` | `.powderline_config.yaml` (the `simulation_defaults` block; engine-free) |
+| `_status.py` | console status glyphs |
 
-All recipes use a three-key structure:
+### Gateways (`src/powderline/gateways/<engine>/`)
 
-```json
-{
-  "schema_name": "GSASII_Rietveld",  // or "GSASII_SPF"
-  "schema_version": "0.26.0",
-  "payload": {
-    // All refinement parameters here
-  }
-}
+Each gateway is a package with the same two layers:
+
+- **Schema layer** — `schema.py`: the engine schema models built on
+  `schema_core` (the engine's `Phase` subclass, instrument, background,
+  controls, payload and recipe models), the version declarations
+  (`ENGINE_SCHEMA_VERSION`, `SUPPORTED_ENGINE_SCHEMAS`, `REQUIRES_CORE_SCHEMA`,
+  exposed as `DECLARATIONS`), `SCHEMA_NAMES`, and `validate_recipe()`. Imports
+  no engine; this is what `powderline.validate()` runs.
+- **Runtime layer** — `gateway.py` (the entry-point factory: `capabilities()`,
+  `validate()`, `run()`, `ENGINE_VERSION_SPEC`, and for pixi-installed engines
+  `ENV` / `INSTALL_COMMAND`) plus the modules that import the engine, imported
+  lazily from `run()`.
+
+| Gateway | Runtime modules |
+|---|---|
+| `gsasii/` (GSAS-II 5.7.9) | the **frozen** setup/execution code moved verbatim from `kicker.py` at the baseline `daace24`: `helpers.py`, `project.py`, `setters.py`, `executors.py`, `extractors.py`, `constraints.py` (code-hashed; see [policies](policies.md#frozen-gsas-ii-code)); non-frozen additions `routing.py` (one entry for in-process, server and client), `fit_report.py` (uniform statistics, `engine_details`, convergence, divergence), `sites.py` (GSAS-II's reading of each site vs core's), `report_rows.py`, `paths.py` (GSAS-II parameter names → recipe paths for the output recipe), `console.py` (the engine's console tail into a failed envelope), `scattering.py` (GSAS-II's ion table and spelling); `server.py` / `client.py` (the persistent FastAPI server and `GSASClient`: per-user, loopback, ephemeral port, signed requests and responses, `POWDERLINE_NO_SERVER=1` disables it — v0.1.2); `simulation_builder.py` (structure dict → simulation recipe; see [the builder](#the-simulation-recipe-builder)) |
+| `topas/` (TOPAS 6) | `native_writer.py` (model → INP + `.xye`), `native_run.py` (run `tc.exe`, read TOPAS's files strictly, build the result; the background-only second run), `peak_list.py`, `runner.py` (find `tc.exe`, read `.powderline_config.yaml`) |
+| `easydiffraction/` (0.21.1) | `native_builder.py` (model → easydiffraction `Project`; the CrysPy template rule; anisotropic atoms first), `native_run.py` (calculate or lmfit fit, the result), `space_group_table.py` / `space_group_support.py` (the 531 settings and the per-calculator verified sets), `scattering.py` (CrysPy's ion table) |
+
+The entry points are declared in `pyproject.toml`
+(`[project.entry-points."powderline.gateways"]`); the metadata is written at
+install time, so after editing that table run `pixi reinstall powderline`
+(every environment has its own install: `--all`). There is deliberately no
+in-code fallback (KI-13): the in-repo gateways use exactly the mechanism a
+third-party engine would.
+
+### The execution stack
+
+```
+powderline <recipe>  /  powderline.run(recipe, output_dir, **engine_options)
+        │  schema_name -> registry.get("<engine>") ; gateway.run(...)
+        ▼
+gateway.run()           validates (schema layer), checks the engine version,
+        │               then the runtime layer:
+        ├─ gsasii:   routing.run_refinement() in this process, or GSASClient
+        │            -> the FastAPI server (GSAS-II resident) -> routing.run_refinement()
+        │            -> executors.run_refinement() -> GSASIIscriptable
+        │            -> fit_report (uniform statistics) ; reports (files)
+        ├─ topas:    native_writer -> tc.exe (twice: fit, background) -> native_run reads the files
+        └─ easydiffraction: native_builder -> lmfit / calculate() -> native_run
+        ▼
+the standardized result dict (tables as DataFrames) + the report files + native artifacts
 ```
 
-**Key field: `schema_name`** - Selects the workflow executor:
-- `"GSASII_Rietveld"`: Full Rietveld structural refinement
-- `"GSASII_SPF"`: Single peak fitting (peak-based analysis without crystal structure)
+`execution_mode` (gsasii only: `'auto'` | `'server'` | `'subprocess'`) is the
+public option; `method` is the result key saying which path ran. The server
+keeps GSAS-II imported in one process (~2.6 s import amortized); it caches
+code, so **restart it after editing anything it runs**
+(`pixi run -e gsasii gsas-server restart`).
 
-### Payload Structure
+## The schema layer
 
-The `payload` contains all refinement parameters organized by concern:
+### Shape of a recipe
 
-```javascript
-"payload": {
-  "xrd_data": {...},           // Required: Diffraction pattern
-  "instrument": {...},         // Required: Beamline/instrument config
-  "phases": {...},             // Required for Rietveld, null for SPF
-  "background": {...},         // Optional: Background model (defaults to empty if omitted)
-  "refinement_controls": {...}, // Optional: Cycles, convergence
-  "fit_range": [min, max],     // Optional: 2θ range limits
-  "single_peaks": {...},       // Required for SPF, optional otherwise
-  "single_peak_fitting_mode": {...} // For SPF workflows
-}
+```
+schema_name              "<engine>.<workflow>"
+core_schema_version      "0.1.0"
+engine_schema_version    "0.1.0"
+metadata                 free-form, echoed, never read (<= 1 MiB)
+payload                  the engine schema's payload model
 ```
 
-**Required fields vary by `schema_name`**:
-- **Rietveld** (`GSASII_Rietveld`): Must have `phases` defined
-- **SPF** (`GSASII_SPF`): Must have `single_peaks` and `single_peak_fitting_mode`
+Core owns the frame, `xrd_data`, `fit_range`, `ChebyshevBackground` and the
+**phase block** (`space_group`, `unit_cell`, `atoms`), generic over the
+parameter type `P` (`RefinableParameter` for gsasii, `BoundedRefinableParameter`
+for topas and easydiffraction). The engine schema owns everything else
+(instrument, background placement, controls, engine phase fields such as
+`scale` and `peak_broadening`) and may add checks, but can never redefine,
+skip or rewrite core's (guarded when the class is defined: no reuse of a
+core field, validator or private-attribute name, no `'before'`/`'wrap'`
+validator on a core field, `extra='forbid'` kept; `tests/test_phase_canary.py`
+runs core's must-fail recipes through every engine phase model).
 
-### Output Files (Fixed Names)
+User-facing rules: [schemas](schemas.md), [fields](fields.md) (generated
+tables), [input guidance](input-guidance.md), [SCHEMA_HISTORY](SCHEMA_HISTORY.md).
 
-PowderLine uses **fixed output filenames** independent of sample identity:
+### Validation model
 
-- `dummy.gpx`: GSAS-II project file (reopenable in GUI)
-- `dummy.lst`: Human-readable refinement log (Rwp, parameter tables)
-- `<phase>_unit_cell_report.csv`: Refined unit cell (one per phase)
-- `<phase>_peak_list_report.csv`: Reflection list (one per phase)
-- `fit_profile.txt`: Observed/calculated/difference intensities
+- Every recipe check is a pydantic validator raising `ValueError` (or
+  `SymmetryError`), so an invalid recipe raises **one** `pydantic.ValidationError`
+  listing every problem at its field path. There is no PowderLine wrapper
+  exception for invalid recipes.
+- **Validation never changes a recipe.** The validated model holds exactly the
+  recipe's values plus documented defaults and the symmetry-derived values; a
+  value an engine would silently replace (a floor, a snapped coordinate, a
+  limit) is an **error naming the value to write**, never an adjustment.
+- **Structured warnings** (`{code, message, field_path[, level]}`; `level` absent = `"warning"`, or `"info"`) are collected once
+  from the validated model (`collect_warnings`) and travel with it: a default
+  applied, a symmetry remark, a unit conversion the gateway will make. They
+  never change what the recipe means, so re-validating reproduces them.
+- Engine quirks that reach a user are recorded in the maintainers'
+  engine-behaviour register and rendered on the
+  [engine behaviour page](engine-behavior.md); a schema rule that exists
+  because of a quirk cites its `EB-nn` in the error message.
 
-**Rationale**: Fixed filenames eliminate variability in automation/testing. Sample identity should be managed externally (directory names, databases, metadata systems).
+## Adding a refinement engine
 
-### Refined Parameters Export with ESDs
+The gateway seam is the contract the refactor exists to provide. A new engine
+is a package `src/powderline/gateways/<engine>/` (in-repo) or a separate
+distribution (out of tree) that provides:
 
-**File:** `refined_parameters.csv` (9 columns)
+1. **A schema module** (`schema.py`), engine-free:
+   - the engine's `Phase` subclass (`class MyPhase(Phase[BoundedRefinableParameter])`
+     or `Phase[RefinableParameter]` if the engine has no usable bounds), adding
+     the engine's phase fields with their own validator names and `'after'`
+     validators only;
+   - instrument, background and controls models in the **engine's native
+     terms and units**, every quantity carrying `json_schema_extra={"unit": ...}`
+     (the [fields page](fields.md) is generated from it), `extra='forbid'`,
+     no `null` for a block that may be left out, and **no default that
+     replaces an engine behaviour silently** (either the value is required, or
+     the default is documented and reported by a warning);
+   - the recipe model(s) subclassing `powderline.schema_core.EngineRecipe`
+     with `schema_name` narrowed to a `Literal` and two class variables,
+     `gateway_name` and `schema_declarations = DECLARATIONS`, where
+     `DECLARATIONS = compat.schema_declarations(engine_schema_version="0.1.0",
+     supported_engine_schemas="==0.1.0", requires_core_schema="==0.1.0")`
+     (widened explicitly later, never by range); `EngineRecipe` runs the
+     version check;
+   - `validate_recipe = schema_core.recipe_validator({<schema_name>: <model>, ...},
+     engine="<engine>", title="<Engine>Recipe")`: accepts a dict or an
+     already-validated model (idempotent) and reports an unknown
+     `schema_name` at `schema_name`;
+   - every engine rule as a validator: refuse what the engine cannot express
+     (settings, features) and what it would silently alter (floors, limits),
+     naming the value to write; apply the three shared value rules
+     (wavelength > 0, scale per engine, peak positions inside the window) and
+     the fit window on data points (`fit_limits_on_data`). The shared pieces
+     are core building blocks, not copies: `absent_not_null` for a
+     block that may be left out but never be `null`, `omit_absent` in the
+     wrap serializer that drops it from dumps, `unique_phase_names`,
+     `fit_range_problems` / `fit_window` / `outside_window_problems` /
+     `refined_flag_problems` for the payload rules, `refined_flags`,
+     `custom_error` + `raise_problems` to report every problem at once;
+   - every warning code the engine emits registered in
+     `powderline.exceptions.WARNING_CODES` (owner, level) and listed in the
+     engine-behaviour table; a core test holds the three in agreement.
+2. **A gateway module** (`gateway.py`) exporting `get_gateway()` →
+   `registry.Gateway(name, capabilities, validate, run)`:
+   - `capabilities()` returns at least `name`, `workflows` (the schema names),
+     `engine_version_spec` (PEP 440) and the schema `DECLARATIONS`;
+   - `validate(recipe, *, verbose=False)` (exactly these keywords) returns the
+     validated model;
+   - `run(recipe, output_dir, *, verbose=False, validate_only=False,
+     allow_unsupported_engine_version=False, **own_options)`: validates, checks
+     the installed engine version against `engine_version_spec`
+     (`registry.check_engine_version`; raise `EngineNotAvailableError` with
+     `env` and `install_command` when the engine is missing — only on a real
+     run, never for `validate_only`), imports the engine **lazily**, runs, and
+     hands `powderline.roundtrip` its refined values by recipe path (`{path: (value, esd)}`
+     in recipe units, plus the flagged paths it did not vary and those that ended at a
+     limit; `roundtrip.build_output` / `attach` do the rest: tie propagation, the
+     multiplicity invariant, `output_recipe`, `output_recipe_valid`, `parameter_dispositions`,
+     the two files) and
+     returns the standardized result dict with the same keys and types as the
+     other gateways (`status`, `converged`, `envelope_version`, `run_id`, `rwp`, `r_exp`, `gof`, `chi2_red`,
+     `simulation_mode`, `engine_details` with `parameters_requested` /
+     `parameters_varied` / `n_points`, `warnings`, `elapsed_time`, `method`,
+     `output_files`, `fit_profile`, `unit_cell_data`, `peak_list_data`,
+     `refined_parameters`, `spf_peaks`, `spf_convergence_diagnostics`; gsasii adds
+     `peak_fit` for a peak fit). A gateway **never returns a failed
+     result**: it raises `EngineExecutionError` (the engine ran and failed) or
+     `ExecutionBackendError` (it did not run) with a `reason` from
+     `powderline.results.REASONS`, or returns
+     `results.raise_if_failed(envelope)` on an envelope it received; the
+     GSAS-II server/client show the wire form (`results.failure_envelope`,
+     `results.with_status_fields`). Statistics come from `powderline.fitstats` over
+     the window's weighted points with P read from the engine after the run;
+     the engine's own values go under `engine_details`; divergence (a
+     non-finite calculated pattern) raises `EngineExecutionError`.
+   - report files through `powderline.reports`; native artifacts kept.
+3. **An entry point** in `pyproject.toml`
+   (`[project.entry-points."powderline.gateways"] <engine> = "...gateway:get_gateway"`),
+   then `pixi reinstall powderline`. A pixi feature/environment for the
+   engine's dependencies if the default environment must not carry them
+   (every in-repo engine has one); `ENV` / `INSTALL_COMMAND` on the gateway.
+4. **Tests**, in the pattern of the existing gateways: schema tests
+   (`test_<engine>_schema.py`: every rule, every refusal, with the error
+   path), the engine phase model registered in `tests/test_phase_canary.py`
+   `ENGINE_PHASES`, an import-block test proving the schema layer and
+   `import powderline` load no engine module, a space-group translation test
+   over every setting the engine accepts (orbit / operator comparison against
+   gemmi), fixtures + goldens for the runtime (hand-derived native recipes
+   with a README of the derivations; goldens recording the engine's version),
+   and the result-contract test (same keys and types as the other engines).
+   Tests that need the engine are marked / skipped so the core-only suite
+   stays green.
+5. **Freeze-equivalent expectations**: the engine's goldens are the
+   references; a change in what the engine is asked to do (the INP, the
+   project, the input dictionary) is proved against them, and anything the
+   engine does silently is written up in the engine-behaviour register with
+   its policy before the gateway ships.
+6. **Docs**: the schemas, fields (regenerate with
+   `scripts/gen_schema_field_tables.py`), input-guidance and engine-behaviour
+   pages; a SCHEMA_HISTORY section; the support matrix regenerates itself.
 
-PowderLine exports all refined parameters with estimated standard deviations (ESDs) after each refinement. This provides a structured, machine-readable record of refinement results with uncertainty quantification.
+### Adding a capability to an existing engine
 
-**Column structure:**
-1. `parameter_name`: GSAS-II internal parameter identifier (e.g., `::0:Scale`, `::A0`, `0::A0`)
-2. `descriptive_name`: Human-readable description (e.g., "Scale factor for phase LaB6", "Background coefficient A0")
-3. `phase_name`, `phase_idx`: Phase associations for phase-specific parameters (null otherwise)
-4. `atom_name`, `atom_idx`: Atom associations for atom-specific parameters (null otherwise)
-5. `value`: Refined parameter value
-6. `esd`: Estimated standard deviation from covariance matrix
-7. `category`: Parameter classification (instrument, background, cell, atom_position, atom_displacement, HAP, peak_broadening)
+The same discipline, smaller: a new field or block goes into the engine
+schema with its unit, its validators and its refusals; the gateway consumes it
+from the validated model (for gsasii, an **input-side read in a frozen module
+is a signed-off frozen-code edit**, otherwise the read happens in the non-frozen modules); a
+fixture and a golden prove it reaches the engine and does what the recipe
+says; the engine-behaviour register records anything the engine does with it
+silently; SCHEMA_HISTORY and the generated field tables record the field. If
+the field changes what an existing recipe means, that is a deliberate change
+(recorded, CHANGELOG, migration note) — and if the engine's own behaviour
+is unknown, that is a question for the maintainer, not an inference.
 
-**Implementation:** `export_refined_parameters_csv()` in [kicker.py](../src/powderline/kicker.py)
+Worked example — March–Dollase preferred orientation:
 
-**ESD calculation:**
-- **Primary source**: GSAS-II covariance matrix (`proj.data['Covariance']`)
-- **Fallback**: A `.lst`-parsing fallback exists in `kicker.py` (`extract_refined_params_from_lst`) but is **currently disabled at its call site**. It is preserved pending a test that confirms covariance matrix ESDs match what `.lst` parsing previously produced. Until that test exists, the covariance matrix is the **sole** ESD source.
-  - **Note**: The `.lst` fallback was incomplete — it only covered instrument, background, and unit cell parameters, not atom or HAP parameters.
-- **Unit cell ESDs**: Uses `G2lat.getCellEsd()` to convert reciprocal metric tensor ESDs to direct lattice parameters
-  - Function: `calculate_cell_esds_from_A_matrix()` in [kicker.py](../src/powderline/kicker.py)
-  - GSAS-II stores cell as reciprocal metric tensor (A-matrix); ESDs require conversion
+1. **Ground truth first.** Read and run each engine: GSAS-II's HAP
+   `Pref.Ori.` entry and `GetPrefOri`; easydiffraction's
+   `preferred_orientation` rows, which only CrysPy reads, and only under the
+   lowercase structure key (EB-97); CrysPy's un-normalised correction (EB-98).
+2. **One core building block, engine fields.** `schema_core.MarchDollase[P]`
+   carries the shape and the engine-independent rules (`hkl` not all zero,
+   `ratio > 0`); each engine's phase model adds `preferred_orientation` in
+   its own parameter shape (gsasii `[value, flag]`, easydiffraction bounded
+   plus the required `march_random_fract`, topas bounded); topas declared the
+   field and refused it until its half was verified on a TOPAS 6 machine
+   (the `PO` macro against the Dollase formula, then the writer and the
+   read-back of r).
+3. **The gateway reads the model.** gsasii: an additive frozen setter and its
+   call, two signed-off frozen-code edits with proofs (the project-dict diff shows only
+   `Pref.Ori.`), and the refined name `p:h:MD` in `paths.py`;
+   easydiffraction: the builder's row plus the `_free` bookkeeping that maps
+   the refined value back to the recipe path.
+4. **A gate, then a demonstration.** The pass/fail gate is a formula check on a
+   simulated pattern (each engine's textured/untextured intensity ratio equals
+   Dollase's correction over the reflection's equivalents); the example
+   (`example_LaB6_textured`) is the demonstration that refinement recovers the
+   programmed value, with its caveats written down (the start at exactly 1.0
+   aborts, EB-99).
+5. **Record.** Fields tables regenerated, SCHEMA_HISTORY per engine,
+   engine-behaviour register rows, CHANGELOG, the T-list row for the TOPAS
+   half, the P-row.
 
-**Parameter name parsing:**
-- `parse_parameter_associations()` in [kicker.py](../src/powderline/kicker.py): Extracts phase/atom indices from GSAS-II parameter names
-- `get_descriptive_param_name()` in [kicker.py](../src/powderline/kicker.py): Generates human-readable descriptions
-- `build_phase_name_mapping()` in [kicker.py](../src/powderline/kicker.py): Maps phase indices to names
-- `build_atom_name_mapping()` in [kicker.py](../src/powderline/kicker.py): Maps atom indices to labels
+## GSAS-II integration notes
 
-**Phase-specific unit cell reports:**
-In addition to the comprehensive `refined_parameters.csv`, each phase generates `<phase>_unit_cell_report.csv` with 3 columns:
-- `parameter`: a, b, c, alpha, beta, gamma, volume
-- `value`: Refined unit cell parameter
-- `esd`: Estimated standard deviation
+### The frozen modules and the project dictionary
 
-**Note on simulations**: Simulation mode (all `refine_flag=false`) does not generate `refined_parameters.csv` since no parameters are refined. Unit cell reports are still generated, with an empty `esd` column (read as `NaN`).
-
-### Schema Evolution
-
-See [SCHEMA_HISTORY.md](SCHEMA_HISTORY.md) for historical context.
-
-**IMPORTANT — Schema Version Discipline:**
-The GSAS-II server caches `kicker.py` at startup. If `kicker.py` changes (even without recipe format changes), a running server will use stale code. The `schema_version` in recipes is validated against `EXPECTED_SCHEMA_VERSION` in `schema.py`, so bumping the version forces a server restart. **You MUST bump `EXPECTED_SCHEMA_VERSION` whenever `kicker.py` output behavior changes** (new output files, format changes, column additions, etc.), even if the recipe input format is unchanged. Update all `input.json` files to match.
-
-## Domain Essentials
-
-### Rietveld Refinement Basics
-
-**What is Rietveld refinement?**
-A method for refining crystal structures against powder diffraction data by fitting a calculated pattern to the observed pattern. The refinement adjusts parameters (unit cell, atom positions, peak shapes, background) to minimize the difference between calculated and observed intensities.
-
-**Key Quality Metric: Rwp (weighted residual)**
-$$R_{wp} = \sqrt{\frac{\sum w_i (y_{obs,i} - y_{calc,i})^2}{\sum w_i y_{obs,i}^2}} \times 100\%$$
-
-Lower Rwp indicates better fit. Typical values: 5-15% for good refinements.
-
-**Peak Profiles:**
-GSAS-II uses Thompson-Cox-Hastings pseudo-Voigt profiles - a convolution of Gaussian and Lorentzian functions. Profile shape controlled by:
-- **Instrument broadening** (U, V, W parameters) - due to instrumental effects
-- **Sample broadening** (size, strain) - due to crystallite size and microstrain
-
-### Parameter Types
-
-PowderLine organizes refinement parameters into logical groups:
-
-1. **Structural Parameters (Phase-specific):**
-   - **Unit cell**: a, b, c, α, β, γ define crystal lattice dimensions
-   - **Atom parameters**: positions (x, y, z), occupancy, thermal parameters
-   - **Space group**: symmetry operations (defined in CIF, not refined)
-
-2. **Intensity Parameters (Phase-specific):**
-   - **Scale factor**: Converts calculated intensities to absolute scale
-   - **Preferred orientation**: Non-random crystallite orientations (not implemented yet)
-
-3. **Peak Shape Parameters (Phase-specific):**
-   - **Sample broadening**: Crystallite size, microstrain
-
-4. **Background Parameters:**
-   - **Chebyshev polynomials**: Smooth curved background
-   - **Single peaks**: Individual pseudo-Voigt peaks for known impurities
-
-### Background Default Behavior
-
-The `background` field is optional in the payload. If omitted (`background: null`):
-- No Chebyshev coefficients are initialized
-- No background single peaks are added
-- GSAS-II uses an empty background (effectively zero)
-
-This is useful when background has been pre-subtracted from XRD data.
-
-5. **Instrument Parameters:**
-   - **Instrument broadening**: U, V, W (Gaussian), X, Y, Z (Lorentzian)
-   - **Profile asymmetry**: Axial divergence, sample transparency
-   - **Wavelength**: X-ray or neutron wavelength
-   - **Zero shift**: 2θ offset correction
-   - **Polarization**: For synchrotron data
-
-### The `[value, refine_flag, min, max]` Pattern
-
-Throughout the JSON schema and code, you'll see parameters represented as 4-element lists:
-```python
-"wavelength": [0.45236, false, null, null]
-```
-
-- **value**: Current parameter value
-- **refine_flag**: `true` = refine this parameter, `false` = hold fixed
-- **min/max**: Parameter bounds (placeholders for future - GSAS-II may not support bounds)
-
-This mirrors GSAS-II's internal parameter representation.
-
-### Phase vs Histogram Parameters
-
-**Critical distinction** (confusing in GSAS-II):
-- **Phase parameters**: Belong to the crystal structure (scale, unit cell, atoms, space group, sample broadening)
-- **Histogram parameters**: Belong to the measurement (instrument broadening, background)
-
-In multi-phase refinements, each phase has its own structural parameters, but histogram parameters are shared across phases (except scale factors, which are phase-histogram pairs).
-
-### Atom Parameter Refinement
-
-**Refine Flags String Format:**
-GSAS-II uses a single string at atom record index 2 to encode which parameters are refined:
-- **'F'**: Refine occupancy (fraction)
-- **'X'**: Refine fractional coordinates (x, y, z) - a single lumped flag for all three
-- **'U'**: Refine displacement parameters (isotropic or anisotropic)
-- **Combinations**: 'FXU' (all), 'XU' (coordinates + displacement), 'F' (occupancy only), etc.
-
-**Per-Parameter Semantics (Schema 0.26):** Although GSAS-II exposes only the lumped 'X' flag (and one 'U' flag for all six anisotropic components), PowderLine honors the recipe's per-parameter flags: a coordinate or `Uij` component refines iff it is present with `refine_flag=true`; absent or false means fixed. This uses the same lumped-flag + "Hold"-constraint mechanism as unit-cell parameters — see [Unit Cell Refinement Semantics (Schema 0.26)](#unit-cell-refinement-semantics-schema-026) and `src/powderline/constraints.py`. For atoms, only site-symmetry-linked parameters remain coupled: e.g. `x` and `y` on an `(x,x,z)` site form one degree-of-freedom group that refines if either is requested; flags on symmetry-fixed parameters have no effect.
-
-**Displacement Parameter Types (ADP field):**
-Each atom has an atom-specific `ADP` field indicating which displacement type to use:
-- **Structure**: `phases[phase]['structure']['atoms'][label]['ADP']` indicates which type is used
-- **Parameterization**: `phases[phase]['parameterization']['atoms'][label]['ADP']` indicates which type to refine
-
-Values:
-- **'Uiso'**: Isotropic displacement (single scalar U value)
-- **'Uaniso'**: Anisotropic displacement (6 values: U11, U22, U33, U12, U13, U23)
-
-The parameterization ADP controls atom_record[9] ('I' or 'A') in GSAS-II.
-
-**Dictionary Structure Examples:**
-
-Structure (embedded in payload):
-```json
-"phases": {
-  "LaB6": {
-    "structure": {
-      "atoms": {
-        "La": {
-          "element": "La",
-          "x": 0.0, "y": 0.0, "z": 0.0,
-          "occupancy": 1.0,
-          "ADP": "Uiso",
-          "Uiso": 0.00858,
-          "Uaniso": null
-        }
-      }
-    }
-  }
-}
-```
-
-Parameterization (refinement settings):
-```json
-"phases": {
-  "LaB6": {
-    "parameterization": {
-      "atoms": {
-        "La": {
-          "x": [null, true, null, null],
-          "y": [null, false, null, null],
-          "z": [null, false, null, null],
-          "occupancy": [null, true, null, null],
-          "ADP": "Uiso",
-          "Uiso": [null, true, null, null],
-          "Uaniso": null
-        }
-      }
-    }
-  }
-}
-```
-
-**Anisotropic Displacement Parameters:**
-If using `ADP="Uaniso"`, all 6 anisotropic U values (U11, U22, U33, U12, U13, U23) must be provided in both structure and parameterization:
-
-```javascript
-"atoms": {
-  "Li": {
-    "ADP": "Uaniso",
-    "Uiso": 0.01,  // Can provide both - ADP dictates which is used
-    "Uaniso": {
-      "U11": 0.012, "U22": 0.011, "U33": 0.010,
-      "U12": 0.001, "U13": 0.001, "U23": 0.001
-    }
-  }
-}
-```
-
-**Mixed ADP Types:** It is common (and allowed) for one atom to have `ADP="Uaniso"` while another has `ADP="Uiso"` in the same phase.
-
-### Glossary
-
-- **CIF**: Crystallographic Information File - standard format for crystal structures (In PowderLine, structural information is provided as embedded dictionaries, not CIF files)
-- **GPX**: GSAS-II project file (binary format)
-- **LST**: GSAS-II refinement log file with Rwp and parameter tables
-- **CHI**: Two-column ASCII file (2θ, intensity) for powder diffraction data (Note: PowderLine uses embedded data arrays, not files. This format is for reference only)
-- **INSTPRM**: GSAS-II instrument parameter file (Note: PowderLine uses embedded instrument parameters, not files. This format is for reference only)
-- **Recipe**: PowderLine's JSON input describing a refinement workflow
-- **Multiplicity**: Number of symmetry-equivalent reflections
-- **d-spacing**: Interplanar spacing for an hkl reflection
-- **2θ (two-theta)**: Diffraction angle in degrees
-- **hkl**: Miller indices describing a crystallographic plane
-
-## GSAS-II Integration
-
-### Why Direct Dictionary Manipulation?
-
-PowderLine manipulates the `proj.data` dictionary directly rather than using GSAS-II's phase/histogram objects. This decision was made because:
-- **Phase object ambiguity**: Unclear how G2Phase initialization maps to parameter setting
-- **Explicit control**: Direct dictionary access makes parameter locations clear
-- **Less abstraction**: Easier to debug when you can see exact data structure
-- **Trade-off**: More brittle if GSAS-II internal structure changes (acceptable risk for Phase 1)
-
-### The `proj.data` Dictionary Structure
-
-GSAS-II stores all project data in a nested dictionary. Key access patterns:
+The GSAS-II setup/execution code manipulates the `proj.data` dictionary of a
+GSAS-II project directly (explicit control, debuggable, brittle to GSAS-II
+internals). It moved verbatim out of `kicker.py` at the baseline
+`daace24` (not on `main`) and is
+frozen behind a code hash; input-side edits go through the maintainers'
+signed-off record of frozen-code edits ([policies](policies.md#frozen-gsas-ii-code)).
+The module headers still read "moved verbatim"; that record, not the headers,
+is the record of the additive edits made since (ionic types in `project.py`,
+the preferred-orientation setter in `setters.py`, the simulation ESDs in
+`extractors.py`).
+Key access patterns, for reading the code:
 
 ```python
-# Instrument parameters (list format: [current_value, value, refine_flag]). See kicker.py for setting functions
-curr_wavelength = proj.data[hist.name]['Instrument Parameters'][0]['Lam'][1] # before setting, can get value from initialization (e.g., when xrd_data is added)
+# Instrument parameters (list format: [current_value, value, refine_flag]); the native
+# gateway builds Iparm1 from the recipe's instrument block (schema.gsasii_iparm1)
 proj.data[hist.name]['Instrument Parameters'][0]['Lam'][1] = wavelength
 proj.data[hist.name]['Instrument Parameters'][0]['Lam'][2] = refine_flag
 
-# Background parameters
+# Background
 proj.data[hist.name]['Background'] = [
     [chebyshev, no_peaks, background_type],  # Background metadata
     {'nDebye': 0, 'debyeTerms': [], ...},     # Debye-Scherrer params
     {'nPeaks': n, 'peaksList': [...]},        # Single peaks
 ]
 
-# Histogram-atom parameters (HAP)
-# Change phase intensity scale given a value and refine_flag from payload for a phase's parameterization:
+# Histogram-atom parameters (HAP): phase scale, size, microstrain
 proj.data['Phases'][phase_name]['Histograms'][hist.name]['Scale'][0] = value
-proj.data['Phases'][phase_name]['Histograms'][hist.name]['Scale'][1] = refine_flag
-
-# Change isotropic size broadening for a given phase from the payload for a phase's parameterization:
-proj.data['Phases'][phase_name]['Histograms'][hist.name]['Size'][0] = model # assume model is "isotropic" in this example
-proj.data['Phases'][phase_name]['Histograms'][hist.name]['Size'][1][0] = value # set isotropic crystallite size value
-proj.data['Phases'][phase_name]['Histograms'][hist.name]['Size'][2][0] = refine_flag # set isotropic size value refinement flag (if not None)
-
-# Change isotropic mustrain broadening for a given phase from the payload for a phase's parameterization:
-proj.data['Phases'][phase_name]['Histograms'][hist.name]['Mustrain'][0] = model # assume model is "isotropic" in this example
-proj.data['Phases'][phase_name]['Histograms'][hist.name]['Mustrain'][1][0] = value # set isotropic mustrain value
-proj.data['Phases'][phase_name]['Histograms'][hist.name]['Mustrain'][2][0] = refine_flag # set isotropic mustrain value refinement flag (if not None)
+proj.data['Phases'][phase_name]['Histograms'][hist.name]['Size'][1][0] = value       # isotropic size
+proj.data['Phases'][phase_name]['Histograms'][hist.name]['Mustrain'][1][0] = value   # isotropic microstrain
 
 # Phase parameters
 proj.data['Phases'][phase_name]['General']['Cell'] = [refine_cell, a, b, c, alpha, beta, gamma, volume]
 ```
 
+GSAS-II exposes lumped refine flags (one for the cell, `'X'` for all three
+coordinates of an atom, `'U'` for all six Uij); `constraints.py` sets the
+lumped flag and emits GSAS-II "Hold" constraints for the degrees of freedom
+the recipe does not refine, so per-parameter flags are honoured. The native
+schema has already refused any flag pattern GSAS-II could not honour (a strict
+subset of a tie group or of a GSAS-II cell group), so no flag is ever silently
+overridden.
 
-### Known GSAS-II Quirks
+### What the native gsasii path adds around the frozen code
 
-These inconsistencies exist in GSAS-II (as of 2025) and are documented in kicker.py comments:
+- `sites.py` compares GSAS-II's `(site symmetry, multiplicity)` of every atom
+  with core's after phase setup and stops with an error naming an equivalent
+  position when GSAS-II misreads the site (some 2-fold sites of R32/R-3m/R-3c)
+  or cannot name it while a coordinate / `Uaniso` is refined.
+- `fit_report.py` computes the uniform statistics over the stated window,
+  reads GSAS-II's stored messages into `gsasii_refinement_message` warnings,
+  its convergence flag into `engine_details.converged`, counts
+  `parameters_varied` from GSAS-II (`Nvars`; the Peak List count after
+  singular drops), and raises on a non-finite calculated pattern.
+- The documented defaults (size/strain 10 µm / 0 with a warning; background
+  none) are pydantic defaults in `schema.py`, so the frozen setters receive
+  explicit values and GSAS-II's own 1 µm / 1000 / constant-1.0 defaults are
+  never used.
 
-1. **Size/Strain Documentation Conflict**:
-   - GSAS-II API does not document structure of dicts / lists well
-   - PowderLine uses correct extended format
+### Known GSAS-II quirks
 
-2. **Unit Cell Refinement**:
-   - GSAS-II natively exposes a single refine flag for all 6 unit cell parameters; since schema 0.26 PowderLine honors per-parameter flags instead.
-   - See [Unit Cell Refinement Semantics (Schema 0.26)](#unit-cell-refinement-semantics-schema-026) for the full mechanism and symmetry-coupling rules.
+All on the [engine behaviour page](engine-behavior.md); the ones a developer
+meets first: the background-peak width `BkPksig` is a **variance** (the
+schema names it `pv_gaussian_sigma_sq`); SH/L is floored at 0.002 in the
+profile calculation; `Refine` returns nothing and stores its messages in the
+project; `Nvars` counts parameters dropped as singular; `GOF` means two
+different things in Rietveld and Peak List fits; limits are applied after the
+cycles (why gsasii 0.1.0 exposes no bounds).
 
-3. **Reflection List Headers**:
-   - GSAS-II provides 15-column reflection arrays without headers
-   - PowderLine adds headers manually: h, k, l, multiplicity, d_spacing, 2theta, etc.
+### Output files
 
-### Peak Broadening Models
+Fixed filenames in every engine (`refined_parameters.csv`,
+`<phase>_unit_cell_report.csv`, `<phase>_peak_list_report.csv`,
+`fit_profile.txt`; single peak fitting adds a peak report), written by
+`powderline.reports` with one column order and LF line endings so the files
+are byte-stable across platforms. gsasii keeps `dummy.gpx`, `dummy.bak0.gpx`
+and `dummy.lst`; topas keeps the INP, `.xye` and every file TOPAS wrote;
+easydiffraction writes the reports only. Refinement runs add
+`output_recipe.json` and `parameter_dispositions.csv`. `powderline.run()`
+removes every PowderLine-owned fixed name (`reports.FIXED_OUTPUT_NAMES` /
+`FIXED_OUTPUT_PATTERNS`) from the directory before dispatch and never the
+engine's files; a failed run leaves the engine's files plus `failure.json`
+(the envelope with a `powderline_provenance` block) and no result table —
+in gsasii the checks run before the tables are written.
 
-**Schema Enhancement**: Size and strain broadening support model branching with schema-level validation.
+ The `refined_parameters.csv`
+columns: `parameter_name` (the engine's identifier), `descriptive_name`,
+`phase_name`, `phase_idx`, `atom_name`, `atom_idx`, `value`, `esd`,
+`category`. gsasii's ESDs come from GSAS-II's covariance matrix
+(`proj.data['Covariance']`); unit-cell ESDs are converted from the
+reciprocal-metric tensor with `extractors.calculate_cell_esds_from_A_matrix`.
 
-#### Size Broadening Models
+## Domain essentials
 
-PowderLine supports three size broadening models matching GSAS-II's capabilities:
+**Rietveld refinement** fits a calculated powder pattern to the observed one
+by adjusting structural, profile and background parameters. The headline
+quality metric, in PowderLine's uniform form (percent, over the fit window's
+points with positive weight):
 
-| Model | Parameters | GSAS-II Structure | Status |
-|-------|-----------|-------------------|--------|
-| **isotropic** | `isotropic_size`, `LG_eta` | `Size[0] = 'isotropic'`<br>`Size[1][0]` = size<br>`Size[1][2]` = LG_eta | ✅ **Implemented** |
-| **uniaxial** | `uniaxial_equatorial`, `uniaxial_axial`, `hkl_direction`, `LG_eta` | `Size[0] = 'uniaxial'`<br>`Size[1][0:2]` = eq/ax sizes<br>`Size[3]` = [h,k,l] | ⚠️ **NotImplementedError** |
-| **ellipsoidal** | `S11`, `S22`, `S33`, `S12`, `S13`, `S23`, `LG_eta` | `Size[0] = 'ellipsoidal'`<br>`Size[4][0:6]` = tensor params | ⚠️ **NotImplementedError** |
+$$R_{wp} = 100 \sqrt{\frac{\sum_i w_i (y_{obs,i} - y_{calc,i})^2}{\sum_i w_i y_{obs,i}^2}}, \quad
+R_{exp} = 100 \sqrt{\frac{N - P}{\sum_i w_i y_{obs,i}^2}}, \quad
+\mathrm{GoF} = R_{wp}/R_{exp}$$
 
-**Usage** (isotropic only):
-```json
-"size_broadening": {
-  "model": "isotropic",
-  "isotropic_size": [100.0, true, null, null],
-  "LG_eta": [0.5, false, null, null]
-}
-```
+with N the included points and P the engine's count of varied parameters.
+Lower Rwp is a better fit of *that model* to *those points*; across engines
+compare lattice parameters, not Rwp (the models differ: background peaks,
+asymmetry treatment, sample broadening).
 
-**Future models** raise `NotImplementedError` at schema validation:
-```python
-# This will fail during recipe validation:
-"size_broadening": {
-  "model": "uniaxial",  # Error: Not yet implemented
-  ...
-}
-```
+**Parameter types** (every one a `[value, flag]` or `[value, flag, min, max]`
+list): structural (cell, coordinates, occupancies, ADPs: the core phase block,
+identical across engines), intensity (phase `scale`), peak shape (sample
+size/strain in gsasii and topas; the instrument profile in every engine),
+background (Chebyshev; gsasii/topas peaks), instrument (profile terms,
+wavelength, zero shift, polarization, asymmetry: the engine's own names and
+units).
 
-#### Strain Broadening Models
+**Phase vs histogram parameters**: phase parameters belong to a crystal
+structure (cell, atoms, scale, sample broadening); histogram parameters belong
+to the measurement (instrument profile, background) and are shared across
+phases in a multi-phase refinement.
 
-Strain broadening supports three models with increasing complexity:
+**Glossary**: *Recipe* — PowderLine's JSON input. *Gateway* — the per-engine
+package behind the registry. *Schema layer / runtime layer* — the engine-free
+and engine-importing halves of a gateway. *Tie group* — parameters the
+symmetry makes one parameter (cubic a, b, c). *Golden* — a committed engine
+output a test compares against. *GPX / LST* — the GSAS-II project and log.
+*INP / `.xye`* — TOPAS's input and data files.
 
-| Model | Parameters | GSAS-II Structure | Status |
-|-------|-----------|-------------------|--------|
-| **isotropic** | `isotropic_strain`, `LG_eta` | `Mustrain[0] = 'isotropic'`<br>`Mustrain[1][0]` = strain<br>`Mustrain[1][2]` = LG_eta | ✅ **Implemented** |
-| **uniaxial** | `uniaxial_equatorial`, `uniaxial_axial`, `hkl_direction`, `LG_eta` | `Mustrain[0] = 'uniaxial'`<br>`Mustrain[1][0:2]` = eq/ax strains<br>`Mustrain[3]` = [h,k,l] | ⚠️ **NotImplementedError** |
-| **generalized** (Stephens) | Symmetry-dependent parameters | Complex Laue class-specific | ⚠️ **NotImplementedError**<br>(Phase 2) |
+## Development workflow
 
-**Usage** (isotropic only):
-```json
-"strain_broadening": {
-  "model": "isotropic",
-  "isotropic_strain": [0.001, true, null, null],
-  "LG_eta": [0.8, false, null, null]
-}
-```
-
-**Note on Stephens Model**: The `generalized` strain model uses Stephens formalism where the number and meaning of parameters depend on the crystal's Laue class (cubic, hexagonal, etc.). Implementation deferred to Phase 2 due to complexity.
-
-#### Implementation Details
-
-**Model Branching** (kicker.py):
-```python
-def set_phase_size_broadening(proj, hist, phase_name, size_dict, print_info=False):
-    """Set size broadening with model-specific branching."""
-    model = size_dict.get('model', 'isotropic')  # Default for backward compat
-
-    # Set model type in GSAS-II
-    proj.data['Phases'][phase_name]['Histograms'][hist.name]['Size'][0] = model
-
-    # Branch on model
-    if model == 'isotropic':
-        _set_isotropic_size_broadening(...)  # Current implementation
-    elif model in ['uniaxial', 'ellipsoidal']:
-        raise NotImplementedError(f"{model} size broadening not yet supported")
-```
-
-**Schema Validation** (schema.py):
-```python
-class SizeBroadening(BaseModel):
-    model: Literal["isotropic", "uniaxial", "ellipsoidal"] = "isotropic"
-    # ... parameters for all models ...
-
-    @model_validator(mode='after')
-    def validate_model_implementation(self) -> Self:
-        if self.model != 'isotropic':
-            raise NotImplementedError(
-                f"{self.model} size broadening not yet implemented. "
-                "Use 'isotropic' model instead."
-            )
-        return self
-```
-
-**Design Rationale**:
-- Schema documents complete API (all models) even if not implemented
-- Clear error messages guide users to supported features
-- Foundation for Phase 2 implementation without breaking changes
-- Validation happens early (recipe parsing), not during refinement
-
-## Architecture & Design Decisions
-
-### Module Responsibilities
-
-**src/powderline/kicker.py** (the refinement engine):
-- CLI entry point via argparse
-- Recipe loading, template detection, validation
-- GSAS-II project initialization
-- All parameter setting functions (background, phases, instrument, unit cell, etc.)
-- Refinement execution
-- Output generation (CSV reports, fit profiles)
-- **Role**: Complete workflow orchestration + implementation
-
-**src/powderline/schema.py**:
-- Pydantic models matching JSON recipe structure
-- Nested validation: RecipeModel → InstrumentModel, PhaseModel, BackgroundModel
-- Custom validators for coefficient counts, list lengths, fit range
-- **Role**: Input validation and type safety
-
-**src/powderline/gsas_server.py / gsas_client.py**:
-- Persistent FastAPI server keeping GSAS-II loaded in memory, and the HTTP client that talks to it (with in-process subprocess fallback)
-- Per-user and authenticated by signed requests/responses (private state dir, loopback, ephemeral port, single instance via a kernel lock); `POWDERLINE_NO_SERVER=1` disables it
-- **Role**: Execution backends for `run()`'s `server`/`auto` modes
-
-**src/powderline/topas/ + src/powderline/easydiff/ + src/powderline/engine.py**:
-- Alternate translation engines — TOPAS v7 (recipe → `.inp`/`.xye`, `tc.exe` runner, results round-trip; standalone `topas-kicker` CLI) and easydiffraction (recipe → easydiffraction `Project`, lmfit fit) — plus the engine dispatcher behind `powderline.run(recipe, output_dir, engine="gsasii"|"topas"|"easydiffraction")`. Both alternate paths import **zero** GSAS-II; the `gsasii` branch is a transparent pass-through to `kicker.run`.
-- **Role**: Alternate refinement engines + engine dispatch
-
-**tests/**:
-- `test_example_LaB6_regression.py`: End-to-end regression test with exact output matching
-- `conftest.py`: Pytest fixtures for paths and test data
-- **Role**: Quality assurance - detect refinement result changes
-
-**Monolithic Design Rationale:**
-Phase 1 keeps all implementation in `kicker.py` intentionally:
-- Simplifies development during schema evolution
-- Easy to understand complete workflow in one file
-- Refactoring to modules planned for Phase 2 when API stabilizes
-- Comments saying "upstream" or "will be handled elsewhere" refer to future refactoring
-
-### Adding a Refinement Engine
-
-PowderLine's engine seam makes new backends cheap to add. The dispatcher
-(`src/powderline/engine.py`) is a small `_ENGINES` tuple plus one lazy-import
-branch per engine; every engine returns the **same result-dict shape**, locked
-by `tests/test_api.py`. The TOPAS (`src/powderline/topas/`) and easydiffraction
-(`src/powderline/easydiff/`) subpackages are the two reference implementations.
-
-The established pattern:
-
-1. **New subpackage** `src/powderline/<engine>/` holding all engine logic:
-   translation (`builder`/`writer`), execution (`runner`), result parsing, unit
-   conversions, and a `run_<engine>_recipe(recipe, output_dir, ...)` adapter that
-   returns the locked result dict.
-2. **One lazy-import branch** in `powderline/engine.py` (add the name to
-   `_ENGINES`). Import the engine module only inside that branch so machines
-   without the engine's dependencies can still use the others.
-3. **No schema changes** — engines translate the existing `GSASII_*` recipes;
-   they do not define their own recipe format.
-4. **Reject unsupported features loudly** — a recipe feature the engine cannot
-   represent raises a translation error (or, if it's a *fixed* unmappable value,
-   is dropped with a recorded warning). Never silently ignore a refine flag.
-5. **Optional pixi feature/environment** if the engine needs dependencies the
-   default environment shouldn't carry (e.g. easydiffraction needs Python ≥3.12,
-   so it lives in the optional `easydiff` environment).
-6. **Keep it GSAS-II-free** if it can be — the alternate engines import zero
-   GSAS-II, a property enforced by subprocess import-block tests.
-
-**Simulation-mode semantics across engines.** The GSAS-II engine treats
-`refinement_cycles == 1` as simulation and *rejects* any refine flag set in that
-mode (`validate_simulation_mode_parameters` in `kicker.py`). The alternate
-engines (TOPAS, easydiffraction) instead treat "no parameters flagged for
-refinement" as simulation and do not enforce the `cycles == 1` lock. For
-well-formed recipes the behavior matches; the two definitions only diverge on
-inconsistent input (`cycles == 1` *with* a stray refine flag), which GSAS-II
-refuses and the alternate engines would run. Uniform input-contract enforcement
-across all engines is a tracked follow-up (see the PowderLine-devkit
-easydiffraction dossier — a private maintainers' repo, access on request).
-
-### Schema Design: Why `extra='allow'`?
-
-Nearly all Pydantic models use `ConfigDict(extra='allow')` to permit fields not explicitly defined (the one exception is `RefinementParameterModel`, which uses `extra='forbid'`):
-
-```python
-class RecipeModel(BaseModel):
-    model_config = ConfigDict(extra='allow')
-```
-
-**Rationale:**
-- **Schema evolution**: Example-driven design means new fields emerge as examples are added
-- **Backwards compatibility**: Old recipes continue working when new fields are added
-- **Flexibility**: Users can add custom metadata without validation errors
-- **Trade-off**: Typos in field names won't be caught (acceptable for Phase 1 iteration speed)
-
-Future phases may tighten validation to `extra='forbid'` once schema stabilizes.
-
-### The "Upstream" Pattern
-
-You'll see several TODO markers like `# TODO: validation will be handled upstream` throughout kicker.py. This means:
-
-- **Currently**: Validation happens in helper functions (e.g., check coefficient count in `set_chebyshev_background`)
-- **Future**: Validation moves to Pydantic schema (separation of concerns)
-- **Not implemented yet**: Still evolving what validation logic belongs where
-
-The pattern reflects Phase 1's iterative approach - implement in helper functions first, refactor to schema later.
-
-### File-less Schema Architecture
-
-PowderLine uses file-less JSON payloads. All data (XRD patterns, structures, instrument parameters) is embedded directly in JSON. File handling (loading XRD data from .chi files, parsing CIF structures, reading instrument parameters) occurs upstream of PowderLine.
-
-**Embedded Data Format:**
-- **XRD data**: "xrd_data" contains "tth", "Itth", "Itth_weights" arrays
-- **Structure**: "structure" contains "space_group", "unit_cell", "atoms" dictionaries
-- **Instrument**: "instrument" contains "initialization" and optional "parameterization" dictionaries
-
-This design enables PowderLine to focus on refinement logic while delegating file I/O to upstream tools.
-
-### Phase Name Resolution
-
-In PowderLine, phase names come from the `phase_name` field in the embedded structure dictionary:
-
-```python
-# Phase name is explicitly specified in structure
-"phases": {
-  "LaB6": {  # This becomes the phase identifier
-    "structure": {
-      "phase_name": "LaB6",  # Must match the key above
-      "space_group": "P m -3 m",
-      ...
-    }
-  }
-}
-```
-
-The phase name is used consistently throughout:
-- Phase dictionary keys
-- Structure `phase_name` field (must match key)
-- Parameterization references
-- Output file naming
-
-This ensures consistent phase identification throughout refinement and output generation.
-
-### Server Architecture (Three-Layer Execution Stack)
-
-`powderline.run()` dispatches through three layers:
-
-```
-powderline.run() / CLI
-        │  validates recipe, normalises DataFrames
-        ▼
-GSASClient.submit_simulation()
-        │  routes: HTTP server  ──or──  in-process fallback
-        ▼
-run_refinement()
-        │  single execution engine, returns JSON-serializable primitives
-        ▼
-GSAS-II (GSASIIscriptable)
-```
-
-**`_submit_via_subprocess` is in-process, not an OS subprocess.**  Despite its name,
-this method calls `run_refinement()` directly in the current interpreter. The name
-has been retained for API stability; if crash-isolation is needed in a future phase
-it can be upgraded to `multiprocessing` without changing callers.
-
-**`execution_mode` vs `method` — two distinct concepts:**
-- `powderline.run()` accepts `execution_mode=` (`'auto'` | `'server'` | `'subprocess'`) as its public input parameter.
-- `run_refinement()` accepts `method=` as its internal parameter (values: `'server'` | `'subprocess'` | `'test'`).
-- Both `run_refinement()` and `GSASClient` include `method` as a **result dict output key** (`result['method']`) recording which execution path was used.
-- These are not a renamed pair — they serve different roles at different layers of the stack.
-
-The FastAPI server (`gsas_server.py`) keeps GSAS-II imported in one persistent
-process, amortising the ~2.6 s import cost across all requests. Requests are handled
-synchronously (one-at-a-time) by design — concurrency is not needed for the current
-single-user CLI and programmatic-API use cases.
-
-**After modifying any Python source file** (`kicker.py`, `schema.py`, or any other
-module under `src/`), restart the server so the running process loads the new code:
+### Environments and tasks
 
 ```bash
-pixi run gsas-server restart
+pixi install -e dev          # every engine + docs/test tooling (contributors)
+pixi install -e gsasii       # GSAS-II only
+pixi run kicker <recipe> --validate-only          # default env: engine-free
+pixi run -e gsasii kicker <recipe>                # run a gsasii.* recipe
+pixi run -e easydiffraction kicker <recipe>       # run an easydiffraction.* recipe
+pixi run test                # engine-free suites (core + topas_gen), any env
+pixi run -e dev test-all     # every suite, the pre-merge gauntlet
+pixi run -e gsasii pytest tests/test_example_LaB6_regression.py -q   # one engine's suite
+pixi run docs                # Sphinx with -W (zero warnings is the standard)
+pixi run -e gsasii gsas-server start|status|stop|restart|logs
+pixi run update-code-hash    # after a signed edit to a frozen gsasii module
+pixi reinstall powderline --all   # after editing entry points / [project.scripts]
 ```
 
-The server loads kicker.py at startup and caches it. Changes are invisible to the
-running server until it is restarted.
+The default feature carries only PowderLine's runtime dependencies plus
+pytest; `gsasii`, `easydiffraction`, `all` and `dev` are features/environments
+in `pixi.toml`. `test` and `update-code-hash` live in the default feature and run anywhere;
+tasks only `dev` has (`test-all`, `docs`, `docs-clean`) resolve without `-e`; engine-bound tasks live in their engine's feature, so pixi
+reports them as ambiguous without `-e` and prints the form to use. Tasks that
+import PowderLine set `PYTHONPATH` through the task-level `env` dict (cross-platform;
+[cross-platform guide](cross-platform-guide.md)).
 
----
+### Execution modes (gsasii)
 
-### MP Pipeline Status
+| Mode | Command | Behaviour |
+|---|---|---|
+| auto (default) | `pixi run -e gsasii kicker input.json` | tries the server, auto-starts it, falls back to in-process |
+| server | `... --use-server` | server only; fails if it cannot be started |
+| in-process | `... --no-server` | skips the server; GSAS-II imported in this process |
 
-The Materials Project integration (`mp_interface.py` / `mp_simulate.py` /
-`simulation_builder.py`) targets the current `mp-api` client (pinned
-`>=0.46,<1` in `pixi.toml`) and recipe schema 0.26.0.
+The server amortizes GSAS-II's import (~2.6 s) over many runs (batch jobs:
+0.1–0.3 s per run against 1–2 s in-process). It **caches code**, so restart it
+after editing anything under `src/` it executes; since 0.2.0 a forgotten
+restart is caught: `/health` reports the PowderLine version and an MD5 of the
+source tree the server loaded (`server.source_tree_hash()`), the client
+compares both with its own and treats a mismatch as a **stale** server —
+`auto` mode says so and runs in-process, `--use-server` fails with
+`server_unavailable` naming `gsas-server restart`, and `gsas-server status`
+prints `Code: STALE`.
 
-**Updated for mp-api 0.46.x (previously written against older client behavior):**
+**No shared filesystem (KI-12):** the client sends the recipe inline and
+the server runs each job in a private scratch directory under its state dir;
+every output file comes back base64-encoded inside the signed response
+(`files`, GSAS-II's `*.bak*.gpx` backups excepted) and the client writes it
+into its own `output_dir` (atomic replace, retried on Windows). A server on
+another node or in a container therefore behaves like a local one; a client
+that cannot write its directory fails with `backend_error`, a malformed or
+oversized transfer with `communication_failed` (auto mode then runs
+in-process).
 
-1. **Single summary fetch** — `get_structure()` uses
-   `client.materials.summary.search(material_ids=[...], fields=[...])` (one
-   request for structure + symmetry + energetics) instead of the legacy
-   `get_structure_by_material_id()` convenience method.
-2. **Conventional-cell standardization** — MP's computed structure is often a
-   primitive cell; it is now standardized via
-   `SpacegroupAnalyzer(...).get_conventional_standard_structure()` so the
-   emitted space-group symbol matches the emitted cell. (Previously a
-   centered-lattice primitive cell was paired with the conventional H-M
-   symbol — wrong phase for anything non-primitive; LaB6 only worked because
-   its primitive and conventional cells coincide.) The symbol is derived from
-   the standardized structure itself (spglib condensed style with screw-axis
-   underscores stripped, e.g. `Pm-3m`, `I41/amd`),
-   which `kicker.py` normalizes via `G2spc.StandardizeSpcName`.
-3. **`MPID` stringification** — search results now return `material_id` as
-   `str`; previously raw `MPID` objects crashed `material_id.startswith('mp-')`
-   on the `--formula` path.
-4. **Polymorph selection** — `search_by_formula()` returns results sorted by
-   `energy_above_hull` (None last); the CLI lists all candidates and
-   auto-selects the most stable one, printing the choice.
-5. **Partial occupancy support** — sites are extracted per species
-   (`site.species.items()`), carrying real occupancies into the recipe
-   (`AtomStructure.occupancy`); disordered structures no longer crash on
-   `site.specie`. `get_structure()` reports `is_ordered`.
-6. **Error taxonomy** — `MPInterfaceError` base with `MPAuthError`,
-   `MPNotFoundError`, `MPConnectionError`; the CLI prints targeted hints
-   instead of a generic wrapped exception.
-7. **Metadata fixes** — `crystal_system` now holds the actual crystal system
-   (previously the space-group number, now under `space_group_number`);
-   `nelements` now holds the element count (previously atom count, now under
-   `num_atoms`); `energy_above_hull` and `theoretical` added.
-8. **Key handling** — API key resolution is config file first, then the
-   `MP_API_KEY` environment variable (`ConfigLoader.get_mp_api_key()`);
-   `MPInterface` is a context manager that closes the HTTP session.
-9. **Server output-visibility guard** — a GSAS-II server can be reachable
-   over localhost yet have a divergent filesystem view (another node; a
-   sandbox with a private `/tmp`), reporting success while its output files
-   are invisible to the client. `GSASClient` verifies `fit_profile.txt` was
-   freshly written client-side after a "successful" server run (stat-compare
-   before/after — a stale file from a previous run into the same output dir
-   does not count) and falls back to in-process execution (or returns a
-   structured error when fallback is disabled). `mp-simulate --no-server`
-   skips the server entirely, and its `.chi` export is built from the
-   in-band `fit_profile` result data rather than re-reading the file.
-   Tests: `tests/test_gsas_client_visibility.py`, `tests/test_mp_simulate_cli.py`.
-   KI-12 tracks the follow-up that removes the shared-filesystem assumption
-   altogether (server returns output artifacts in-band).
-10. **Strict config validation** — `SimulationRecipeBuilder` validates the
-   `simulation_defaults` block against its allowed shape: unknown keys at any
-   level (typos, the retired flat layout) and invalid values (null from an
-   empty YAML key, strings where numbers belong) raise a `ValueError` naming
-   the offending key path; the CLI exits with that message. These previously
-   passed `RecipeModel` validation (the instrument block is `Any`-typed
-   passthrough) and failed opaquely inside GSAS-II.
-
-**Historical (schema 0.21 → 0.26 fixes, retained by the regression suite):**
-payload wrapper, `schema_name`, `isotropic_size`/`isotropic_strain` renames,
-`recipe=` keyword for `GSASClient.submit_simulation()`.
-
-**Regression guard:** `tests/test_mp_interface.py` (mocked MPRester — real
-pymatgen Structures, no live API) and `tests/test_mp_pipeline.py` run as part
-of the standard test suite (`pixi run test`):
-
-```bash
-pixi run pytest tests/test_mp_interface.py tests/test_mp_pipeline.py -v
-```
-
-**Limitation:** `mp_simulate.py` requires a live Materials Project API key to
-fetch structures. The test suite uses mocks and a synthetic LaB6 fixture
-(`mp_lab6_structure_data` in `conftest.py`) so no API key is needed for testing.
-
----
-
-### Future: File-less Output Design
-
-Currently `run_refinement()` always writes output files to `output_dir`.  Two
-options are under consideration for making file output optional:
-
-**Option A — `save_files` flag (default `False`)**
-```python
-result = powderline.run(recipe, output_dir=None, save_files=False)
-# Returns DataFrames; no files written
-```
-- Simplest API change; easy to add without breaking existing calls
-- Requires `output_dir` to be optional throughout the stack
-
-**Option B — optional `output_dir` (default `None`)**
-```python
-result = powderline.run(recipe)          # no files
-result = powderline.run(recipe, output_dir=Path("/tmp/out"))  # files + DataFrames
-```
-- Slightly more discoverable ("no `output_dir` = no files")
-- Requires `output_dir=None` guard at every write site in `run_refinement()`
-
-Both options are backwards-compatible additions. This will be evaluated alongside
-the Phase 2 module refactoring work.
-
----
-
-## Development Workflow
-
-### Environment Setup
-
-PowderLine uses [pixi](https://pixi.sh) for reproducible conda environments:
-
-```bash
-# Install dependencies (first time)
-pixi install
-
-# Activate environment
-pixi shell
-
-# Run refinement
-pixi run kicker examples/example_LaB6/input.json
-
-# Run tests
-pixi run test
-
-# Validate recipe only (no refinement)
-pixi run kicker --validate-only examples/example_LaB6/input.json
-```
-
-**PYTHONPATH Configuration:**
-The `kicker` task in `pixi.toml` sets `PYTHONPATH=$PWD/src:$PYTHONPATH` to enable `from powderline.schema import RecipeModel` imports.
-
-### Execution Modes
-
-PowderLine supports three execution modes for running refinements:
-
-#### 1. Auto-Detect Mode (Default)
-```bash
-pixi run kicker input.json
-```
-- **Behavior**: Tries server → auto-starts if needed → falls back to subprocess
-- **Performance**: 0.1-0.3s per simulation (if server available), 1-2s (if fallback)
-- **Use case**: Normal development workflow - "just works"
-- **Output**: Shows "🚀 server mode" or "🐢 subprocess mode" at end
-
-#### 2. Force Server Mode
-```bash
-pixi run kicker input.json --use-server
-```
-- **Behavior**: Uses server only, **fails if unavailable**, no fallback
-- **Performance**: 0.1s per simulation (10x+ faster than subprocess)
-- **Use case**: Batch processing, CI/CD where performance matters
-- **Auto-start**: Attempts to start server automatically if not running
-- **Error handling**: Exits with clear error if server can't be started
-
-#### 3. Force Subprocess Mode
-```bash
-pixi run kicker input.json --no-server
-```
-- **Behavior**: Direct in-process execution using loaded GSAS-II libraries, skip server entirely
-- **Performance**: 1-2s per simulation (slower; GSAS-II imported on first use)
-- **Use case**: Debugging, HPC/Slurm batch jobs, environments where the server is not suitable
-- **Output**: Returns the same full structured result (DataFrames) as server mode
-
-#### Managing the Server
-
-**Start server manually:**
-```bash
-pixi run gsas-server start   # Starts in background
-pixi run gsas-server status  # Check if running
-pixi run gsas-server stop    # Shutdown server
-```
-
-**Server state and security (per user):** the server binds `127.0.0.1` on a
-free ephemeral port and writes its lock, PID, log, and an endpoint file (port +
-random secret token) — all mode 0600 — to a private per-user state directory:
-`$XDG_RUNTIME_DIR/powderline` (if it is a real directory owned by you), else
-`<tempdir>/powderline-<uid>` on POSIX (mode 0700; refused if it is a symlink,
-owned by someone else, or group/other-accessible, or if the temp directory
-would let others replace it), and `%LOCALAPPDATA%\powderline` on Windows. On
-POSIX the files are opened relative to a re-verified, no-follow directory
-handle.
+**Server state and security (per user, v0.1.2):** the server binds `127.0.0.1`
+on a free ephemeral port and writes its lock, PID, log, and an endpoint file
+(port + random secret token) — all mode 0600 — to a private per-user state
+directory: `$XDG_RUNTIME_DIR/powderline` (if it is a real directory owned by
+you), else `<tempdir>/powderline-<uid>` on POSIX (mode 0700; refused if it is a
+symlink, owned by someone else, or group/other-accessible, or if the temp
+directory would let others replace it), and `%LOCALAPPDATA%\powderline` on
+Windows. On POSIX the files are opened relative to a re-verified, no-follow
+directory handle.
 
 The token never travels over the wire: every request carries a fresh nonce, a
 timestamp and an HMAC-SHA256 over method, path, nonce, timestamp and body, and
-the server rejects anything unsigned, wrongly signed, stale, or replayed —
-on every route, including 404/405/422 — before reading the body. Every
-response is signed back over the nonce, status and body, and the client
-discards unsigned responses. Other users on a shared host therefore can
-neither submit jobs to your server nor impersonate it (e.g. by taking over the
-port of a crashed server). `gsas-server start` takes a kernel-held lock
-(`flock` / `msvcrt.locking` on `server.lock`) for the server's lifetime; the
-OS releases it when the process exits, so concurrent auto-starts never spawn
-duplicates and leftover PID files can never make a dead server look alive.
+the server rejects anything unsigned, wrongly signed, stale, or replayed — on
+every route, including 404/405/422 — before reading the body. Every response
+is signed back over the nonce, status and body, and the client discards
+unsigned responses. Other users on a shared host therefore can neither submit
+jobs to your server nor impersonate it (e.g. by taking over the port of a
+crashed server). `gsas-server start` takes a kernel-held lock (`flock` /
+`msvcrt.locking` on `server.lock`) for the server's lifetime; the OS releases
+it when the process exits, so concurrent auto-starts never spawn duplicates
+and leftover PID files can never make a dead server look alive.
+
+**One refinement at a time:** the server runs `/simulate` requests strictly in
+sequence (GSAS-II's module-level state is not thread-safe); concurrent clients
+queue (up to the ASGI thread pool's size, 40 by default; `/health` is not
+behind the lock). **Port problems are reported, not crashed:** a malformed
+`POWDERLINE_SERVER_PORT` is refused up front by `gsas-server start` and by a
+client about to auto-start (`ExecutionBackendError`, `server_unavailable`,
+naming the variable); a busy port fails the start before GSAS-II is imported,
+with the port named, and a client whose auto-started server exits at start
+reports the exit and points at the server log.
 
 **Pin the server port** (only if needed — the default ephemeral port avoids
 collisions between users):
 ```bash
 export POWDERLINE_SERVER_PORT=19472
-pixi run gsas-server start
-pixi run kicker input.json  # client reads the port from your state directory
+pixi run -e gsasii gsas-server start
+pixi run -e gsasii kicker input.json  # the client reads the port from your state directory
 ```
 
 **Disable the server entirely** (shared workstations, locked-down deployments):
@@ -846,323 +537,183 @@ export POWDERLINE_NO_SERVER=1   # also: true / yes / on
 ```
 With it set, `execution_mode='auto'` (and the CLI default) runs in-process and
 never starts a server, `execution_mode='server'` / `--use-server` fail with a
-clear error, and `pixi run gsas-server start|restart` refuse.
+clear error, and `pixi run -e gsasii gsas-server start|restart` refuse.
 
 **View server logs** (`server.log` in the state directory; `status` prints the path):
 ```bash
-pixi run gsas-server logs
+pixi run -e gsasii gsas-server logs
 ```
 
-**Server benefits:**
-- GSAS-II libraries loaded once (2.6s startup amortized across requests)
-- Direct function calls using pre-loaded libraries (no subprocess overhead)
-- Persistent process (no repeated Python interpreter startup)
-- Ideal for batch simulations (10+ recipes)
-- Connection retry logic (3 attempts with exponential backoff) handles transient issues
+### Adding a new recipe field (any engine)
 
-**Server caching behavior:**
+1. **Schema**: add the field to the engine's `schema.py` (unit metadata,
+   validators, refusals; for a structural quantity, to `schema_core`).
+2. **Gateway**: consume it from the validated model in the runtime layer
+   (gsasii: a non-frozen module, or a signed-off edit for a frozen read).
+3. **Fixture + golden**: a native recipe stating it and the engine's output.
+4. **Example** if it is a real case: `examples/<case>/` with `DESCRIPTION.md`
+   and, for gsasii, the committed output (regression reference).
+5. **Docs**: `scripts/gen_schema_field_tables.py`, SCHEMA_HISTORY, the
+   input-guidance / engine-behaviour pages as needed, CHANGELOG.
 
-The server keeps Python modules loaded in memory for performance. This means:
-- ✅ **Production benefit**: 4-6x speedup (first run ~12s, subsequent ~2-3s)
-- ⚠️ **Development caveat**: Code changes require server restart to take effect
+### Adding a new example
 
-**During active development:**
-```bash
-# After making code changes to kicker.py or other modules:
-pixi run gsas-server restart   # gracefully restart with updated code
+Examples drive schema evolution; see `examples/CONTRIBUTING_EXAMPLES.md`.
+Directory `examples/<case>/` with `input.json` (the `gsasii.*` recipe),
+`DESCRIPTION.md`, `output/` (committed GSAS-II results as regression
+references), and optionally `topas/input.json`, `easydiffraction/input.json`
+with a README each. An `easydiffraction/output/` folder holds that engine's
+committed reference results (checked against the easydiffraction goldens);
+TOPAS references live as goldens under `tests/data/topas/native/golden/<version>/`
+(they come from a TOPAS machine; the directory is the fixture's `engine_version`).
 
-# Next run will use the freshly started server with current code
-pixi run kicker input.json
-```
+### Running tests
 
-**For deterministic integration tests:**
-```bash
-# Restart the server first so tests run against current code
-pixi run gsas-server restart
-pixi run pytest tests/test_schema.py -q
-```
-
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) ("Stale Server (Old Code Running)") for details on stale server issues.
-
-**When to use each mode:**
-- **Auto-detect**: Default for interactive use
-- **--use-server**: Batch processing, automation, performance-critical
-- **--no-server**: Debugging kicker.py, isolated testing, server issues
-
-#### Performance Comparison (Post-Fix ✅)
-
-| Mode | LaB6 Simulation | DRX_33 Multi-phase | Typical Use |
-|------|----------------|-------------------|-------------|
-| Server (--use-server) | 0.1s | 0.3s | Batch jobs |
-| Auto-detect (default) | 0.1-2s | 0.3-3s | Interactive |
-| Subprocess (--no-server) | 1.1s | 3s | Debugging |
-
-**Speedup**: Server mode is **10.67x faster** than subprocess for LaB6 simulations.
-
-*Times measured on NSLS-II workstation post-fix*
-
-### Adding a New Refinement Parameter
-
-Follow this pattern (using size broadening as example):
-
-1. **Add to schema** (`schema.py`):
-   ```python
-   class PeakBroadening(BaseModel):
-       size_broadening: dict[str, RefinementParameter | None] | None = None
-   ```
-
-2. **Create setter function** (`kicker.py`):
-   ```python
-   def set_phase_size_broadening(proj, hist, phase_name, size_dict, print_info=False):
-       """Set crystallite size broadening for phase-histogram pair."""
-       # Extract from size_dict
-       size_val = size_dict['size']
-       # Access proj.data dictionary
-       hap = proj.data[hist.name]['Histograms'][phase_name]
-       hap['Size'] = [size_val[0], size_val[1], 'isotropic', [0, 0], 1.0, size_val[1]]
-   ```
-
-3. **Integrate into parameterization** (in main execution):
-   ```python
-   if phase_param.peak_broadening and phase_param.peak_broadening.size_broadening:
-       set_phase_size_broadening(proj, hist, phase_name,
-                                  phase_param.peak_broadening.size_broadening)
-   ```
-
-4. **Add example** (create directory under `examples/`):
-   - `input.json` with new parameter
-   - `DESCRIPTION.md` explaining use case
-   - Run refinement and commit output files
-
-5. **Add test** (if example becomes reference):
-   ```python
-   def test_example_with_size_broadening(tmp_output_dir):
-       # Run refinement, compare outputs
-   ```
-
-### Adding a New Example
-
-Examples drive schema evolution. To contribute:
-
-1. **Create directory**: `examples/example_N/`
-2. **Add required files**:
-   - `input.json` - complete recipe
-   - `DESCRIPTION.md` - what refinement demonstrates, data source, expected results
-3. **Run refinement**: `pixi run kicker examples/example_N/input.json`
-4. **Commit outputs**: `output/` directory with .gpx, .lst, .csv files
-5. **Update schema** if new fields needed
-6. **Add regression test** if example becomes quality reference
-
-See `examples/CONTRIBUTING_EXAMPLES.md` for detailed guidelines.
-
-### Running Tests
+Every test carries exactly one suite marker (`pyproject.toml`
+`[tool.pytest.ini_options] markers`; `tests/conftest.py` refuses a collection
+where one is missing or doubled), and the pixi tasks select on them:
 
 ```bash
-# All tests
+# Engine-free suites (core + topas_gen): any env, the default one included.
+# Installs the core guard: an engine import or a tc.exe run fails loudly.
 pixi run test
 
-# Specific test file
-pixi run pytest tests/test_example_LaB6_regression.py
+# Engine suites, each in its env (the slow regressions are part of test-gsasii)
+pixi run -e gsasii test-gsasii
+pixi run -e easydiffraction test-easydiffraction
 
-# With verbose output
-pixi run pytest -v
+# TOPAS: generation everywhere; the topas_exec tests run tc.exe on the TOPAS
+# machine when POWDERLINE_TOPAS_DIR and POWDERLINE_TOPAS_VERSION are set
+# (PowerShell: $env:POWDERLINE_TOPAS_DIR='C:\TOPAS6'; $env:POWDERLINE_TOPAS_VERSION='6')
+pixi run test-topas
 
-# See stdout/stderr
-pixi run pytest -s
+# Everything, in the dev env -- the pre-merge gauntlet
+pixi run test-all
+
+# Extra pytest arguments pass through
+pixi run test -x -k schema
+pixi run -e gsasii test-gsasii -m "gsasii and not slow"
 ```
+
+Markers: `core` (imports no engine, runs no engine subprocess -- the schema
+layer of every gateway included), `gsasii`, `topas_gen` (engine-free TOPAS
+input generation), `topas_exec` (tc.exe), `easydiffraction`, plus the optional
+`slow` (a full refinement runs). `POWDERLINE_CORE_GUARD=1` forces the guard on
+for a path or `-k` selection; `=0` turns it off.
 
 **Regression test strategy:**
-- Exact matching of Rwp, unit cell parameters, peak counts
-- Detects any changes in GSAS-II refinement algorithm
+- Rwp, unit cell parameters and refined values compared within the tolerances
+  of `regression-tolerance.md`; peak lists by row count
+- Detects any change in the engine's refinement result
 - Reference outputs committed to git for comparison
-- If test fails: inspect .lst file to determine if change is expected or bug
+- If a test fails: inspect the `.lst` file to determine whether the change is
+  expected or a bug; a new engine version goes through `engine-versions.md`
 
-**Note on test speed:** All tests currently run as a single suite (`pixi run test`). Introducing `@pytest.mark.slow` / `@pytest.mark.integration` markers to allow skipping GSAS-II-dependent tests in CI is planned.
 
-### Template File Detection
+Suite map: `test_schema_core`, `test_symmetry_core`,
+`test_symmetry_characterization` (core rules; all 230 groups against
+GSAS-II's site tables), `test_phase_canary` (engine phase models cannot
+weaken core), `test_api`, `test_cli`, `test_registry`, `test_compat`,
+`test_exceptions`, `test_fitstats`, `test_reports` (core), `test_gsasii_schema`,
+`test_gsasii_schema_engine` (GSAS-II's reading of every setting),
+`test_gsasii_native_run`, `test_example_LaB6_regression`, `test_esd_extraction`,
+`test_per_parameter_flags`, `test_run_refinement_missing_keys`,
+`test_constraints_mapping`, `test_code_hash`, the server/client tests
+(gsasii), `test_topas_schema`, `test_topas_native`, `test_topas_native_golden`
+(12 INPs byte-identical to the TOPAS 6 goldens),
+`test_topas_runner` (topas),
+`test_easydiffraction_schema`, `test_easydiffraction_native`,
+`test_easydiffraction_space_groups` (easydiffraction),
+`test_convert_recipe_026` (the migration tool), `test_cross_engine_comparison`,
+`test_simulation_builder` (the structure → simulation-recipe builder).
 
-PowderLine prevents users from accidentally running template files with three-level detection:
+**Regression strategy:** the gsasii examples' outputs are compared within
+the tolerances of [regression-tolerance.md](regression-tolerance.md)
+(`tests/subprocess_utils.py`: `refined_params_match`, `unit_cell_match`),
+peak lists by row count, GSAS-II's own `.lst` wR as a freeze tripwire and the
+uniform `rwp` against a recorded value; TOPAS and easydiffraction against
+their goldens (easydiffraction cell rtol 1e-4, values 1e-3). If a regression
+test fails, inspect the engine's log and the deliberate-changes policy before
+touching a reference. Some gsasii cases need a working GSAS-II refinement
+and can fail for environment reasons: compare against the baseline run.
 
-1. **Path check**: Filename/directory contains "template"
-2. **Required fields check**: Missing `payload.xrd_data`, `payload.instrument`, or `payload.phases`
-3. **Placeholder text check**: Fields contain `"XXXX"` or `"TODO"` or `"REPLACE"`
+### Documentation
 
-If detected, shows error with helpful message directing to real examples.
+`pixi run docs` builds with `-W --keep-going` and `nitpicky`; zero warnings
+is the standard. Pages under `docs/_generated/` are written by scripts
+(`gen_schema_field_tables.py`: field tables and support matrix;
+`cross_engine_comparison.py`: the comparison tables) and pulled in with MyST
+`{include}`; regenerate them with the change that affects them. `api.rst`
+documents the public API; the schema contract is the generated field tables.
 
-## Key Gotchas & Implementation Notes
+### Template file detection
 
-### Output File Formats
+The CLI refuses a recipe whose path contains `template` or whose payload lacks
+the blocks its workflow needs (`xrd_data`, `instrument`, `refinement_controls`
+and `phases` or `single_peaks`), pointing at the examples. It is a CLI-only
+guard: `powderline.run()` trusts its caller.
 
-After refinement, PowderLine generates (fixed filenames):
-- **`dummy.gpx`**: GSAS-II project file (can reopen in GUI)
-- **`dummy.bak0.gpx`**: Backup before refinement started
-- **`dummy.lst`**: Human-readable refinement log with Rwp, parameter tables, correlations
-- **`fit_profile.txt`**: 2θ, observed, calculated, background, difference intensities
-- **`<phase>_unit_cell_report.csv`**: Refined unit cell parameters per phase
-- **`<phase>_peak_list_report.csv`**: Reflection list (hkl, d-spacing, 2θ, intensities) per phase
+## Key gotchas
 
-For single peak fitting (SPF) mode:
-- **`single_peaks_report.txt`**: Peak fit results (position, width, intensity per peak)
-- **`peak_convergence_diagnostics.txt`**: Convergence warnings for aphysical parameters
+- **Restart the GSAS-II server** after code changes; a stale server is the
+  usual cause of "my fix has no effect".
+- **`pixi reinstall powderline --all`** after touching entry points or
+  `[project.scripts]`, or when the registry reports no gateways (KI-13).
+- **Frozen modules** change only through signed-off, recorded edits; `test_code_hash` guards
+  them; `pixi run update-code-hash` after a signed edit.
+- **Generated docs** go stale silently unless regenerated
+  (`gen_schema_field_tables.py --check`).
+- **Parameter correlation warnings** from GSAS-II (`gsasii_refinement_message`:
+  "parameters 0 and 1 are 99.8% correlated") are normal for
+  over-parameterized models (background terms, U/V/W, size vs strain);
+  they matter when a fit does not converge or values are unphysical.
+- **Chebyshev coefficients** are indexed from the constant term; their basis
+  spans the fit window's first and last data points in every engine.
+- **Single peak fitting**: `gsasii.spf` widths are σ² (centidegree²) and γ
+  (centidegree), each ≥ 0.001; with `use_instrument_profile: true` the
+  widths come from U..Z and the peaks' own width flags must be `false`
+  (GSAS-II would ignore them silently); `topas.spf` peaks are `xo_Is` with
+  the instrument peak type convolved with their own `gauss_fwhm` / `lor_fwhm`.
+  gsasii writes `single_peaks_report.txt` (position, intensity, σ, γ, FWHMs,
+  integral breadths, convergence) and `peak_convergence_diagnostics.txt` only
+  when a peak did not converge.
+- **Error handling**: validation errors are pydantic's, listed together;
+  PowderLine's own errors derive from `PowderLineError`; the CLI exits 1 on
+  any failure.
 
-**Note**: Output filenames are now fixed (`dummy.*`) regardless of sample name. This simplifies automation and testing by eliminating filename variability.
+## The simulation recipe builder
 
-### Parameter Correlation Warnings
+`powderline.gateways.gsasii.simulation_builder.SimulationRecipeBuilder` turns a
+crystal-structure dict (`space_group`, `unit_cell`, `atoms`, `formula`) into a
+`gsasii.rietveld` 0.1.0 simulation recipe: the conventional cell reduced to
+symmetry-unique sites with an orbit self-check, two-origin groups moved to
+origin choice 2, the canonical space-group name, every default stated, SH/L
+0.002, instrument defaults from `.powderline_config.yaml`'s
+`simulation_defaults`. The Materials Project fetch and `.chi` export that
+drove it (`mp-simulate`) left PowderLine in 0.2.0; RandomXRD carries
+its own copy. The recipe's `metadata.materials_project` block (material id,
+formula, the space group as stated) keeps its name: it is what the tests and
+RandomXRD's copy read, and a source-neutral key is a shape decision for the
+maintainer.
 
-GSAS-II may print warnings about highly correlated parameters (e.g., background coefficients):
-```
-** Warning: parameters 0 and 1 are 99.8% correlated **
-```
-This is **normal** for over-parameterized models. Common causes:
-- Too many Chebyshev background terms
-- Refining both instrument and sample broadening simultaneously
-- Limited 2θ range
+## Future roadmap
 
-Not necessarily a problem if Rwp is good and parameters are physically reasonable.
-
-### Unit Cell Refinement Semantics (Schema 0.26)
-
-GSAS-II natively refines all unit cell parameters together with a single lumped flag, but since schema 0.26 PowderLine honors per-parameter flags: a cell parameter refines iff it is present with `refine_flag=true`; absent or false means fixed. Internally, PowderLine sets the lumped GSAS-II flag when any parameter is requested and emits "Hold" constraints for the unrefined degrees of freedom (`src/powderline/constraints.py`):
-
-```json
-"unit_cell": {
-  "a": [11.777, true, null, null],   // refines
-  "c": [3.986, false, null, null]    // held fixed (e.g. a tetragonal phase)
-}
-```
-
-Only symmetry-linked parameters refine together: parameters coupled by the phase's Laue class form one degree-of-freedom group with logical OR within the group. For example, cubic `a=b=c` is a single group (any true flag refines all three), and the oblique monoclinic parameters `a`/`c`/`beta` form one coupled group (see KI-02 in `docs/known_issues.md`). Flags on symmetry-fixed parameters (e.g. cubic angles) have no effect. PowderLine does not validate flag/symmetry consistency — producing symmetry-consistent flags is the recipe author's responsibility.
-
-### Chebyshev Background Coefficients
-
-Indexing starts from 0th order (constant term):
-```json
-"coefficients": [
-  [100.0, true, null, null],    // 0th order (constant)
-  [-50.0, true, null, null],    // 1st order (linear)
-  [10.0, true, null, null]      // 2nd order (quadratic)
-]
-```
-
-Number of coefficients must match `num_coefficients` field (validated in schema).
-
-### Single Peak Background Format
-
-Each single peak is a pseudo-Voigt with 4 parameters:
-```json
-"background": {
-  "single_peaks": {
-    "positions": [[35.5, false, null, null]],           // 2θ position
-    "intensities": [[50.0, true, null, null]],          // Peak height
-    "pv_gaussian_sigma": [[0.1, false, null, null]],    // Gaussian width (σ)
-    "pv_lorentzian_gamma": [[0.05, false, null, null]]  // Lorentzian width (γ, HWHM)
-  }
-}
-```
-
-All lists must have same length (validated in schema). Useful for known impurity peaks that are part of the background.
-
-**Note**: `pv_mixing_eta` parameter not currently implemented in schema.
-
-### Single Peak Fitting (Peak List Mode)
-
-Earlier schemas introduced dedicated single peak fitting capabilities via the top-level `single_peaks` field (distinct from `background.single_peaks`), maintained in the current schema.
-
-This enables refining individual peaks with direct control over position, intensity, and pseudo-Voigt width parameters—useful for:
-- Materials without crystal structure (amorphous, liquids, polymers)
-- Unknown phases requiring peak characterization before structure solution
-- Detailed peak shape analysis independent of structure
-- Le Bail fitting (fit peak intensities without structural model)
-
-**Key Features:**
-- **Independent width refinement**: With `use_instrument_profile: false`, peak widths (σ, γ) refine directly rather than being derived from instrument parameters (U, V, W, X, Y, Z)
-- **Coexistence**: Both `background.single_peaks` and `single_peaks` can be used in same recipe—they populate different GSAS-II structures
-- **Extended output**: Generates `single_peaks_report.txt` with refined parameters plus calculated FWHM and integral breadths
-
-**JSON Structure:**
-```javascript
-// use_instrument_profile lives in refinement_controls.single_peak_fitting_mode
-// (false = direct width refinement), not inside single_peaks:
-"single_peaks": {
-  "positions": [[21.3, true, null, null], [...]],     // 2θ positions
-  "intensities": [[100.0, true, null, null], [...]],  // Peak intensities
-  "pv_gaussian_sigma_sq": [[0.15, true, null, null], [...]], // Gaussian width variances (σ²)
-  "pv_lorentzian_gamma": [[0.08, true, null, null], [...]] // Lorentzian widths (γ, HWHM)
-}
-```
-
-**Implementation Details:**
-- **GSAS-II Location**: Peaks stored in `proj.data[hist.name]['Peak List']['peaks']` (not Background)
-- **Format**: Each peak is `[pos, pos_flag, intensity, int_flag, σ², σ²_flag, γ, γ_flag]`
-  - Note: GSAS-II uses **variance** (σ²) internally, not σ
-- **Instrument mode**: Set via `G2pwd.setPeakInstPrmMode(use_instrument_profile)`
-  - `False` (default): Peak widths refined independently
-  - `True`: Widths constrained by instrument parameters (U, V, W, X, Y, Z)
-
-**Output File: `single_peaks_report.txt`**
-
-Tab-separated file with 10 columns per peak:
-```
-position_2theta  intensity  sigma  gamma  fwhm_gaussian  fwhm_lorentzian  fwhm_pseudovoigt  integral_breadth_gaussian  integral_breadth_lorentzian  integral_breadth_pseudovoigt
-```
-
-**Calculated Values:**
-- **FWHM values**:
-  - Gaussian: FWHM_G = 2√(2ln2) × σ ≈ 2.355σ
-  - Lorentzian: FWHM_L = 2γ
-  - Pseudo-Voigt: Thompson et al. (1987) approximation
-- **Integral Breadths**: Area under peak / peak height
-  - Gaussian: IB_G = FWHM_G × √(π/(4ln2)) ≈ 1.065 × FWHM_G
-  - Lorentzian: IB_L = π × γ = (π/2) × FWHM_L
-  - Pseudo-Voigt: Weighted combination using mixing parameter η
-
-**Verification**: FWHM values are cross-checked against GSAS-II's `G2pwd.getgamFW(γ, σ)` with warning if >1% difference.
-
-**Example**: See `examples/example_LaB6_singlepeakfit/` for complete demonstration.
-
-**Schema Classes:**
-- `SinglePeaksBackground`: For background-associated peaks (`background.single_peaks`)
-- `SinglePeaks`: For Peak List fitting (`single_peaks` at top level) - includes `use_instrument_profile`
-
-### Error Handling Strategy
-
-PowderLine fails fast with actionable error messages:
-- **File loading errors**: Check paths relative to JSON, file permissions
-- **Template detection**: Redirect to real examples
-- **Validation errors**: Show which field failed Pydantic validation
-- **Histogram creation errors**: Check XRD data format, instrument file compatibility
-- **Refinement errors**: Check parameter ranges, correlation warnings in .lst
-- **Output errors**: Check directory permissions, disk space
-
-All errors exit with code 1 for automation compatibility.
-
-## Future Roadmap
-
-**Phase 2 (Next)**: Recipe generation API
-- Python functions to build JSON programmatically
-- Template system for common refinement types
-- Possible FastAPI wrapper for web service
-
-**Phase 3**: Output parsing
-- Structured extraction of all refined parameters to JSON/CSV/HDF5
-- Quality metrics beyond Rwp (χ², GOF, R-Bragg)
-
-**Phase 4**: Dash GUI for recipe building
-- Visual parameter selection
-- Live preview of refinement setup
-
-**Phase 5**: Dash GUI for results visualization
-- Interactive plots of fit profiles
-- Parameter evolution across refinement cycles
-- Comparison between refinements
+- A later minor gsasii
+  schema version with bounds (clamp-freeze-refit); TOPAS 7 after a
+  compatibility run on a TOPAS 7 machine; `unsafe_mode` for deliberately
+  relaxed checks; a recipe builder / CIF importer upstream of the schemas;
+  a structure-source plugin (Materials Project, CIF) upstream of the builder.
 
 ## Contributing
 
 Key principles for future work:
 - Add features when real examples need them (not speculatively)
-- Schema evolves based on examples
-- Maintain backwards compatibility when possible
-- Document GSAS-II quirks as you discover them
-- Add regression tests for new examples
+- Every rule in the schema; every engine quirk refused or warned about, and
+  recorded in the engine-behaviour register
+- Behaviour changes are deliberate, recorded and reviewed; references move
+  only with an equivalence record
+- Frozen modules only through signed-off, recorded edits; "ask, don't assume" on any open
+  decision ([policies](policies.md))
+- Add regression tests, fixtures and goldens for new capabilities
 
 Questions? Open an issue or discussion on GitHub.

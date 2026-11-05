@@ -1,11 +1,10 @@
 """Configuration file loader for PowderLine.
 
-Loads API keys and default parameters from YAML config file. The Materials
-Project API key falls back to the MP_API_KEY environment variable when the
-config file is absent or holds the placeholder.
+Loads the simulation defaults (``simulation_defaults``) from ``.powderline_config.yaml``; the
+TOPAS section is read by ``gateways.topas.runner``. Nothing else lives in the file since the
+Materials Project tool left PowderLine (P-36, 0.2.0).
 """
 
-import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 import yaml
@@ -54,19 +53,21 @@ class ConfigLoader:
         
         if config_file is None:
             print(f"{WARN}  No config file found. Using defaults.")
-            print("   To use Materials Project API, create .powderline_config.yaml")
-            print("   See .powderline_config.yaml.example for template")
+            print("   See .powderline_config.yaml.example for the template")
             self.config = self._get_defaults()
             return
         
         try:
-            with open(config_file, 'r') as f:
-                self.config = yaml.safe_load(f) or {}
-            print(f"{CHECK} Loaded config from: {config_file}")
-        except Exception as e:
-            print(f"{WARN}  Error loading config file: {e}")
-            print("   Using defaults")
-            self.config = self._get_defaults()
+            with open(config_file, 'r', encoding='utf-8') as f:
+                loaded = yaml.safe_load(f)
+        except yaml.YAMLError as e:
+            raise ValueError(f"{config_file}: not valid YAML ({e})") from e
+        if loaded is None:
+            loaded = {}
+        if not isinstance(loaded, dict):
+            raise ValueError(f"{config_file}: the config must be a mapping, got {type(loaded).__name__}")
+        self.config = loaded
+        print(f"{CHECK} Loaded config from: {config_file}")
     
     def _get_defaults(self) -> Dict[str, Any]:
         """Get default configuration values (GSAS-II conventions/units)."""
@@ -75,8 +76,8 @@ class ConfigLoader:
                 'instrument_defaults': {
                     'wavelength': 0.4133,      # Angstroms (30 keV)
                     'polarization': 0.99,      # GSAS-II 'Polariz.'
-                    'zero_shift': 0.0,         # degrees 2theta ('Zero')
-                    'axial_divergence': 0.001, # GSAS-II 'SH/L'
+                    'zero_shift': 0.0,         # centidegrees 2theta ('Zero')
+                    'axial_divergence': 0.002, # GSAS-II 'SH/L': its own floor (A91; P-05)
                     'broadening': {            # TCH pseudo-Voigt (GSAS-II U..Z)
                         'U': 1.0,
                         'V': -0.5,
@@ -111,19 +112,6 @@ class ConfigLoader:
                 }
             }
         }
-    
-    def get_mp_api_key(self) -> Optional[str]:
-        """Get Materials Project API key.
-
-        Resolution order: `materials_project.api_key` in the config file,
-        then the `MP_API_KEY` environment variable. A placeholder config
-        value is passed through unchanged (so callers can report it) only
-        when the environment variable is also unset.
-        """
-        config_key = self.config.get('materials_project', {}).get('api_key')
-        if config_key and config_key != "YOUR_API_KEY_HERE":
-            return config_key
-        return os.environ.get('MP_API_KEY') or config_key
     
     def get_simulation_defaults(self) -> Dict[str, Any]:
         """Get default simulation parameters."""

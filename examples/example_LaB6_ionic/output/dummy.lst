@@ -1,0 +1,176 @@
+********************************************************************************
+   General Structure Analysis System-II Crystal Structure Refinement
+              by Robert B. Von Dreele & Brian H. Toby
+                Argonne National Laboratory(C), 2010
+ This product includes software developed by the UChicago Argonne, LLC,
+            as Operator of Argonne National Laboratory.
+                          Please cite:
+   B.H. Toby & R.B. Von Dreele, J. Appl. Cryst. 46, 544-549 (2013)
+********************************************************************************
+ Least squares controls:
+ Refinement type: analytic Hessian
+ Maximum number of cycles: 5
+ Regularize hydrogens (if any): False
+ Initial shift factor: 1.000
+
+ Phases:
+
+ Phase name: LaB6
+=======================================================================================================================================
+
+ X-ray scattering factors:
+   Symbol     fa                                      fb                                      fc
+---------------------------------------------------------------------------------------------------
+ B          2.05450   1.33260   1.09790   0.70680  23.21850   1.02100  60.34980   0.14030  -0.19320
+ La+3      20.24890  19.37630  11.63230   0.33605   2.92070   0.25070  17.82110  54.94530   2.40860
+
+ Electron scattering factors:
+   Symbol     fa                                                fb
+---------------------------------------------------------------------------------------------------
+ B          0.04360   0.18980   0.67880   1.32730   0.55440   0.12070   1.15950   6.24740  21.04600  59.36190
+ La         0.54610   2.38560   5.06530   5.76010   4.04630   0.14790   1.65520  10.00590  47.32450 145.84640
+
+ Neutron scattering factors:
+   Symbol   isotope       mass       b       resonant terms
+---------------------------------------------------------------------------------------------------
+ B       Nat. Abund.     10.810    0.530
+ La+3    Nat. Abund.    138.906    0.824
+
+ Space Group: P m -3 m
+ The lattice is centrosymmetric primitive cubic
+ The Laue symmetry is m3m
+ The lattice point group is m3m
+ Multiplicity of a general site is 48
+ The inversion center is located at 0,0,0
+ 
+ The equivalent positions are:
+
+ ( 1)     X,     Y,     Z 
+ ( 2)     Z,     X,     Y 
+ ( 3)     Y,     Z,     X 
+ ( 4)     X,     Y,    -Z 
+ ( 5)    -Z,     X,     Y 
+ ( 6)     Y,    -Z,     X 
+ ( 7)    -Z,     X,    -Y 
+ ( 8)    -Y,    -Z,     X 
+ ( 9)     Y,    -Z,    -X 
+ (10)    -X,     Y,    -Z 
+ (11)    -Z,    -X,     Y 
+ (12)     X,    -Y,    -Z 
+ (13)     Y,     X,     Z 
+ (14)     Z,     Y,     X 
+ (15)     X,     Z,     Y 
+ (16)     Y,     X,    -Z 
+ (17)    -Z,     Y,     X 
+ (18)     X,    -Z,     Y 
+ (19)    -Z,     Y,    -X 
+ (20)    -X,    -Z,     Y 
+ (21)     X,    -Z,    -Y 
+ (22)    -Y,     X,    -Z 
+ (23)    -Z,    -Y,     X 
+ (24)     Y,    -X,    -Z 
+
+ Atoms:
+   name    type  refine?   x         y         z      frac site sym  mult I/A   Uiso     U11     U22     U33     U12     U13     U23
+---------------------------------------------------------------------------------------------------------------------------------------
+      B      B          0.50000   0.50000   0.20210   1.000 4mm(z)    6    I 0.00900                                                
+     La   La+3          0.00000   0.00000   0.00000   1.000    m3m    1    I 0.00858                                                
+
+ Unit cell: a = 4.15682 b = 4.15682 c = 4.15682 alpha = 90.000 beta = 90.000 gamma = 90.000 volume = 71.826 Refine? False
+
+ Phase: LaB6 in histogram: PWDR dummy
+=======================================================================================================================================
+ Phase fraction  :          1 Refine? True
+ Extinction coeff:     0.0000 Refine? False
+ March-Dollase PO:     1.0000 Refine? False Axis: 0 0 1
+
+ Size model    : isotropic equatorial:      10.000 Refine? False
+	 LG mixing coeff.:       1.0000 Refine? False
+
+ Mustrain model: isotropic equatorial:         0.0 Refine? False
+	 LG mixing coeff.:      1.0000 Refine? False
+
+ Hydrostatic/elastic strain:
+ names :         D11          eA
+ values:           0           0
+ refine:       False       False
+
+ Histogram: PWDR dummy histogram Id: 0
+=======================================================================================================================================
+ Instrument type: Debye-Scherrer
+ Histogram limits:     1.00 deg to    15.00 deg
+
+ Sample Parameters:
+ Goniometer omega = 0.00, chi = 0.00, phi = 0.00
+ name  :         Scale    Absorption     DisplaceX     DisplaceY
+ value :        1.0000        0.0000        0.0000        0.0000
+ refine:         False         False         False         False
+
+ Instrument Parameters:
+ name  :     Azimuth         Lam    Polariz.        SH/L           U           V           W           X           Y
+ value :    0.000000    0.166500    0.990000    0.002000   18.717409    0.600341    1.147013    0.281430    0.001000
+ refine:                   False       False       False        True        True        True        True        True
+
+ name  :           Z        Zero
+ value :    0.000000    0.000000
+ refine:        True       False
+
+ Background function: chebyschev-1 Refine? True
+ Coefficients:     10.000     5.000     1.000     0.000     0.000     0.000
+ Fixed background file: ; mult: 1.000  Refine? False
+
+ Refinement results:
+---------------------------------------------------------------------------------------------------------------------------------------
+ Number of function calls: 12 No. of observations: 3767 No. of parameters: 13 User rejected: 0 Sp. gp. extinct: 0
+ Refinement time =    1.830s,    0.457s/cycle, for 4 cycles
+ wR =    6.49%, chi**2 =      1019.32, GOF =   0.52
+
+ Phases:
+ Result for phase: LaB6
+=======================================================================================================================================
+
+ Atoms:
+   name      x         y         z      frac   Uiso     U11     U22     U33     U12     U13     U23
+---------------------------------------------------------------------------------------------------------------------------------------
+      B      B:
+ values:   0.50000   0.50000   0.20210   1.000 0.00900
+ sig   :                                               
+     La   La+3:
+ values:   0.00000   0.00000   0.00000   1.000 0.00858
+ sig   :                                               
+
+ Density: 4.7108 g/cm**3
+
+ Phase: LaB6 in histogram: PWDR dummy
+=======================================================================================================================================
+ Final refinement RF, RF^2 = 3.30%, 4.98% on 49 reflections
+ Durbin-Watson statistic = 0.073
+ Bragg intensity sum = 4.82e+04
+ Phase fraction  :   0.037739, sig  7.156e-05 Weight fraction  :  0.00000, sig    0.00000
+
+ Histogram: PWDR dummy histogram Id: 0
+=======================================================================================================================================
+ PWDR histogram weight factor = 1.000
+ Final refinement wR = 6.49% on 3767 observations in this histogram
+ Other residuals: R = 4.97%, R-bkg = 5.82%, wR-bkg = 6.49% wRmin = 12.48%
+ Instrument type: Debye-Scherrer
+
+ Resonant form factors:(ref: D.T. Cromer & D.A. Liberman (1981), Acta Cryst. A37, 267-268.)
+ Element:        B     La+3
+ f'     :   -0.001   -0.066
+ f"     :    0.000    1.162
+
+ Instrument Parameters:
+ names :         Lam    Polariz.        SH/L           U           V           W           X           Y           Z
+ value :    0.166500    0.990000    0.002000   48.035224   11.243616    0.705287    0.617995  -10.169912    0.340803
+ sig   :                                        8.341968    0.955231    0.025674    0.008556    0.393852    0.008654
+
+ Instrument Parameters:
+ names :        Zero
+ value :    0.000000
+ sig   :            
+
+ Background function: chebyschev-1
+ value :      30.03     1.358     1.195    -1.437    0.5202    0.3336
+ sig   :    0.06721    0.1075   0.09789   0.09587   0.08369   0.08261
+ Background sums: empirical 1.11e+05, Debye 0, peaks 0, Total 1.11e+05

@@ -41,3 +41,6 @@ examples/**/output/**/*.bak*.gpx
 fort.*
 
 .vscode/*
+
+# Maintainers' local probe scripts (never part of the package or the suite)
+probes/

@@ -7,8 +7,11 @@ These tests confirm that:
   D. extract_refined_params_from_project returns {} (not silently swallows) when
      covariance data is absent — the RuntimeError is raised at the call site.
 
-Tests A–C run the full pipeline via subprocess (consistent with the rest of the suite).
-Test D is a pure unit test using a lightweight mock.
+Tests A–C run the full pipeline via subprocess on the native ``gsasii.rietveld``
+examples (consistent with the rest of the suite); test A also checks both Rwp
+sources (GSAS-II's wR in ``dummy.lst``, the freeze tripwire, and the uniform
+``rwp`` the CLI prints) against the re/07 reference. Test D is a pure unit test
+using a lightweight mock.
 """
 
 import math
@@ -20,17 +23,24 @@ from unittest.mock import MagicMock
 import pandas as pd
 import pytest
 
-from subprocess_utils import run_subprocess_utf8
+pytestmark = [pytest.mark.gsasii, pytest.mark.slow]
+
+pytest.importorskip("GSASII.GSASIIscriptable")  # the unit tests import the frozen extractors, which import GSAS-II
+
+from subprocess_utils import extract_rwp_from_lst, kicker_command, run_subprocess_utf8
+
+REPO = Path(__file__).resolve().parent.parent  # the repo, whatever the cwd (review item 17)
+from test_example_LaB6_regression import UNIFORM_RWP_REFERENCE, UNIFORM_RWP_TOLERANCE, extract_rwp_from_stdout
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 def _run_kicker(input_json: Path, output_dir: Path) -> subprocess.CompletedProcess:
     result = run_subprocess_utf8(
-        ["pixi", "run", "kicker", "--no-server", str(input_json), "--output", str(output_dir)],
+        kicker_command(str(input_json), "--output", str(output_dir), repo_root=REPO),
         capture_output=True,
         text=True,
-        cwd=Path.cwd(),
+        cwd=REPO,
     )
     return result
 
@@ -69,6 +79,14 @@ def test_covariance_path_returns_nonempty_params(example_LaB6_input, tmp_output_
     assert df["esd"].apply(lambda v: math.isfinite(float(v))).all(), (
         "Some ESDs are non-finite (inf/-inf) in refined_parameters.csv"
     )
+
+    # Both Rwp sources against the reference: GSAS-II's own wR (freeze tripwire)
+    # and PowderLine's uniform rwp (A23)
+    lst_wr = extract_rwp_from_lst(tmp_output_dir / "dummy.lst")
+    uniform_rwp = extract_rwp_from_stdout(result.stdout)
+    assert uniform_rwp is not None, result.stdout
+    assert abs(lst_wr - UNIFORM_RWP_REFERENCE["LaB6"]) < UNIFORM_RWP_TOLERANCE
+    assert abs(uniform_rwp - UNIFORM_RWP_REFERENCE["LaB6"]) < UNIFORM_RWP_TOLERANCE
 
 
 # ─── Test B: cell ESD calculation returns floats for all 7 cell parameters ────
@@ -166,11 +184,11 @@ def test_extract_refined_params_empty_covariance_returns_empty_dict():
     """
     extract_refined_params_from_project() returns {} when covariance data is absent.
 
-    This is expected for simulation mode (no parameters varied) and for GSASII_SPF.
+    This is expected for simulation mode (no parameters varied) and for gsasii.spf.
     The RuntimeError at the call site only fires when GSAS-II DID populate a varyList
     but extraction still returned nothing (indicating corrupt covariance data).
     """
-    from powderline.kicker import extract_refined_params_from_project  # noqa: PLC0415
+    from powderline.gateways.gsasii.extractors import extract_refined_params_from_project  # noqa: PLC0415
 
     mock_proj = MagicMock()
     mock_proj.data = {"Covariance": {"data": {}}}
@@ -188,7 +206,7 @@ def test_extract_refined_params_missing_covariance_key_returns_empty_dict():
     entirely absent from proj.data (e.g. a freshly constructed project that has not
     been refined yet, or SPF mode).
     """
-    from powderline.kicker import extract_refined_params_from_project  # noqa: PLC0415
+    from powderline.gateways.gsasii.extractors import extract_refined_params_from_project  # noqa: PLC0415
 
     mock_proj = MagicMock()
     mock_proj.data = {}  # No 'Covariance' key at all
@@ -204,7 +222,7 @@ def test_extract_refined_params_populated_varylast_returns_params():
     extract_refined_params_from_project() returns a non-empty dict when covariance
     data has a non-empty varyList. This is the normal post-refinement case.
     """
-    from powderline.kicker import extract_refined_params_from_project  # noqa: PLC0415
+    from powderline.gateways.gsasii.extractors import extract_refined_params_from_project  # noqa: PLC0415
 
     import numpy as np
 

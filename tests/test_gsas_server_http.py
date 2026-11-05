@@ -13,15 +13,16 @@ cannot start (e.g. GSAS-II unavailable).
 import json
 import secrets
 import pytest
+
+pytestmark = [pytest.mark.gsasii, pytest.mark.slow]
 import time
 import subprocess
 import sys
 from pathlib import Path
-import tempfile
 import os
 
-from powderline import gsas_server
-from powderline.gsas_client import GSASClient
+from powderline.gateways.gsasii import server as gsas_server
+from powderline.gateways.gsasii.client import GSASClient
 
 
 def _endpoint_in(state_root: Path):
@@ -58,7 +59,7 @@ def server_state_root(tmp_path_factory):
 def test_server(server_state_root):
     """Start a server in an isolated state dir; yield ``(port, token)``."""
     src_dir = Path(__file__).parent.parent / 'src'
-    server_script = src_dir / 'powderline' / 'gsas_server.py'
+    server_script = src_dir / 'powderline' / 'gateways' / 'gsasii' / 'server.py'
 
     if not server_script.exists():
         pytest.skip(f"Server script not found: {server_script}")
@@ -132,7 +133,7 @@ def test_health_endpoint_format(test_server):
     data = resp.json()
 
     # Verify all expected fields are present
-    required_fields = {"status", "pid", "uptime_seconds", "request_count"}
+    required_fields = {"status", "pid", "uptime_seconds", "request_count", "powderline_version", "code_hash"}
     assert required_fields.issubset(data.keys()), \
         f"Missing required fields: {required_fields - data.keys()}"
 
@@ -144,14 +145,14 @@ def test_simulate_endpoint_missing_fields(test_server):
     port, token = test_server
 
     # Missing recipe_data
-    resp = _signed(port, token, 'POST', '/simulate', {"output_dir": "/tmp/test"}
+    resp = _signed(port, token, 'POST', '/simulate', {"verbose": True}
     )
     assert resp.status_code == 422, "Should return validation error for missing recipe_data"
 
-    # Missing output_dir
-    resp = _signed(port, token, 'POST', '/simulate', {"recipe_data": {}}
+    # output_dir is no longer part of the request (re/19, KI-12): the server's filesystem is not the client's
+    resp = _signed(port, token, 'POST', '/simulate', {"recipe_data": {}, "output_dir": "/tmp/test"}
     )
-    assert resp.status_code == 422, "Should return validation error for missing output_dir"
+    assert resp.status_code == 422, "Should refuse a request naming an output directory"
 
     # Empty request
     resp = _signed(port, token, 'POST', '/simulate', {}
@@ -165,22 +166,16 @@ def test_simulate_endpoint_invalid_recipe(test_server):
 
     port, token = test_server
 
-    # Invalid (empty) recipe_data — server should return 200 with success=False
-    with tempfile.TemporaryDirectory() as tmpdir:
-        resp = _signed(port, token, 'POST', '/simulate', {
-                "recipe_data": {},
-                "output_dir": tmpdir
-            }
-        )
+    # Invalid (empty) recipe_data — server should return 200 with a failed envelope
+    resp = _signed(port, token, 'POST', '/simulate', {"recipe_data": {}})
 
-        assert resp.status_code == 200, "Should return 200 even for errors (error in response body)"
-        data = resp.json()
+    assert resp.status_code == 200, "Should return 200 even for errors (error in response body)"
+    data = resp.json()
 
-        assert "success" in data, "Response should contain 'success' field"
-        assert data["success"] is False, "Should indicate failure"
-        assert "error" in data, "Response should contain 'error' field"
-        assert "recipe" in data["error"].lower() or "validation" in data["error"].lower(), \
-            "Error message should mention recipe validation failure"
+    assert data["status"] == "failed" and data["envelope_version"] == "1"
+    assert data["failure"]["kind"] == "backend" and data["failure"]["reason"] == "backend_error"
+    msg = data["failure"]["message"].lower()
+    assert "recipe" in msg or "validation" in msg, "the message should mention recipe validation failure"
 
 
 def test_simulate_endpoint_optional_verbose(test_server):
@@ -189,26 +184,13 @@ def test_simulate_endpoint_optional_verbose(test_server):
 
     port, token = test_server
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        # Request with verbose=true — should accept and return 200 (even if recipe invalid)
-        resp = _signed(port, token, 'POST', '/simulate', {
-                "recipe_data": {},
-                "output_dir": tmpdir,
-                "verbose": True
-            }
-        )
+    # Request with verbose=true — should accept and return 200 (even if recipe invalid)
+    resp = _signed(port, token, 'POST', '/simulate', {"recipe_data": {}, "verbose": True})
+    assert resp.status_code == 200, "Should accept verbose parameter"
 
-        assert resp.status_code == 200, "Should accept verbose parameter"
-
-        # Request with verbose=false
-        resp = _signed(port, token, 'POST', '/simulate', {
-                "recipe_data": {},
-                "output_dir": tmpdir,
-                "verbose": False
-            }
-        )
-
-        assert resp.status_code == 200, "Should accept verbose parameter"
+    # Request with verbose=false
+    resp = _signed(port, token, 'POST', '/simulate', {"recipe_data": {}, "verbose": False})
+    assert resp.status_code == 200, "Should accept verbose parameter"
 
 
 def test_health_endpoint_performance(test_server):
@@ -250,12 +232,7 @@ def test_server_increments_request_count(test_server):
     initial_count = resp.json()["request_count"]
 
     # Make a simulation request (will fail validation but should still increment counter)
-    with tempfile.TemporaryDirectory() as tmpdir:
-        _signed(port, token, 'POST', '/simulate', {
-                "recipe_data": {},
-                "output_dir": tmpdir
-            }
-        )
+    _signed(port, token, 'POST', '/simulate', {"recipe_data": {}})
 
     # Check count increased
     resp = _signed(port, token, 'GET', '/health')
@@ -275,14 +252,13 @@ def _forged_headers(token: str, method: str, path: str, body: bytes) -> dict:
             "Content-Type": "application/json"}
 
 
-def test_requests_without_token_rejected(test_server, tmp_path):
+def test_requests_without_token_rejected(test_server, server_state_root):
     """Unsigned, bearer-style, or wrongly signed requests -> 401 on every route,
-    and nothing is written."""
+    and no job directory is created."""
     import httpx
 
     port, token = test_server
-    out = tmp_path / "other_users_output"
-    body = json.dumps({"recipe_data": {}, "output_dir": str(out)}).encode()
+    body = json.dumps({"recipe_data": {}}).encode()
     for headers in ({},
                     {"Authorization": f"Bearer {token}"},  # the old scheme: refused
                     _forged_headers("not-the-token", "POST", "/simulate", body)):
@@ -294,7 +270,8 @@ def test_requests_without_token_rejected(test_server, tmp_path):
         assert resp.status_code == 401
         assert "pid" not in resp.text
         assert gsas_server.RESPONSE_SIGNATURE_HEADER not in resp.headers
-    assert not out.exists(), "an unauthenticated request must not create output_dir"
+    assert not list((server_state_root / "powderline").glob("job-*")), \
+        "an unauthenticated request must not start a job"
 
 
 @pytest.mark.skipif(os.name == "nt", reason="POSIX permission bits")
@@ -330,8 +307,7 @@ def test_client_ignores_another_users_server(test_server, tmp_path, monkeypatch)
         json.dumps({"pid": os.getpid(), "port": port, "token": "guessed"}))
     assert client.is_server_available() is False
     with pytest.raises(Exception):
-        client._submit_to_server({}, tmp_path / "out")
-    assert not (tmp_path / "out").exists()
+        client._submit_to_server({})
 
 
 def test_refinement_through_authenticated_server(test_server, server_state_root,
@@ -341,6 +317,60 @@ def test_refinement_through_authenticated_server(test_server, server_state_root,
     monkeypatch.setattr(gsas_server, "state_dir", lambda: server_state_root / "powderline")
     client = GSASClient(fallback_to_subprocess=False)
     result = client.submit_simulation(recipe_LaB6_dict, tmp_path, auto_start_server=False)
-    assert result["success"] is True, result.get("error")
+    assert result["status"] == "ok", result.get("failure")
+    assert result["envelope_version"] == "1" and result["converged"] in (True, False, None)
     assert result["method"] == "server"
-    assert (tmp_path / "fit_profile.txt").exists()
+    # re/19 (KI-12): the files came back in the response and were written here; the server kept nothing
+    for name in ("fit_profile.txt", "refined_parameters.csv", "dummy.lst", "dummy.gpx"):
+        assert (tmp_path / name).exists(), name
+    assert "files" not in result
+    assert all(Path(f).parent == tmp_path.resolve() for f in result["output_files"]), result["output_files"]
+    assert not list((server_state_root / "powderline").glob("job-*")), "the server's scratch dir must be gone"
+
+
+def test_engine_failure_through_authenticated_server(test_server, server_state_root, monkeypatch,
+                                                     recipe_LaB6_dict, tmp_path):
+    """R30 inside the server process: a site GSAS-II misreads (EB-40) raises in the server's run_refinement,
+    the server answers a failed envelope, and the client returns it (no fallback) — re/12 spec §7."""
+    import copy
+    monkeypatch.delenv("POWDERLINE_NO_SERVER", raising=False)
+    monkeypatch.setattr(gsas_server, "state_dir", lambda: server_state_root / "powderline")
+    recipe = copy.deepcopy(recipe_LaB6_dict)
+    recipe["payload"]["background"].pop("single_peaks", None)
+    p = lambda v, f=False: [v, f]  # noqa: E731
+    recipe["payload"]["phases"] = {"P": {
+        "space_group": "R -3 m:H",
+        "unit_cell": {k: p(v) for k, v in zip(("a", "b", "c", "alpha", "beta", "gamma"), (5.0, 5.0, 12.0, 90.0, 90.0, 120.0))},
+        "atoms": {"Fe": {"element": "Fe", "x": p(0.0), "y": p(0.333333), "z": p(0.166667),
+                         "occupancy": p(1.0), "ADP": "Uiso", "Uiso": p(0.01)}},
+        "scale": p(1.0)}}
+    client = GSASClient(fallback_to_subprocess=False)
+    result = client.submit_simulation(recipe, tmp_path, auto_start_server=False)
+    assert result["status"] == "failed" and result["method"] == "server"
+    assert result["failure"]["kind"] == "engine" and result["failure"]["reason"] == "unusable_site"
+    assert "state the equivalent position" in result["failure"]["message"]
+    assert result["failure"]["traceback"]  # the raise site travels with the envelope
+    assert not (tmp_path / "dummy.lst").exists()  # refused before GSAS-II refined anything
+
+
+def test_a_failed_server_job_leaves_the_engine_files_and_failure_json_locally(test_server, server_state_root, monkeypatch, tmp_path):
+    """re/30 through the server: the job's GSAS-II files travel back (re/19) and powderline.run() records the failure
+    locally; no result table exists for the failed run."""
+    import json
+    import powderline
+    from powderline.exceptions import EngineExecutionError
+    monkeypatch.delenv("POWDERLINE_NO_SERVER", raising=False)
+    monkeypatch.setattr(gsas_server, "state_dir", lambda: server_state_root / "powderline")
+    repo = Path(__file__).parent.parent
+    recipe = json.loads((repo / 'examples' / 'example_LaB6_textured' / 'input.json').read_text(encoding='utf-8'))
+    recipe['payload']['phases']['LaB6']['preferred_orientation']['ratio'] = [1.0, True]      # GSAS-II aborts (EB-99)
+    out = tmp_path / 'out'
+    with pytest.raises(EngineExecutionError) as info:
+        powderline.run(recipe, out, execution_mode='server')
+    assert info.value.reason == 'diverged' and info.value.result['method'] == 'server'
+    names = {p.name for p in out.iterdir()}
+    assert {'dummy.gpx', 'dummy.lst', 'failure.json'} <= names
+    assert not names & {'refined_parameters.csv', 'LaB6_unit_cell_report.csv', 'LaB6_peak_list_report.csv',
+                        'fit_profile.txt', 'output_recipe.json', 'parameter_dispositions.csv'}, sorted(names)
+    record = json.loads((out / 'failure.json').read_text(encoding='utf-8'))
+    assert record['failure']['reason'] == 'diverged' and record['powderline_provenance']['schema_name'] == 'gsasii.rietveld'

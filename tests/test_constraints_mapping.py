@@ -1,6 +1,6 @@
-"""Unit tests for powderline.constraints — per-parameter flag translation.
+"""Unit tests for powderline.gateways.gsasii.constraints — per-parameter flag translation.
 
-Covers the schema-0.26 DOF-group tables: cell plans for every Laue class
+Covers the DOF-group tables: cell plans for every Laue class
 (incl. all monoclinic unique axes and both rhombohedral settings) and atom
 plans for representative site symmetries (general position, fixed, partially
 fixed, linked coordinates, linked Uij). Expected groupings were verified
@@ -9,8 +9,10 @@ coupling, Uij holds).
 """
 import pytest
 
-from GSASII import GSASIIspc as G2spc
-from powderline.constraints import (
+pytestmark = pytest.mark.gsasii
+
+G2spc = pytest.importorskip("GSASII.GSASIIspc")
+from powderline.gateways.gsasii.constraints import (
     AtomPlan,
     CellPlan,
     atom_refinement_plan,

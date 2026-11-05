@@ -84,10 +84,10 @@
  Extinction coeff:     0.0000 Refine? False
  March-Dollase PO:     1.0000 Refine? False Axis: 0 0 1
 
- Size model    : isotropic equatorial:       1.000 Refine? False
+ Size model    : isotropic equatorial:      10.000 Refine? False
 	 LG mixing coeff.:       1.0000 Refine? False
 
- Mustrain model: isotropic equatorial:      1000.0 Refine? False
+ Mustrain model: isotropic equatorial:         0.0 Refine? False
 	 LG mixing coeff.:      1.0000 Refine? False
 
  Hydrostatic/elastic strain:
@@ -108,7 +108,7 @@
 
  Instrument Parameters:
  name  :     Azimuth         Lam    Polariz.        SH/L           U           V           W           X           Y
- value :    0.000000    0.166500    0.990000    0.000500   18.717409    0.600341    1.147013    0.281430    0.001000
+ value :    0.000000    0.166500    0.990000    0.002000   18.717409    0.600341    1.147013    0.281430    0.001000
  refine:                   False       False       False        True        True        True        True        True
 
  name  :           Z        Zero
@@ -117,17 +117,13 @@
 
  Background function: chebyschev-1 Refine? True
  Coefficients:     10.000     5.000     1.000     0.000     0.000     0.000
-
- Single peak coefficients
- names :   BkPkpos refine? BkPkint refine? BkPksig refine? BkPkgam refine?
- peak 0:       1.500  True       1.000  True    1000.000  True       0.000  True
  Fixed background file: ; mult: 1.000  Refine? False
 
  Refinement results:
 ---------------------------------------------------------------------------------------------------------------------------------------
- Number of function calls: 10 No. of observations: 3768 No. of parameters: 17 User rejected: 0 Sp. gp. extinct: 0
- Refinement time =    1.335s,    0.445s/cycle, for 3 cycles
- wR =    6.53%, chi**2 =      1030.77, GOF =   0.52
+ Number of function calls: 12 No. of observations: 3767 No. of parameters: 13 User rejected: 0 Sp. gp. extinct: 0
+ Refinement time =    1.855s,    0.464s/cycle, for 4 cycles
+ wR =    6.53%, chi**2 =      1033.08, GOF =   0.52
 
  Phases:
  Result for phase: LaB6
@@ -147,15 +143,15 @@
 
  Phase: LaB6 in histogram: PWDR dummy
 =======================================================================================================================================
- Final refinement RF, RF^2 = 3.28%, 4.98% on 49 reflections
+ Final refinement RF, RF^2 = 3.29%, 4.97% on 49 reflections
  Durbin-Watson statistic = 0.072
  Bragg intensity sum = 4.82e+04
- Phase fraction  :   0.037734, sig 7.1982e-05 Weight fraction  :  0.00000, sig    0.00000
+ Phase fraction  :   0.037731, sig 7.2044e-05 Weight fraction  :  0.00000, sig    0.00000
 
  Histogram: PWDR dummy histogram Id: 0
 =======================================================================================================================================
  PWDR histogram weight factor = 1.000
- Final refinement wR = 6.53% on 3768 observations in this histogram
+ Final refinement wR = 6.53% on 3767 observations in this histogram
  Other residuals: R = 5.05%, R-bkg = 5.95%, wR-bkg = 6.53% wRmin = 12.48%
  Instrument type: Debye-Scherrer
 
@@ -166,8 +162,8 @@
 
  Instrument Parameters:
  names :         Lam    Polariz.        SH/L           U           V           W           X           Y           Z
- value :    0.166500    0.990000    0.000500   47.406157   11.187802    0.710974    0.572187  -15.805808    0.295016
- sig   :                                        8.313658    0.953997    0.025659    0.008561    0.393705    0.008659
+ value :    0.166500    0.990000    0.002000   49.119084   11.184586    0.706372    0.619371  -10.260126    0.342172
+ sig   :                                        8.398558    0.959783    0.025743    0.008592    0.395800    0.008690
 
  Instrument Parameters:
  names :        Zero
@@ -175,10 +171,6 @@
  sig   :            
 
  Background function: chebyschev-1
- value :      30.04     1.358     1.193    -1.423    0.5137    0.3163
- sig   :     0.0676    0.1081   0.09841   0.09637   0.08415   0.08306
-
- Single peak coefficients:
- peak no.    BkPkpos        esd        BkPkint        esd        BkPksig        esd        BkPkgam        esd     
-    0 87678477107.2750      0.0000-279344594.194       0.000   1033768.031       0.000-279869600.075       0.000
- Background sums: empirical 1.12e+05, Debye 0, peaks 0, Total 1.12e+05
+ value :      30.02     1.363     1.179    -1.427    0.5207    0.3165
+ sig   :    0.06768    0.1082   0.09854    0.0965   0.08424   0.08317
+ Background sums: empirical 1.11e+05, Debye 0, peaks 0, Total 1.11e+05

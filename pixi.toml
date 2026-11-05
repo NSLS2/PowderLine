@@ -1,87 +1,173 @@
 [workspace]
-requires-pixi = ">=0.82.1"
 authors = ["Dan Olds <dpolds@gmail.com>", "Adam Corrao <95718914+AdamCorrao@users.noreply.github.com>"]
 channels = ["conda-forge"]
 name = "PowderLine"
 platforms = ["linux-64", "win-64", "osx-arm64"]
-version = "0.1.2"
+version = "0.2.0"
+requires-pixi = ">=0.82.1"
 preview = ["pixi-build"]
 
-[tasks]
-kicker = "PYTHONPATH=$PWD/src:$PYTHONPATH python src/powderline/kicker.py"
-topas-kicker = "PYTHONPATH=$PWD/src:$PYTHONPATH python -m powderline.topas.kicker"
-# Cross-platform (task-level env avoids Unix-only shell syntax; see
-# docs/cross-platform-guide.md Issue B for the remaining tasks)
-mp-simulate = { cmd = "python -m powderline.mp_simulate", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
-gsas-server = "PYTHONPATH=$PWD/src:$PYTHONPATH python src/powderline/gsas_server.py"
-test = "PYTHONPATH=$PWD/src:$PYTHONPATH pytest -v"
-docs = "sphinx-build -W --keep-going -b html docs docs/_build/html"
-docs-clean = "rm -rf docs/_build"
-ui = 'GSASII_NOPATHHACKING="true" python -m GSASII' # to test running GSAS-II GUI
-update-code-hash = "python scripts/update_code_hash.py"
+# ---------------------------------------------------------------------------
+# Environments:
+#
+#   default          core only: schema layer, registry, the engine-free CLI.
+#                    No engine -- a gsasii.* recipe validates here but a run
+#                    raises EngineNotAvailableError naming the env to use.
+#   gsasii           + GSAS-II (pixi-build) and the GSAS-II-only tooling
+#                    (server).
+#   easydiffraction  + easydiffraction (Python >=3.12); no GSAS-II.
+#   all              every engine.
+#   dev              all + docs/test tooling: the contributor env.
+#
+# Tasks: `kicker` is engine-free and lives in the default feature, so
+# `pixi run kicker <recipe>` runs in the default env unless you say where:
+# `pixi run -e gsasii kicker <recipe>`. Engine-bound tasks live in their
+# engine's feature, so without `-e` pixi reports them as ambiguous and prints
+# the `--environment` form to use. Tasks only the dev env has (`test-all`,
+# `docs`) resolve to it automatically. All tasks use the task-level `env` dict
+# for PYTHONPATH (cross-platform; docs/cross-platform-guide.md Issue B).
+#
+# Test suites (markers declared in pyproject.toml, one per test):
+#   pixi run test                              core + topas_gen, engine-free, any env;
+#                                              installs the core guard (tests/conftest.py)
+#   pixi run -e gsasii test-gsasii             GSAS-II suite incl. the slow regressions
+#   pixi run -e easydiffraction test-easydiffraction
+#   pixi run test-topas                        topas_gen + topas_exec; topas_exec runs tc.exe
+#                                              (the TOPAS machine: set POWDERLINE_TOPAS_DIR and
+#                                              POWDERLINE_TOPAS_VERSION), else it skips
+#   pixi run test-all                          every marker, in `dev` (the pre-merge gauntlet)
+# Each takes extra pytest arguments: `pixi run test -x -k schema`.
+# ---------------------------------------------------------------------------
 
+[tasks]
+# The one CLI: `powderline <recipe.json>` after `pixi reinstall powderline`;
+# this task runs the same main. Dispatches on the recipe's schema_name.
+kicker = { cmd = "python -m powderline.kicker", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
+doctor = { cmd = "python -m powderline.kicker --doctor", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
+# Regenerate src/powderline/_code_hash.json after editing the frozen GSAS-II
+# gateway modules (stdlib only; guarded by tests/test_code_hash.py).
+update-code-hash = "python scripts/update_code_hash.py"
+# The engine-free suites: what every env must pass without importing an engine
+# (the core guard makes an engine import fail). TOPAS input generation needs
+# only gemmi, so it belongs here and runs on every CI push.
+test = { cmd = 'pytest -m "core or topas_gen"', env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
+# The TOPAS suite: generation everywhere; the topas_exec tests (tests/test_topas_exec.py) skip
+# with a reason unless POWDERLINE_TOPAS_DIR and POWDERLINE_TOPAS_VERSION name the TOPAS
+# installation, so they run only on the TOPAS Windows machine. The core guard is off here.
+test-topas = { cmd = 'pytest -m "topas_gen or topas_exec"', env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
+fields-check = { cmd = "python scripts/gen_schema_field_tables.py --check", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
 
 [dependencies]
+# Core = the pyproject runtime dependencies + what the editable install and the
+# test runner need. Keep this engine-free: no engine package may appear here.
 python = ">=3.10"
-hatchling = ">=1.24"
-pydantic = ">=2.0"
-h5py = ">=3.12.1,<4"
-imageio = ">=2.36.1,<3"
-matplotlib = ">=3.10.0,<4"
-meson-python = ">=0.17.1,<0.18"
-ninja = ">=1.12.1,<2"
-numpy = ">=2.2.1,<3"
-pillow = ">=11.1.0,<12"
-pkg-config = ">=0.29.2,<0.30"
-pyopengl = ">=3.1.6,<4"
-pyproject-metadata = ">=0.9.0,<0.10"
-requests = ">=2.32.3,<3"
-scipy = ">=1.15.0,<2"
-tomli = ">=2.2.1,<3"
-wheel = ">=0.45.1,<0.46"
-wxpython = ">=4.2.2,<5"
 pip = ">=26.2.2"
-zarr = ">=2.18.3,<4"
-xmltodict = ">=0.14.2,<0.15"
-pycifrw = ">=4.4.0"
+hatchling = ">=1.24"
 pytest = ">=8.3.4,<9"
-gitpython = ">=3.1.44,<4"
-cython = ">=3.0.11,<4"
-seekpath = ">=2.1.0,<3"
-pybaselines = ">=1.2.0,<2"
+pydantic = ">=2.0"
+numpy = ">=2.2.1,<3"
+scipy = ">=1.15.0,<2"
 pyyaml = ">=6.0.3,<7"
 pandas = ">=2.3.3,<3"
-sphinx = ">=8.0.0,<9"
-sphinx_rtd_theme = ">=3.0.0,<4"
-myst-parser = ">=4.0.0,<5"
-mp-api = ">=0.46.4,<1"
-emmet-core = ">=0.87.1,<0.88"
 fastapi = ">=0.115.0,<1"
 uvicorn = ">=0.34.0,<1"
 httpx = ">=0.28.0,<1"
-gemmi = ">=0.7.5,<0.8"
-# GSAS-II is built as a conda package via pixi-build (see `preview` above) from
-# the tacaswell fork, which adds the conda recipe. This installs GSAS-II on ALL
-# platforms (linux-64/win-64/osx-arm64), unlike the former linux-64-only pip pin.
-# Currently resolves to GSAS-II v5.7.9. Note: a GSAS-II (or scipy/BLAS) change can
-# shift refined-parameter results, so the regression tests compare
-# refined_parameters.csv within tolerance (tests/test_example_LaB6_regression.py
-# `refined_params_match`). The win-64 TOPAS path still imports zero GSAS-II — that
-# guarantee is enforced by the subprocess import-block tests, not by GSAS-II's
-# absence. Don't change the rev casually; re-check the regression suite if you do.
-GSAS-II = { git = "https://github.com/tacaswell/GSAS-II", rev = "enh/pixi_pkg" }
-
-
+# gemmi is pinned exactly: core's space-group contract is its canonical names
+# (tests/data/canonical_space_groups.txt) and the symmetry rules are
+# characterized against this version. Widen only after re-running the symmetry
+# tests and updating that file.
+gemmi = "==0.7.5"
+packaging = ">=22"
+# tomllib fallback for Python 3.10 (tests/test_gateways.py reads this manifest).
+tomli = ">=2.2.1,<3"
 
 [pypi-dependencies]
 powderline = { path = ".", editable = true }
 
-[feature.easydiff.dependencies]
+# ---------------------------------------------------------------------------
+# gsasii: GSAS-II via pixi-build + the GSAS-II-only tooling.
+# ---------------------------------------------------------------------------
+[feature.gsasii.dependencies]
+# GSAS-II is built as a conda package via pixi-build (see `preview` above) from
+# the tacaswell fork, which adds the conda recipe. This installs GSAS-II on ALL
+# platforms (linux-64/win-64/osx-arm64), unlike the former linux-64-only pip pin.
+#
+# Engine-version pin: the conda package version (2.0.0, from the
+# fork's recipe) is unrelated to the GSAS-II runtime version, so the pin is the
+# source revision. `rev` is the COMMIT the previous lock resolved for the fork's
+# branch `enh/pixi_pkg` (pixi.lock, 2026-10), so a re-lock cannot move GSAS-II.
+# It gives GSAS-II v5.7.9, which must satisfy gateways/gsasii/gateway.py
+# ENGINE_VERSION_SPEC (asserted by tests/test_gateways.py
+# test_gsasii_installed_engine_version_satisfies_spec in this env). Raising
+# GSAS-II = bump this rev and the specifier together, then re-run the
+# regression suite: a GSAS-II (or scipy/BLAS) change can shift refined values
+# (tests/test_example_LaB6_regression.py compares within tolerance).
+GSAS-II = { git = "https://github.com/tacaswell/GSAS-II", rev = "e0910fc19bdd829a10f0204e3e4f4eaa38ad5e0f" }
+# GSAS-II runtime imports (also declared by the conda package; kept explicit so
+# the versions stay where the v0.1.1 lock had them).
+wxpython = ">=4.2.2,<5"
+pyopengl = ">=3.1.6,<4"
+matplotlib = ">=3.10.0,<4"
+pillow = ">=11.1.0,<12"
+imageio = ">=2.36.1,<3"
+zarr = ">=2.18.3,<4"
+pycifrw = ">=4.4.0"
+seekpath = ">=2.1.0,<3"
+requests = ">=2.32.3,<3"
+# Carried over from the from-source era; the pixi-build recipe brings its own
+# build requirements, so these are candidates for pruning after the re-lock.
+meson-python = ">=0.17.1,<0.18"
+ninja = ">=1.12.1,<2"
+cython = ">=3.0.11,<4"
+pkg-config = ">=0.29.2,<0.30"
+pyproject-metadata = ">=0.9.0,<0.10"
+wheel = ">=0.45.1,<0.46"
+
+[feature.gsasii.tasks]
+gsas-server = { cmd = "python -m powderline.gateways.gsasii.server", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
+ui = { cmd = "python -m GSASII", env = { GSASII_NOPATHHACKING = "true" } } # the GSAS-II GUI
+# The GSAS-II suite, slow regressions included (they are its point); the
+# regression tests spawn `pixi run -e <this env> kicker` via
+# tests/subprocess_utils.kicker_command. `pixi run -e gsasii test-gsasii`.
+test-gsasii = { cmd = 'pytest -m "gsasii"', env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
+
+# ---------------------------------------------------------------------------
+# easydiffraction (renamed from `easydiff`). No GSAS-II: its suite mocks
+# or import-blocks GSAS-II; cross-engine comparisons use `all`.
+# ---------------------------------------------------------------------------
+[feature.easydiffraction.dependencies]
 python = ">=3.12"                 # easydiffraction floor; default env stays >=3.10
 "diffpy.pdffit2" = "*"            # from conda-forge: its PyPI sdist needs GSL to build
 
-[feature.easydiff.pypi-dependencies]
-easydiffraction = ">=0.20.1,<0.21"
+[feature.easydiffraction.pypi-dependencies]
+# Exact, mirroring gateways/easydiffraction/gateway.py ENGINE_VERSION_SPEC;
+# tests/test_gateways.py asserts the pin lies inside the specifier.
+easydiffraction = "==0.21.1"
+
+[feature.easydiffraction.tasks]
+# The easydiffraction suite (the native runs and goldens are slow, ~18 min).
+# `pixi run -e easydiffraction test-easydiffraction`.
+test-easydiffraction = { cmd = 'pytest -m "easydiffraction"', env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
+
+# ---------------------------------------------------------------------------
+# dev: docs/test tooling on top of every engine.
+# ---------------------------------------------------------------------------
+[feature.dev.dependencies]
+sphinx = ">=8.0.0,<9"
+sphinx_rtd_theme = ">=3.0.0,<4"
+myst-parser = ">=4.0.0,<5"
+gitpython = ">=3.1.44,<4"
+
+[feature.dev.tasks]
+# The full gauntlet: every marker, every engine, before a merge (`pixi run
+# test-all`; only `dev` has it, so no `-e` is needed). The core guard is off
+# here: the engines are legitimately importable.
+test-all = { cmd = "pytest", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
+docs = "sphinx-build -W --keep-going -b html docs docs/_build/html"
+docs-clean = "python -c \"import shutil; shutil.rmtree('docs/_build', ignore_errors=True)\""
 
 [environments]
-easydiff = ["easydiff"]
+gsasii = ["gsasii"]
+easydiffraction = ["easydiffraction"]
+all = ["gsasii", "easydiffraction"]
+dev = ["gsasii", "easydiffraction", "dev"]

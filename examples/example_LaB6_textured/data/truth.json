@@ -1,0 +1,30 @@
+{
+  "march_dollase_r": 0.6,
+  "axis": [
+    0,
+    0,
+    1
+  ],
+  "convention": "IUCr / GSAS-II: 1 random, < 1 platy, > 1 needle",
+  "profile": {
+    "U": 18.71740850558368,
+    "V": 0.6003411256329596,
+    "W": 1.1470130081855334,
+    "X": 0.28143034323339766,
+    "Y": 0.001,
+    "Z": 0.0
+  },
+  "background": [
+    30.02431,
+    1.36278,
+    1.178665,
+    -1.426545,
+    0.5206805,
+    0.3164668
+  ],
+  "scale": 0.03773081,
+  "seed": 20261021,
+  "points": 3821,
+  "max_counts": 3399.0,
+  "noise": "Poisson counts on GSAS-II's calculated profile; weights 1/max(counts, 1)"
+}

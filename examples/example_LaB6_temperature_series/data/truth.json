@@ -1,0 +1,92 @@
+{
+  "source": "Akdoğan & Payzant, J. Appl. Cryst. 58 (2025) 1635: a(T) = A0 + XI dT + PSI dT^2, dT = T[K] - 298",
+  "A0": 4.15678,
+  "XI": 2.4645e-05,
+  "PSI": 1.0325e-08,
+  "Uiso_298K": {
+    "La": 0.00858,
+    "B": 0.009
+  },
+  "Uiso_model": "Uiso(T) = Uiso(298 K) * T[K] / 298",
+  "instrument": {
+    "U": 49.11908,
+    "V": 11.18459,
+    "W": 0.7063716,
+    "X": 0.6193714,
+    "Y": -10.26013,
+    "Z": 0.3421716
+  },
+  "background": [
+    30.02431,
+    1.36278,
+    1.178665,
+    -1.426545,
+    0.5206805,
+    0.3164668
+  ],
+  "scale": 0.03773081,
+  "seed": 20261020,
+  "noise": "Poisson counts on GSAS-II's calculated profile; weights 1/max(counts, 1)",
+  "steps": [
+    {
+      "temperature_C": 25,
+      "a": 4.156784,
+      "Uiso": {
+        "La": 0.008584,
+        "B": 0.009005
+      },
+      "points": 3821,
+      "max_counts": 2776.0
+    },
+    {
+      "temperature_C": 120,
+      "a": 4.159218,
+      "Uiso": {
+        "La": 0.01132,
+        "B": 0.011874
+      },
+      "points": 3821,
+      "max_counts": 2767.0
+    },
+    {
+      "temperature_C": 215,
+      "a": 4.16184,
+      "Uiso": {
+        "La": 0.014055,
+        "B": 0.014743
+      },
+      "points": 3821,
+      "max_counts": 2932.0
+    },
+    {
+      "temperature_C": 310,
+      "a": 4.164647,
+      "Uiso": {
+        "La": 0.01679,
+        "B": 0.017612
+      },
+      "points": 3821,
+      "max_counts": 2708.0
+    },
+    {
+      "temperature_C": 405,
+      "a": 4.167641,
+      "Uiso": {
+        "La": 0.019525,
+        "B": 0.020481
+      },
+      "points": 3821,
+      "max_counts": 2716.0
+    },
+    {
+      "temperature_C": 500,
+      "a": 4.170821,
+      "Uiso": {
+        "La": 0.02226,
+        "B": 0.02335
+      },
+      "points": 3821,
+      "max_counts": 2639.0
+    }
+  ]
+}

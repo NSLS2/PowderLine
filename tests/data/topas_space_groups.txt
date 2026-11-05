@@ -1,0 +1,544 @@
+# Canonical space-group names (gemmi 0.7.5 xhm) that topas 0.1.0 accepts, with the TOPAS symbol written.
+# Evidence: TOPAS 6 accepted each symbol, and its own operator file for each equals gemmi's operators.
+# Regenerate with tests/test_topas_schema.py::test_space_group_table (see its docstring).
+P 1	p1
+P -1	p-1
+P 1 2 1	p121
+P 1 1 2	p112
+P 2 1 1	p211
+P 1 21 1	p1211
+P 1 1 21	p1121
+P 21 1 1	p2111
+C 1 2 1	c121
+A 1 2 1	a121
+I 1 2 1	i121
+A 1 1 2	a112
+B 1 1 2	b112
+I 1 1 2	i112
+B 2 1 1	b211
+C 2 1 1	c211
+I 2 1 1	i211
+P 1 m 1	p1m1
+P 1 1 m	p11m
+P m 1 1	pm11
+P 1 c 1	p1c1
+P 1 n 1	p1n1
+P 1 a 1	p1a1
+P 1 1 a	p11a
+P 1 1 n	p11n
+P 1 1 b	p11b
+P b 1 1	pb11
+P n 1 1	pn11
+P c 1 1	pc11
+C 1 m 1	c1m1
+A 1 m 1	a1m1
+I 1 m 1	i1m1
+A 1 1 m	a11m
+B 1 1 m	b11m
+I 1 1 m	i11m
+B m 1 1	bm11
+C m 1 1	cm11
+I m 1 1	im11
+C 1 c 1	c1c1
+A 1 n 1	a1n1
+I 1 a 1	i1a1
+A 1 a 1	a1a1
+C 1 n 1	c1n1
+I 1 c 1	i1c1
+A 1 1 a	a11a
+B 1 1 n	b11n
+I 1 1 b	i11b
+B 1 1 b	b11b
+A 1 1 n	a11n
+I 1 1 a	i11a
+B b 1 1	bb11
+C n 1 1	cn11
+I c 1 1	ic11
+C c 1 1	cc11
+B n 1 1	bn11
+I b 1 1	ib11
+P 1 2/m 1	p12/m1
+P 1 1 2/m	p112/m
+P 2/m 1 1	p2/m11
+P 1 21/m 1	p121/m1
+P 1 1 21/m	p1121/m
+P 21/m 1 1	p21/m11
+C 1 2/m 1	c12/m1
+A 1 2/m 1	a12/m1
+I 1 2/m 1	i12/m1
+A 1 1 2/m	a112/m
+B 1 1 2/m	b112/m
+I 1 1 2/m	i112/m
+B 2/m 1 1	b2/m11
+C 2/m 1 1	c2/m11
+I 2/m 1 1	i2/m11
+P 1 2/c 1	p12/c1
+P 1 2/n 1	p12/n1
+P 1 2/a 1	p12/a1
+P 1 1 2/a	p112/a
+P 1 1 2/n	p112/n
+P 1 1 2/b	p112/b
+P 2/b 1 1	p2/b11
+P 2/n 1 1	p2/n11
+P 2/c 1 1	p2/c11
+P 1 21/c 1	p121/c1
+P 1 21/n 1	p121/n1
+P 1 21/a 1	p121/a1
+P 1 1 21/a	p1121/a
+P 1 1 21/n	p1121/n
+P 1 1 21/b	p1121/b
+P 21/b 1 1	p21/b11
+P 21/n 1 1	p21/n11
+P 21/c 1 1	p21/c11
+C 1 2/c 1	c12/c1
+A 1 2/n 1	a12/n1
+I 1 2/a 1	i12/a1
+A 1 2/a 1	a12/a1
+C 1 2/n 1	c12/n1
+I 1 2/c 1	i12/c1
+A 1 1 2/a	a112/a
+B 1 1 2/n	b112/n
+I 1 1 2/b	i112/b
+B 1 1 2/b	b112/b
+A 1 1 2/n	a112/n
+I 1 1 2/a	i112/a
+B 2/b 1 1	b2/b11
+C 2/n 1 1	c2/n11
+I 2/c 1 1	i2/c11
+C 2/c 1 1	c2/c11
+B 2/n 1 1	b2/n11
+I 2/b 1 1	i2/b11
+P 2 2 2	p222
+P 2 2 21	p2221
+P 21 2 2	p2122
+P 2 21 2	p2212
+P 21 21 2	p21212
+P 2 21 21	p22121
+P 21 2 21	p21221
+P 21 21 21	p212121
+C 2 2 21	c2221
+A 21 2 2	a2122
+B 2 21 2	b2212
+C 2 2 2	c222
+A 2 2 2	a222
+B 2 2 2	b222
+F 2 2 2	f222
+I 2 2 2	i222
+I 21 21 21	i212121
+P m m 2	pmm2
+P 2 m m	p2mm
+P m 2 m	pm2m
+P m c 21	pmc21
+P c m 21	pcm21
+P 21 m a	p21ma
+P 21 a m	p21am
+P b 21 m	pb21m
+P m 21 b	pm21b
+P c c 2	pcc2
+P 2 a a	p2aa
+P b 2 b	pb2b
+P m a 2	pma2
+P b m 2	pbm2
+P 2 m b	p2mb
+P 2 c m	p2cm
+P c 2 m	pc2m
+P m 2 a	pm2a
+P c a 21	pca21
+P b c 21	pbc21
+P 21 a b	p21ab
+P 21 c a	p21ca
+P c 21 b	pc21b
+P b 21 a	pb21a
+P n c 2	pnc2
+P c n 2	pcn2
+P 2 n a	p2na
+P 2 a n	p2an
+P b 2 n	pb2n
+P n 2 b	pn2b
+P m n 21	pmn21
+P n m 21	pnm21
+P 21 m n	p21mn
+P 21 n m	p21nm
+P n 21 m	pn21m
+P m 21 n	pm21n
+P b a 2	pba2
+P 2 c b	p2cb
+P c 2 a	pc2a
+P n a 21	pna21
+P b n 21	pbn21
+P 21 n b	p21nb
+P 21 c n	p21cn
+P c 21 n	pc21n
+P n 21 a	pn21a
+P n n 2	pnn2
+P 2 n n	p2nn
+P n 2 n	pn2n
+C m m 2	cmm2
+A 2 m m	a2mm
+B m 2 m	bm2m
+C m c 21	cmc21
+C c m 21	ccm21
+A 21 m a	a21ma
+A 21 a m	a21am
+B b 21 m	bb21m
+B m 21 b	bm21b
+C c c 2	ccc2
+A 2 a a	a2aa
+B b 2 b	bb2b
+A m m 2	amm2
+B m m 2	bmm2
+B 2 m m	b2mm
+C 2 m m	c2mm
+C m 2 m	cm2m
+A m 2 m	am2m
+A b m 2	abm2
+B m a 2	bma2
+B 2 c m	b2cm
+C 2 m b	c2mb
+C m 2 a	cm2a
+A c 2 m	ac2m
+A m a 2	ama2
+B b m 2	bbm2
+B 2 m b	b2mb
+C 2 c m	c2cm
+C c 2 m	cc2m
+A m 2 a	am2a
+A b a 2	aba2
+B b a 2	bba2
+B 2 c b	b2cb
+C 2 c b	c2cb
+C c 2 a	cc2a
+A c 2 a	ac2a
+F m m 2	fmm2
+F 2 m m	f2mm
+F m 2 m	fm2m
+F d d 2	fdd2
+F 2 d d	f2dd
+F d 2 d	fd2d
+I m m 2	imm2
+I 2 m m	i2mm
+I m 2 m	im2m
+I b a 2	iba2
+I 2 c b	i2cb
+I c 2 a	ic2a
+I m a 2	ima2
+I b m 2	ibm2
+I 2 m b	i2mb
+I 2 c m	i2cm
+I c 2 m	ic2m
+I m 2 a	im2a
+P m m m	pmmm
+P n n n:1	pnnn
+P n n n:2	pnnn:2
+P c c m	pccm
+P m a a	pmaa
+P b m b	pbmb
+P b a n:1	pban
+P b a n:2	pban:2
+P n c b:1	pncb
+P n c b:2	pncb:2
+P c n a:1	pcna
+P c n a:2	pcna:2
+P m m a	pmma
+P m m b	pmmb
+P b m m	pbmm
+P c m m	pcmm
+P m c m	pmcm
+P m a m	pmam
+P n n a	pnna
+P n n b	pnnb
+P b n n	pbnn
+P c n n	pcnn
+P n c n	pncn
+P n a n	pnan
+P m n a	pmna
+P n m b	pnmb
+P b m n	pbmn
+P c n m	pcnm
+P n c m	pncm
+P m a n	pman
+P c c a	pcca
+P c c b	pccb
+P b a a	pbaa
+P c a a	pcaa
+P b c b	pbcb
+P b a b	pbab
+P b a m	pbam
+P m c b	pmcb
+P c m a	pcma
+P c c n	pccn
+P n a a	pnaa
+P b n b	pbnb
+P b c m	pbcm
+P c a m	pcam
+P m c a	pmca
+P m a b	pmab
+P b m a	pbma
+P c m b	pcmb
+P n n m	pnnm
+P m n n	pmnn
+P n m n	pnmn
+P m m n:1	pmmn
+P m m n:2	pmmn:2
+P n m m:1	pnmm
+P n m m:2	pnmm:2
+P m n m:1	pmnm
+P m n m:2	pmnm:2
+P b c n	pbcn
+P c a n	pcan
+P n c a	pnca
+P n a b	pnab
+P b n a	pbna
+P c n b	pcnb
+P b c a	pbca
+P c a b	pcab
+P n m a	pnma
+P m n b	pmnb
+P b n m	pbnm
+P c m n	pcmn
+P m c n	pmcn
+P n a m	pnam
+C m c m	cmcm
+C c m m	ccmm
+A m m a	amma
+A m a m	amam
+B b m m	bbmm
+B m m b	bmmb
+C m c a	cmca
+C c m b	ccmb
+A b m a	abma
+A c a m	acam
+B b c m	bbcm
+B m a b	bmab
+C m m m	cmmm
+A m m m	ammm
+B m m m	bmmm
+C c c m	cccm
+A m a a	amaa
+B b m b	bbmb
+C m m a	cmma
+C m m b	cmmb
+A b m m	abmm
+A c m m	acmm
+B m c m	bmcm
+B m a m	bmam
+C c c a:1	ccca
+C c c a:2	ccca:2
+C c c b:1	cccb
+C c c b:2	cccb:2
+A b a a:1	abaa
+A b a a:2	abaa:2
+A c a a:1	acaa
+A c a a:2	acaa:2
+B b c b:1	bbcb
+B b c b:2	bbcb:2
+B b a b:1	bbab
+B b a b:2	bbab:2
+F m m m	fmmm
+F d d d:1	fddd
+F d d d:2	fddd:2
+I m m m	immm
+I b a m	ibam
+I m c b	imcb
+I c m a	icma
+I b c a	ibca
+I c a b	icab
+I m m a	imma
+I m m b	immb
+I b m m	ibmm
+I c m m	icmm
+I m c m	imcm
+I m a m	imam
+P 4	p4
+P 41	p41
+P 42	p42
+P 43	p43
+I 4	i4
+I 41	i41
+P -4	p-4
+I -4	i-4
+P 4/m	p4/m
+P 42/m	p42/m
+P 4/n:1	p4/n
+P 4/n:2	p4/n:2
+P 42/n:1	p42/n
+P 42/n:2	p42/n:2
+I 4/m	i4/m
+I 41/a:1	i41/a
+I 41/a:2	i41/a:2
+P 4 2 2	p422
+P 4 21 2	p4212
+P 41 2 2	p4122
+P 41 21 2	p41212
+P 42 2 2	p4222
+P 42 21 2	p42212
+P 43 2 2	p4322
+P 43 21 2	p43212
+I 4 2 2	i422
+I 41 2 2	i4122
+P 4 m m	p4mm
+P 4 b m	p4bm
+P 42 c m	p42cm
+P 42 n m	p42nm
+P 4 c c	p4cc
+P 4 n c	p4nc
+P 42 m c	p42mc
+P 42 b c	p42bc
+I 4 m m	i4mm
+I 4 c m	i4cm
+I 41 m d	i41md
+I 41 c d	i41cd
+P -4 2 m	p-42m
+P -4 2 c	p-42c
+P -4 21 m	p-421m
+P -4 21 c	p-421c
+P -4 m 2	p-4m2
+P -4 c 2	p-4c2
+P -4 b 2	p-4b2
+P -4 n 2	p-4n2
+I -4 m 2	i-4m2
+I -4 c 2	i-4c2
+I -4 2 m	i-42m
+I -4 2 d	i-42d
+P 4/m m m	p4/mmm
+P 4/m c c	p4/mcc
+P 4/n b m:1	p4/nbm
+P 4/n b m:2	p4/nbm:2
+P 4/n n c:1	p4/nnc
+P 4/n n c:2	p4/nnc:2
+P 4/m b m	p4/mbm
+P 4/m n c	p4/mnc
+P 4/n m m:1	p4/nmm
+P 4/n m m:2	p4/nmm:2
+P 4/n c c:1	p4/ncc
+P 4/n c c:2	p4/ncc:2
+P 42/m m c	p42/mmc
+P 42/m c m	p42/mcm
+P 42/n b c:1	p42/nbc
+P 42/n b c:2	p42/nbc:2
+P 42/n n m:1	p42/nnm
+P 42/n n m:2	p42/nnm:2
+P 42/m b c	p42/mbc
+P 42/m n m	p42/mnm
+P 42/n m c:1	p42/nmc
+P 42/n m c:2	p42/nmc:2
+P 42/n c m:1	p42/ncm
+P 42/n c m:2	p42/ncm:2
+I 4/m m m	i4/mmm
+I 4/m c m	i4/mcm
+I 41/a m d:1	i41/amd
+I 41/a m d:2	i41/amd:2
+I 41/a c d:1	i41/acd
+I 41/a c d:2	i41/acd:2
+P 3	p3
+P 31	p31
+P 32	p32
+R 3:H	r3
+R 3:R	r3r
+P -3	p-3
+R -3:H	r-3
+R -3:R	r-3r
+P 3 1 2	p312
+P 3 2 1	p321
+P 31 1 2	p3112
+P 31 2 1	p3121
+P 32 1 2	p3212
+P 32 2 1	p3221
+R 3 2:H	r32
+R 3 2:R	r32r
+P 3 m 1	p3m1
+P 3 1 m	p31m
+P 3 c 1	p3c1
+P 3 1 c	p31c
+R 3 m:H	r3m
+R 3 m:R	r3mr
+R 3 c:H	r3c
+R 3 c:R	r3cr
+P -3 1 m	p-31m
+P -3 1 c	p-31c
+P -3 m 1	p-3m1
+P -3 c 1	p-3c1
+R -3 m:H	r-3m
+R -3 m:R	r-3mr
+R -3 c:H	r-3c
+R -3 c:R	r-3cr
+P 6	p6
+P 61	p61
+P 65	p65
+P 62	p62
+P 64	p64
+P 63	p63
+P -6	p-6
+P 6/m	p6/m
+P 63/m	p63/m
+P 6 2 2	p622
+P 61 2 2	p6122
+P 65 2 2	p6522
+P 62 2 2	p6222
+P 64 2 2	p6422
+P 63 2 2	p6322
+P 6 m m	p6mm
+P 6 c c	p6cc
+P 63 c m	p63cm
+P 63 m c	p63mc
+P -6 m 2	p-6m2
+P -6 c 2	p-6c2
+P -6 2 m	p-62m
+P -6 2 c	p-62c
+P 6/m m m	p6/mmm
+P 6/m c c	p6/mcc
+P 63/m c m	p63/mcm
+P 63/m m c	p63/mmc
+P 2 3	p23
+F 2 3	f23
+I 2 3	i23
+P 21 3	p213
+I 21 3	i213
+P m -3	pm-3
+P n -3:1	pn-3
+P n -3:2	pn-3:2
+F m -3	fm-3
+F d -3:1	fd-3
+F d -3:2	fd-3:2
+I m -3	im-3
+P a -3	pa-3
+I a -3	ia-3
+P 4 3 2	p432
+P 42 3 2	p4232
+F 4 3 2	f432
+F 41 3 2	f4132
+I 4 3 2	i432
+P 43 3 2	p4332
+P 41 3 2	p4132
+I 41 3 2	i4132
+P -4 3 m	p-43m
+F -4 3 m	f-43m
+I -4 3 m	i-43m
+P -4 3 n	p-43n
+F -4 3 c	f-43c
+I -4 3 d	i-43d
+P m -3 m	pm-3m
+P n -3 n:1	pn-3n
+P n -3 n:2	pn-3n:2
+P m -3 n	pm-3n
+P n -3 m:1	pn-3m
+P n -3 m:2	pn-3m:2
+F m -3 m	fm-3m
+F m -3 c	fm-3c
+F d -3 m:1	fd-3m
+F d -3 m:2	fd-3m:2
+F d -3 c:1	fd-3c
+F d -3 c:2	fd-3c:2
+I m -3 m	im-3m
+I a -3 d	ia-3d
+A 1	a1
+B 1	b1
+C 1	c1
+F 1	f1
+I 1	i1
+A -1	a-1
+B -1	b-1
+C -1	c-1
+F -1	f-1
+I -1	i-1
+C 4 2 2	c422
