@@ -7,9 +7,12 @@ and chain.**
 Rietveld refinement is powerful, but reliable results take expertise in a
 particular program. Running it at scale has usually meant custom code for
 each project. PowderLine gives every refinement the same validated,
-machine-writable description, so the same analysis can be run from a GUI, a
+machine-writable description. The same analysis can then be run from a GUI, a
 notebook, a beamline pipeline, an autonomous experiment or an LLM agent, and
-give the same result.
+it gives the same result.
+
+PowderLine handles constant-wavelength X-ray powder data on a 2θ axis.
+[Scope and limitations](reference/scope.md) lists what it does not do.
 
 ## The idea in one picture
 
@@ -53,7 +56,8 @@ data.
 Calibrate once, refine every sample, chain a series, and run unattended.
 
 [Calibrate the instrument →](how-to/calibrate-instrument.md) ·
-[Run a series →](how-to/sequential-refinement.md)
+[Run a series →](how-to/sequential-refinement.md) ·
+[Run at a beamline →](how-to/beamline-operation.md)
 :::
 :::{grid-item-card} 🧩 I build pipelines and automation
 Call PowderLine from Python, validate recipes without an engine, handle

@@ -10,7 +10,8 @@ scattering factors and texture where your sample needs them.
 - Your structure, written as a phase block. PowderLine reads no CIF files:
   your own tooling (a script, a notebook, a database export) writes the
   block, and validation checks it against the space group.
-  [Validation](../concepts/validation.md) explains why.
+  [Where recipes come from](../concepts/recipes.md#where-recipes-come-from)
+  explains why.
 
 ## 1. Write the phase block
 
@@ -45,36 +46,11 @@ LaB6 phase of `examples/example_LaB6/input.json`:
 - `ADP` is `"Uiso"` with `Uiso`, or `"Uaniso"` with all six `U11` … `U23`,
   in Å².
 
-The block is the same in every engine, apart from the parameter shape.
-TOPAS and easydiffraction parameters carry two more entries, a minimum and a
-maximum (`null` for none):
-
-::::{tab-set}
-:sync-group: engine
-
-:::{tab-item} GSAS-II
-:sync: gsasii
-```json
-"a": [4.15682, true]
-```
-:::
-:::{tab-item} TOPAS
-:sync: topas
-```json
-"a": [4.15682, true, null, null]
-```
-:::
-:::{tab-item} easydiffraction
-:sync: easydiffraction
-```json
-"a": [4.15682, true, null, null]
-```
-:::
-::::
-
-[Recipe format](../reference/recipe-format.md) has the shapes, units and
-what a bound means in each engine. [Fields](../reference/fields.md) lists
-every field.
+The block is the same in every engine, apart from the parameter shape:
+`[value, flag]` in GSAS-II recipes, `[value, flag, min, max]` in TOPAS and
+easydiffraction recipes ([Recipes](../concepts/recipes.md#every-refinable-value-carries-its-flag)).
+[Recipe format](../reference/recipe-format.md#bounds) says what a bound
+means in each engine, and [Fields](../reference/fields.md) lists every field.
 
 ## 2. Choose what to refine
 
@@ -134,9 +110,11 @@ Write a fixed component as exactly `0`, and a coupled one at its derived
 value. Validation names any component that does not fit.
 
 :::{note}
-A tensor that is not positive definite, or a negative `Uiso`, is accepted
-with the warning `uaniso_not_positive_definite`. Every engine uses the value
-as stated.
+A `Uaniso` tensor that is not positive definite is accepted with the
+warning `uaniso_not_positive_definite` and used as stated. A negative `Uiso`
+is accepted without a warning in GSAS-II and TOPAS recipes.
+easydiffraction recipes refuse it at validation: there `Uiso`, `U11`, `U22`
+and `U33` must lie between 0 and 10 Å².
 :::
 
 ## 4. Use ionic scattering factors
@@ -172,12 +150,14 @@ needles. These blocks are from `examples/example_LaB6_textured/`:
 
 :::{tab-item} GSAS-II
 :sync: gsasii
+
 ```json
 "preferred_orientation": {"model": "march_dollase", "hkl": [0, 0, 1], "ratio": [0.8, true]}
 ```
 :::
 :::{tab-item} TOPAS
 :sync: topas
+
 ```json
 "preferred_orientation": {"model": "march_dollase", "hkl": [0, 0, 1], "ratio": [0.8, true, null, null]}
 ```
@@ -187,6 +167,7 @@ error.
 :::
 :::{tab-item} easydiffraction
 :sync: easydiffraction
+
 ```json
 "preferred_orientation": {"model": "march_dollase", "hkl": [0, 0, 1],
                           "ratio": [0.8, true, 0.1, 5.0],
@@ -213,6 +194,7 @@ Peak broadening from the sample is an engine field of the phase:
 
 :::{tab-item} GSAS-II
 :sync: gsasii
+
 ```json
 "peak_broadening": {
   "size_broadening": {"model": "isotropic", "isotropic_size": [1.0, true], "LG_eta": [1.0, false]},
@@ -224,6 +206,7 @@ Size is in µm, strain in microstrain. Left out, PowderLine applies 10 µm and
 :::
 :::{tab-item} TOPAS
 :sync: topas
+
 ```json
 "peak_broadening": {
   "size_broadening": {"model": "isotropic", "CS_L": [100.0, true, null, null]},
@@ -236,6 +219,7 @@ broadening.
 :::
 :::{tab-item} easydiffraction
 :sync: easydiffraction
+
 An easydiffraction phase has no `peak_broadening` block. The peak widths
 come from the instrument's `broadening` block.
 :::
@@ -262,21 +246,49 @@ and flags. PowderLine never ties them together.
 
 ```bash
 pixi run powderline my_sample/input.json --validate-only
-pixi run -e gsasii powderline my_sample/input.json
 ```
 
-Use `-e easydiffraction` for an easydiffraction recipe. For TOPAS see
-[Run TOPAS recipes](run-topas.md).
+Then run it with your engine:
+
+::::{tab-set}
+:sync-group: engine
+
+:::{tab-item} GSAS-II
+:sync: gsasii
+
+```bash
+pixi run -e gsasii powderline my_sample/input.json
+```
+:::
+:::{tab-item} TOPAS
+:sync: topas
+
+```bash
+pixi run powderline my_sample/input.json --topas-version 6 --topas-dir C:/TOPAS6
+```
+
+TOPAS runs on Windows only. See [Run TOPAS recipes](run-topas.md).
+:::
+:::{tab-item} easydiffraction
+:sync: easydiffraction
+
+```bash
+pixi run -e easydiffraction powderline my_sample/input.json
+```
+:::
+::::
 
 **Check:**
 - The validate-only report says `Parameters requested: N`, with a tie group
   counted once.
-- After the run, `result["engine_details"]` holds `parameters_requested` and
-  `parameters_varied`. If the engine varied fewer, the result warns
+- In `my_sample/output/parameter_dispositions.csv`, each parameter you
+  released reads `varied`, and none reads `requested_not_varied`. If the
+  engine varied fewer parameters than you asked for, the run also warns
   `<engine>_parameters_not_varied`.
-- In `output/parameter_dispositions.csv`, each parameter you released reads
-  `varied`.
-- The result says `output_recipe_valid: true`. If not, the engine returned a
+- `my_sample/output/refined_parameters.csv` lists each refined value with
+  its ESD, under the engine's own parameter names.
+- The run prints `Output recipe: …/output_recipe.json` with no
+  `(not valid as written …)` after it. If it does, the engine returned a
   value the recipe format refuses, such as an occupancy above 1. The
   `output_recipe_not_valid` warning names it.
 

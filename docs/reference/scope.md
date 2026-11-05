@@ -60,4 +60,4 @@ that asks for one is refused at validation, or the schema has no field for it.
 | Fetching structures from a database (Materials Project or others) | Not part of PowderLine. |
 
 Why PowderLine reads no CIF and builds no recipe is explained on
-[Validation](../concepts/validation.md).
+[Recipes](../concepts/recipes.md#where-recipes-come-from).

@@ -8,7 +8,7 @@ stays listed.
 
 What the engines do on their own, and what PowderLine does about it, is on
 the [Engines](../engines/index.md) pages, under `EB-NN` IDs. Every ID is
-listed in the [ID index](../reference/ids.md).
+listed in the [ID index](ids.md).
 
 | Status | Meaning |
 |---|---|
@@ -21,9 +21,6 @@ listed in the [ID index](../reference/ids.md).
 Severity is the impact if you meet the issue: **critical** (silent wrong or
 empty output, or data loss), **major** (breaks a real workflow), **minor**
 (works, but fragile or wrong in edge cases) or **nit** (cleanup).
-
-The entries are generated from `docs/catalog/known_issues.yaml` by
-`scripts/gen_catalog.py`. Edit the YAML, never the generated page.
 
 ```{include} ../_generated/known_issues.md
 ```

@@ -30,14 +30,17 @@ own, for example `my_lab6/`.
 
 :::{tab-item} GSAS-II
 :sync: gsasii
+
 `examples/example_LaB6/input.json`
 :::
 :::{tab-item} TOPAS
 :sync: topas
+
 `examples/example_LaB6/topas/input.json`
 :::
 :::{tab-item} easydiffraction
 :sync: easydiffraction
+
 `examples/example_LaB6/easydiffraction/input.json`
 
 This example refines the cell. For a calibration, set the flags of `a`, `b`
@@ -62,12 +65,14 @@ Then run it:
 
 :::{tab-item} GSAS-II
 :sync: gsasii
+
 ```bash
 pixi run -e gsasii powderline my_lab6/input.json
 ```
 :::
 :::{tab-item} TOPAS
 :sync: topas
+
 ```bash
 pixi run powderline my_lab6/input.json --topas-version 6 --topas-dir C:/TOPAS6
 ```
@@ -75,6 +80,7 @@ TOPAS runs on Windows only. See [Run TOPAS recipes](run-topas.md).
 :::
 :::{tab-item} easydiffraction
 :sync: easydiffraction
+
 ```bash
 pixi run -e easydiffraction powderline my_lab6/input.json
 ```
@@ -154,10 +160,35 @@ See [Good refinement practice](../concepts/refinement-practice.md).
 
 ```bash
 pixi run powderline my_sample/input.json --validate-only
-pixi run -e gsasii powderline my_sample/input.json
 ```
 
-Use the run command for your engine, as in step 1.
+Then run it with your engine:
+
+::::{tab-set}
+:sync-group: engine
+
+:::{tab-item} GSAS-II
+:sync: gsasii
+
+```bash
+pixi run -e gsasii powderline my_sample/input.json
+```
+:::
+:::{tab-item} TOPAS
+:sync: topas
+
+```bash
+pixi run powderline my_sample/input.json --topas-version 6 --topas-dir C:/TOPAS6
+```
+:::
+:::{tab-item} easydiffraction
+:sync: easydiffraction
+
+```bash
+pixi run -e easydiffraction powderline my_sample/input.json
+```
+:::
+::::
 
 **Check:** open `my_sample/output/parameter_dispositions.csv`. Every row whose
 `path` starts with `payload.instrument` reads `held_by_user`.
@@ -172,7 +203,7 @@ again with TOPAS.
 ## In Python
 
 The same steps as a script. `hold()` sets every refine flag in a block to
-`False` and leaves everything else as it is.
+`false` and leaves everything else as it is.
 
 ```python
 from pathlib import Path

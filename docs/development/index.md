@@ -12,8 +12,6 @@ change follows.
   step by step.
 - [Policies](policies.md): versioning, deliberate changes, the frozen GSAS-II
   code, engine pins and review.
-- [Known issues](known-issues.md): known, deliberately deferred behaviours,
-  by `KI-NN` ID.
 - [Internals API](internals-api.md): the modules behind the public API.
 - [Migrating from 0.1](migrating-from-0.1.md): for recipes and code written
   for PowderLine 0.1.x.
@@ -26,7 +24,6 @@ architecture
 contributing
 adding-an-engine
 policies
-known-issues
 internals-api
 migrating-from-0.1
 ```

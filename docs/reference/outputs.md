@@ -21,12 +21,12 @@ result["status"], result["rwp"], result["unit_cell_data"]["LaB6"]
 | Key | Type | Value |
 |---|---|---|
 | `status` | str | `"ok"`, or `"generated"` when the TOPAS input was written but TOPAS was not run. |
-| `converged` | bool or None | `True` or `False`; `None` when the engine cannot tell (TOPAS 6) or nothing was refined. |
+| `converged` | bool or None | `True` or `False`. `None` when the engine cannot tell (TOPAS 6, a GSAS-II peak fit), for an easydiffraction simulation, and when TOPAS was not run. |
 | `envelope_version` | str | `"1"`: the version of this result's shape. |
 | `run_id` | str | A UUID4 that identifies this run. |
 | `rwp`, `r_exp` | float or None | PowderLine's uniform Rwp and Rexp over the fit window, in percent. |
 | `gof`, `chi2_red` | float or None | PowderLine's uniform GoF and reduced χ², dimensionless. |
-| `simulation_mode` | bool | `True` when nothing was refined. |
+| `simulation_mode` | bool | `True` for a simulation: `refinement_cycles: 1` (GSAS-II), `iters: 0` (TOPAS), or no refine flag set (easydiffraction). |
 | `engine_details` | dict | The engine's own statistics and counts ([below](#engine-details)). |
 | `warnings` | list of dict | Structured warnings from validation and from the run ([below](#warnings)). |
 | `elapsed_time` | float | Wall-clock seconds. |
@@ -60,7 +60,7 @@ above are PowderLine's; these are the engine's own.
 | `parameters_varied` | all | The number of parameters the engine varied. |
 | `rwp` | all | The engine's own Rwp. |
 | `gof`, `chi2`, `n_obs`, `message`, `converged` | GSAS-II | GSAS-II's own GoF, χ², point count, refinement message and convergence flag. `converged` is `None` for a peak fit. |
-| `console_tail` | GSAS-II | The engine's console text, after a verbose run. |
+| `console_tail` | GSAS-II | The engine's console text, after a verbose run that succeeded. |
 | `r_exp`, `gof`, `tc_path` | TOPAS | TOPAS's own Rexp and GoF, and the `tc.exe` that ran. |
 | `calculator`, `peak_type`, `minimizer` | easydiffraction | The calculator, the peak type and the minimizer. |
 | `r_exp`, `reduced_chi_square` | easydiffraction | easydiffraction's own Rexp and reduced χ². |
@@ -237,8 +237,11 @@ output directory is called `output`, and `topas` otherwise. A base name that
 is not ASCII is written as `topas`, with the warning
 `topas_base_name_sanitized`.
 
-Without a `tc.exe`, a TOPAS run writes only `<base>.inp` and `<base>.xye` and
-returns `status: "generated"`. This is a normal outcome, not a failure.
+Without a `tc.exe`, a TOPAS run writes `<base>.inp` and `<base>.xye`, plus
+`output_recipe.json` and `parameter_dispositions.csv`, and returns
+`status: "generated"`. This is a normal outcome, not a failure. The output
+recipe is the resolved input. Every parameter with a refine flag set has the
+disposition `requested_not_varied`.
 
 ## When a run fails
 
@@ -257,7 +260,7 @@ Both carry `.reason`, a [failure reason](messages.md#failure-reasons), and
 | `status` | `"failed"` |
 | `envelope_version`, `run_id`, `elapsed_time`, `method`, `warnings`, `simulation_mode` | As in a result. |
 | `output_files` | The files kept for diagnosis: the engine's own files written so far, and `failure.json`. |
-| `failure` | `kind` (`"engine"` or `"backend"`), `reason`, `message`, `traceback`, `engine_details`. GSAS-II runs add `console_tail`: the last 65,536 characters GSAS-II printed, or `None`. |
+| `failure` | `kind` (`"engine"` or `"backend"`), `reason`, `message`, `traceback`, `engine_details`. GSAS-II and TOPAS runs add `console_tail`: the last 65,536 characters the engine printed, or `None`. |
 
 ```python
 try:
@@ -287,7 +290,7 @@ nothing. The summary has the same keys for every engine:
 | `method` | `"validate_only"` |
 | `schema_name`, `core_schema_version`, `engine_schema_version` | From the recipe. |
 | `phases` | The number of phases (0 for single-peak fitting). |
-| `simulation_mode` | `True` when nothing would be refined. |
+| `simulation_mode` | `True` for a simulation, by the same rule as in a result. |
 | `parameters_requested` | The number of parameters the recipe refines. |
 | `warnings` | The structured warnings of validation. |
 | `engine` | The engine's own controls: `refinement_cycles` (GSAS-II), `iters` and `engine_version` (TOPAS), `calculator` (easydiffraction). |

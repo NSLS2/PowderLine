@@ -15,7 +15,7 @@ PowderLine 0.2.0 is a clean break from the unified recipe schema 0.26.0: a
 recipe names one engine and is written in that engine's own conventions, and
 nothing is translated between engines. Recipes written for 0.1.x do not
 validate; see the [migration guide](docs/development/migrating-from-0.1.md). Known
-limitations are listed in the [known-issues register](docs/development/known-issues.md).
+limitations are listed in the [known-issues register](docs/reference/known-issues.md).
 
 ### Highlights
 

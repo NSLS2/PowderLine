@@ -222,18 +222,6 @@ easydiffraction runs in the same process as PowderLine.
 - **Offline,** importing easydiffraction prints a warning about a PyPI
   version check and continues ({ref}`EB-82 <eb-82>`).
 
-## Upstream status
-
-PowderLine has written up 14 of these behaviours for easydiffraction's
-developers, each with a standalone reproduction: the Uaniso column bug,
-special-position images, CrysFML's short-symbol setting, CrysFML ignoring
-`Uaniso`, the hand of `P 31`, the monoclinic cell reset, the 53 crashes,
-silent negative widths, the σ replacement, CIF exponent notation, the ASCII
-rounding, the CrysFML intensity drift, starts moved onto bounds, and the
-single-precision Jacobian. None has been posted yet. Until a fix lands
-upstream and PowderLine's pin moves to it, every behaviour below stands as
-documented.
-
 ## Behaviours
 
 Each entry says what easydiffraction does on its own and what PowderLine

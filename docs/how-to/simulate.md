@@ -21,6 +21,7 @@ format as a refinement, with every refine flag `false`.
 
 :::{tab-item} GSAS-II
 :sync: gsasii
+
 Set every refine flag to `false`, including the polarization and any
 background peak flags, and run one cycle:
 
@@ -33,6 +34,7 @@ validation error.
 :::
 :::{tab-item} TOPAS
 :sync: topas
+
 Set every refine flag to `false` and calculate only:
 
 ```json
@@ -44,6 +46,7 @@ The other controls are still stated.
 :::
 :::{tab-item} easydiffraction
 :sync: easydiffraction
+
 Set every refine flag to `false`. A recipe with no flag set is a
 simulation: lmfit is not run. The controls stay as they are, all stated.
 :::
@@ -72,12 +75,14 @@ pixi run powderline my_sim/input.json --validate-only
 
 :::{tab-item} GSAS-II
 :sync: gsasii
+
 ```bash
 pixi run -e gsasii powderline my_sim/input.json
 ```
 :::
 :::{tab-item} TOPAS
 :sync: topas
+
 ```bash
 pixi run powderline my_sim/input.json --topas-version 6 --topas-dir C:/TOPAS6
 ```
@@ -86,6 +91,7 @@ it, the run only writes TOPAS's input ([Run TOPAS recipes](run-topas.md)).
 :::
 :::{tab-item} easydiffraction
 :sync: easydiffraction
+
 ```bash
 pixi run -e easydiffraction powderline my_sim/input.json
 ```
@@ -100,21 +106,21 @@ in these ways:
 
 | | Value in a simulation |
 |---|---|
-| `simulation_mode` | `True` |
-| `converged` | `None`: nothing was optimised |
+| `simulation_mode` | `true` |
+| `converged` | `null`: nothing was optimised |
 | `rwp`, `r_exp`, `gof`, `chi2_red` | PowderLine's uniform statistics with no refined parameters. Against real data they show how good the starting values are. Against placeholder intensities they mean nothing. |
 | ESDs in `<phase>_unit_cell_report.csv` | `0.0` for every value |
 | `refined_parameters.csv` | not written by GSAS-II; written with no rows by TOPAS and easydiffraction |
 | `output_recipe.json` | the input's values, since nothing was refined |
 | `parameter_dispositions.csv` | no row `varied`: each value is `held_by_user`, `held_by_symmetry` or `default_applied` |
 
-A statistic with no degrees of freedom is `None`, never NaN. GSAS-II's own
+A statistic with no degrees of freedom is `null`, never NaN. GSAS-II's own
 Rwp, under `engine_details`, is capped at 100 %.
 
 ## In Python
 
 This turns a refinement recipe into a simulation. `hold_all()` sets every
-refine flag to `False`, including the background's `refine_flag`.
+refine flag to `false`, including the background's `refine_flag`.
 
 ```python
 from pathlib import Path

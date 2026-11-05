@@ -42,7 +42,8 @@ minutes; later runs start immediately.
 
 :::{note}
 Keep `--frozen`. It installs exactly the versions PowderLine was tested with,
-as recorded in the repository's lock file.
+as recorded in the repository's lock file. Without it, pixi may re-solve the
+lock file, including the GSAS-II package it builds from source.
 :::
 
 ## 3. Check the installation

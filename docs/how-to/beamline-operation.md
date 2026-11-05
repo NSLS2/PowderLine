@@ -34,51 +34,95 @@ PowderLine 0.2.0  (Python 3.13.15, Linux-…)
 ```
 
 An engine that is not installed is not a problem: the core-only environment
-runs no engine by design. The command exits non-zero only when no gateway is
-found, or an installed engine has the wrong version. It names the repair.
+runs no engine by design. Neither is a TOPAS version left undeclared. The
+command lists each problem under `PROBLEMS` and exits non-zero when it finds
+any of these:
+
+- no gateway at all: the install is stale ({ref}`KI-13 <ki-13>`);
+- a gateway that fails to load;
+- an installed engine outside the version PowderLine supports;
+- an engine whose installed version cannot be read;
+- a `.powderline_config.yaml` that cannot be read, for the TOPAS settings.
+
+Each problem line names what went wrong. For a stale install it also names
+the repair.
 
 ## 2. Use the GSAS-II server
 
-Starting GSAS-II takes a few seconds. The **GSAS-II server** is a
-background process that keeps GSAS-II loaded, so a series of runs pays that
-start-up once. It serves only `gsasii.*` recipes.
+GSAS-II is loaded at the start of every run, and loading it takes time. The
+**GSAS-II server** is a background process that keeps GSAS-II loaded, so a
+series of runs pays that cost once. It serves only `gsasii.*` recipes.
 
 ```mermaid
 flowchart TB
     R["gsasii recipe"] --> M{"execution mode"}
     M -- "auto or server" --> U{"server usable?<br/>running or started,<br/>and current"}
     U -- yes --> SV["run in the server"]
-    U -- "no (auto)" --> IP["run in this process"]
+    U -- "no (auto)" --> IP["run in-process"]
     U -- "no (server)" --> F["fail:<br/>ExecutionBackendError"]
     M -- "in-process" --> IP
 ```
 
 | Mode | Command line | Python | What happens |
 |---|---|---|---|
-| auto (default) | none | `execution_mode="auto"` | uses the server, starting it if needed; runs in this process if the server cannot be used |
+| auto (default) | none | `execution_mode="auto"` | uses the server, starting it if needed; runs in-process if the server cannot be used |
 | server | `--use-server` | `execution_mode="server"` | uses the server, starting it if needed; fails if it cannot |
-| in-process | `--no-server` | `execution_mode="subprocess"` | never uses the server; GSAS-II is loaded in this process |
+| in-process | `--no-server` | `execution_mode="subprocess"` | never uses the server |
+
+**In-process** means the refinement runs inside the process that called
+PowderLine: the `powderline` command, or your Python script. GSAS-II is
+loaded into that process for the run. In Python this mode is named
+`"subprocess"`, but no separate process is started.
 
 All three modes give the same results and files. The command line prints
-which one ran (`Executed using server mode` or `subprocess mode`), and
-`result["method"]` says `"server"` or `"subprocess"`.
+which one ran: `Executed using server mode`, or `Executed using subprocess
+mode` for an in-process run. In Python, `result["method"]` says `"server"`
+or `"subprocess"` the same way.
+
+### When auto mode runs in-process
+
+In auto mode a run goes in-process, with a message, when:
+
+- no server can be started, for example because a pinned port is busy;
+- a server it has just started is not answering yet. It goes on loading
+  GSAS-II in the background, and the next run uses it;
+- the server is stale (see below);
+- the exchange with the server fails, for example a dropped connection or a
+  reply that is not signed with your token.
+
+A connection that cannot be made is retried twice, after 0.5 s and then
+1 s, before the run gives up on the server. In server mode (`--use-server`), each of these cases
+fails the run instead, with reason `server_unavailable` or
+`communication_failed`.
+
+A run never falls back in-process after a time limit (below). A run that
+failed inside the server, for example with reason `diverged`, fails as it
+would in-process. It is not run again.
 
 ### Manage the server
 
 ```bash
 pixi run -e gsasii gsas-server status     # running? its PID, URL, log file, and whether its code is current
 pixi run -e gsasii gsas-server stop
-pixi run -e gsasii gsas-server restart
 pixi run -e gsasii gsas-server logs       # the last 50 lines of its log
-pixi run -e gsasii gsas-server start
+pixi run -e gsasii gsas-server start      # runs the server in this terminal; the command does not return
+pixi run -e gsasii gsas-server restart    # stop, then start in this terminal; the command does not return
 ```
 
-You rarely need `start`: a run in auto or server mode starts the server in
-the background by itself. `gsas-server start` runs the server in that
-terminal until you stop it, which shows its messages as they happen.
+You rarely need `start`. A run in auto or server mode starts the server in
+the background by itself.
 
-The server runs one refinement at a time. Requests from several processes
-wait their turn.
+:::{important}
+`gsas-server start` and `gsas-server restart` run the server in the
+terminal you type them in. The command does not return while the server
+runs, and its messages appear there. Stop it with Ctrl+C, or with
+`gsas-server stop` from another terminal. Use them in a terminal of their
+own, for example to watch the server start.
+:::
+
+The server runs one refinement at a time. Requests from several of your
+processes wait their turn. Time spent waiting counts towards a time
+limit.
 
 ### Restart it after an update
 
@@ -87,30 +131,50 @@ PowderLine (a `git pull`, another checkout), the running server still has
 the old code. PowderLine detects this and calls the server **stale**:
 
 - `gsas-server status` prints `Code: STALE`;
-- an auto-mode run prints `WARNING: the GSAS-II server is stale` and runs in
-  this process instead;
+- an auto-mode run prints `WARNING: the GSAS-II server is stale` and runs
+  in-process instead;
 - a `--use-server` run fails with reason `server_unavailable`.
 
-Restart the server:
+Stop the stale server:
 
 ```bash
-pixi run -e gsasii gsas-server restart
+pixi run -e gsasii gsas-server stop
 ```
+
+The next run in auto or server mode starts a current server in the
+background. To start it yourself instead, run `gsas-server start` in a
+terminal of its own.
 
 ### On a shared workstation
 
 The server is per user:
 
 - It listens on the loopback interface (`127.0.0.1`) only, on a free port.
-- Its port, process ID and a random secret token live in a private
-  directory that only you can read: `$XDG_RUNTIME_DIR/powderline` or
-  `<tempdir>/powderline-<uid>` on Linux and macOS, `%LOCALAPPDATA%\powderline`
-  on Windows.
-- Every request and every answer is signed with that token. The token itself
-  never travels.
+  Other machines cannot reach it.
+- Each start makes a new random secret token. The token, the port and the
+  process ID live in a private directory: `$XDG_RUNTIME_DIR/powderline` or
+  `<tempdir>/powderline-<uid>` on Linux and macOS,
+  `%LOCALAPPDATA%\powderline` on Windows.
+- Every request and every answer is signed with that token (an HMAC). The
+  token itself never travels.
+- The server refuses a request that is not signed with the token. A request
+  without valid signing headers is refused before its body is read.
+- A client trusts only an answer signed with the token. Another process on
+  the same port cannot pose as your server.
 
 Other users therefore cannot use your server, and cannot pose as it. Each
 user who runs `gsasii.*` recipes gets a server of their own.
+
+On Linux and macOS, PowderLine checks that the private directory is yours
+and closed to other users. It refuses to use a directory that is not, for
+example one another user created in a shared `/tmp`.
+
+:::{caution}
+On Windows, PowderLine does not check who can read
+`%LOCALAPPDATA%\powderline`. The token is only as private as your user
+profile's access control. On a shared Windows machine, make sure other
+users cannot read your profile, or switch the server off (below).
+:::
 
 To switch the server off, for example in a facility launcher or a locked-down
 deployment, set:
@@ -120,12 +184,14 @@ export POWDERLINE_NO_SERVER=1        # also: true, yes, on
 ```
 
 Then auto-mode runs go in-process and never start a server, `--use-server`
-fails, and `gsas-server start` and `restart` refuse to start.
+fails with reason `server_disabled`, and `gsas-server start` and `restart`
+refuse to start.
 
 :::{note}
 The server picks a free port by itself, so users never collide. Pin a port
 only if a firewall rule needs one: set `POWDERLINE_SERVER_PORT` before
-`gsas-server start`. Clients find the port in your private directory.
+`gsas-server start`. If that port is busy, the server does not start.
+Clients find the port in your private directory.
 :::
 
 ### Set a time limit

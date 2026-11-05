@@ -59,6 +59,45 @@ The phase block (`space_group`, `unit_cell`, `atoms`) is identical in every
 engine. You can paste it from a converted `gsasii.*` recipe and add the bounds
 slots the engine expects.
 
+## Leftover servers from before 0.1.2
+
+GSAS-II servers from PowderLine 0.1.1, or from a 0.2.0 checkout older than
+the 0.1.2 merge, used fixed shared files, port 19471, and accepted
+unauthenticated requests ({ref}`KI-14 <ki-14>`). The current client never
+uses them. `gsas-server status` and `stop` cannot see them, so one may still
+be running unnoticed, perhaps auto-started. It runs as `gsas_server.py`
+(0.1.1) or `gateways/gsasii/server.py`.
+
+Stop your current server first, then end every remaining server process of
+yours once.
+
+::::{tab-set}
+
+:::{tab-item} Linux and macOS
+
+```bash
+pixi run -e gsasii gsas-server stop
+pkill -u "$USER" -f "gsas_server.py|gsasii[/.]server"
+```
+
+:::
+
+:::{tab-item} Windows
+
+```powershell
+pixi run -e gsasii gsas-server stop
+Get-CimInstance Win32_Process |
+  Where-Object CommandLine -match 'gsas_server.py|gsasii[/\\.]server' |
+  ForEach-Object { Stop-Process -Id $_.ProcessId }
+```
+
+You can also end the `python … gsas_server.py start` or `… server.py start`
+processes in Task Manager.
+
+:::
+
+::::
+
 ## Checklist
 
 1. Run the converter on each GSAS-II recipe. Read every report line: each is

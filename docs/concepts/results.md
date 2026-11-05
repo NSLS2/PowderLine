@@ -142,7 +142,9 @@ always comes from a run that succeeded.
 
 ## Simulations
 
-A run that refines nothing is a **simulation**: it calculates the pattern of
-the recipe as written. The result says `simulation_mode: true`. The statistics
+A **simulation** calculates the pattern of the recipe as written, refining
+nothing. Each engine has its own way to ask for one: every flag `false` plus
+`refinement_cycles: 1` (GSAS-II) or `iters: 0` (TOPAS), or no flag set
+(easydiffraction). The result then says `simulation_mode: true`. The statistics
 are computed in the same way, so against real data they show how good your
 starting values are. See [Simulate a pattern](../how-to/simulate.md).

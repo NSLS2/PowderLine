@@ -65,13 +65,15 @@ measured pattern replaces the three data points.
 - `instrument` with all four blocks: `radiation`, `geometry`, `corrections`,
   `broadening`.
 - At least one phase in `phases`, each with `space_group`, `unit_cell`,
-  `atoms` and `scale`.
+  `atoms` and `scale`. `scale` is ≥ 0. A `scale` of 0 is accepted, so a
+  recipe can be reused with its scale still to be set.
 - `refinement_controls`.
 
 **Optional:** `fit_range`; `background`; `instrument.description`; and per
 phase `peak_broadening`, `scattering_types` and `preferred_orientation`.
 The recipe above leaves out `background` and `peak_broadening`, so it
-validates with two default warnings (see [Defaults](#defaults)).
+validates with three default warnings: one for the background, and one each
+for size and strain broadening (see [Defaults](#defaults)).
 
 **`gsasii.spf`** (single-peak fitting) has no `phases`. It needs `xrd_data`,
 `instrument` as above, `single_peaks` and `refinement_controls` with
@@ -189,33 +191,18 @@ flowchart LR
     M -- "subprocess" --> IP
 ```
 
-Starting GSAS-II takes about 10 s. A persistent **GSAS-II server** keeps it
-loaded, so you pay that once per server lifetime instead of once per run.
-Both paths produce the same files and results.
-
-| Mode | Command-line flag | What it does |
-|---|---|---|
-| `auto` (default) | none | Uses the server, starting it if needed. Falls back to an in-process run if the server is unavailable. |
-| `server` | `--use-server` | Uses the server only. The run fails if the server cannot start. |
-| `subprocess` | `--no-server` | Runs GSAS-II in this process. No server is used. |
-
-From Python, pass the mode to `run()`:
+A GSAS-II recipe runs in one of three execution modes. `auto`, the default,
+uses a persistent GSAS-II server that stays loaded between runs, and falls
+back to an in-process run. `server` (`--use-server`) uses the server only,
+and `subprocess` (`--no-server`) runs in PowderLine's own process. Both paths
+produce the same files and results.
 
 ```python
 result = powderline.run(recipe, "output", execution_mode="subprocess")
 ```
 
-- **The server is private to you.** Each user gets their own server. It
-  accepts jobs only from you, through signed requests on the local machine
-  ({ref}`KI-14 <ki-14>`). Output files travel back inside its answer, so no
-  shared filesystem is needed ({ref}`KI-12 <ki-12>`).
-- **Turn the server off** by setting `POWDERLINE_NO_SERVER=1`. Then `auto`
-  runs in-process, and `server` mode fails. No server is ever started.
-- **Limit the wait** with `--server-timeout SECONDS`. By default there is no
-  limit. Past the limit the run fails with reason `timeout`. It does not fall
-  back to an in-process run, because the job is still running on the server.
-
-Starting, stopping and checking the server: [Run at a beamline](../how-to/beamline-operation.md).
+How to start, check and secure the server, and how to limit the wait for it:
+[Run at a beamline](../how-to/beamline-operation.md).
 
 ### Convergence and failures
 
@@ -232,18 +219,6 @@ Starting, stopping and checking the server: [Run at a beamline](../how-to/beamli
 - A run that fails raises an error. Its directory keeps `failure.json` and the
   console text GSAS-II printed ({ref}`KI-05 <ki-05>`). Details:
   [Outputs](../reference/outputs.md#when-a-run-fails).
-
-## Upstream status
-
-PowderLine has written up 13 of these behaviours for GSAS-II's developers,
-each with a standalone reproduction: the σ² label, the cell-edge
-multiplicity, `'sp'` sites, the R-centred 2-fold misread, symbol spellings,
-limits applied after the cycles, the Peak List `TypeError`, the two GOF
-meanings and the 100 % cap, ignored single-peak-fitting flags, the window's
-extra point, the SH/L floors, the background-peak floors, and the convergence
-flag absent from the messages. None has been posted yet. Until a fix lands
-upstream and PowderLine's pin moves to it, every behaviour below stands as
-documented.
 
 ## Behaviours
 

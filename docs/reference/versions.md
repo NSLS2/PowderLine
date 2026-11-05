@@ -87,108 +87,15 @@ verified on Linux (`linux-64`) and Windows (`win-64`).
 
 ## Schema history
 
-Each schema starts at 0.1.0, in PowderLine 0.2.0. The field-by-field
-definition is on [Fields](fields.md). What each engine does with its schema
-is on its [engine page](../engines/index.md).
+Every schema below starts at 0.1.0 and was introduced in PowderLine 0.2.0.
+Each field is on [Fields](fields.md).
 
-### Core schema 0.1.0
-
-Introduced in PowderLine 0.2.0. Every engine schema builds on it.
-
-- **The frame**: `schema_name`, `core_schema_version`,
-  `engine_schema_version`, `metadata` (at most 1 MiB) and `payload`
-  ([Recipe format](recipe-format.md#the-frame)).
-- **Parameters**: `[value, refine_flag]`, or `[value, refine_flag, min, max]`
-  in engines with bounds. `value` is a number and `refine_flag` a JSON
-  boolean; neither is ever `null`.
-- **Data and fit window**: `xrd_data` (2θ in degrees, intensities, weights
-  1/σ²) and `fit_range` (`[min, max]` inside the data, with at least two
-  points of positive weight).
-- **Background**: the Chebyshev block (`num_coefficients`, `coefficients`,
-  `refine_flag`).
-- **The phase block**: `space_group`, `unit_cell` and `atoms`, with every
-  structural quantity a parameter. Each engine schema adds its own phase
-  fields next to them, and never changes the core's.
-- **Space groups**: gemmi 0.7.5's canonical names, which state the setting
-  (`"P m -3 m"`, `"F d -3 m:2"`).
-- **Symmetry**: the cell must fit the space group; atoms on special
-  positions, symmetry-tied values, flags and bounds follow the rules on
-  [Validation](../concepts/validation.md).
-- **Atoms**: `element` is the neutral atom (ions go in the engine's
-  `scattering_types`); `occupancy` from 0 to 1; `ADP` is `"Uiso"` or
-  `"Uaniso"`, with the matching values in Å²; `Multiplicity` is optional and,
-  when stated, must equal the derived value.
-- **Names, numbers and unknown keys** follow
-  [Recipe format](recipe-format.md).
-- **Also defined in the core**: the unit-cell report's row names, and the
-  building blocks behind the engines' `scattering_types` and March–Dollase
-  `preferred_orientation`.
-
-### gsasii engine schema 0.1.0
-
-Introduced in PowderLine 0.2.0, on core 0.1.0.
-
-- **Workflows**: `gsasii.rietveld` (phases) and `gsasii.spf` (single peaks,
-  no phases).
-- **Parameters**: `[value, refine_flag]` only; no bounds
-  ([why](recipe-format.md#gsas-ii-no-bounds)).
-- **Phase fields**: `scale`, `peak_broadening` (isotropic size in µm and
-  microstrain), `scattering_types` (ions GSAS-II 5.7.9 has a form factor
-  for) and `preferred_orientation` (March–Dollase).
-- **Instrument**: `radiation` (`type: "PXC"`, `wavelength`), `geometry`,
-  `corrections` and `broadening` (`U` … `Z`), in GSAS-II's units.
-- **Background**: Chebyshev and pseudo-Voigt background peaks.
-- **Controls**: `refinement_cycles`; `1` is a simulation, with every flag
-  `false`.
-- **Defaults**, each with a warning: sample broadening 10 µm and 0
-  microstrain, no background, 5 cycles.
-- **Space groups**: the settings GSAS-II cannot read, or reads as another
-  setting, are refused.
-
-### topas engine schema 0.1.0
-
-Introduced in PowderLine 0.2.0, on core 0.1.0. The numbers in a recipe are
-the numbers TOPAS receives in its input file.
-
-- **Workflows**: `topas.rietveld` (phases) and `topas.spf` (single peaks).
-- **TOPAS version**: the recipe states `engine_version: "6"`. TOPAS 6 is the
-  only supported version.
-- **Parameters**: `[value, refine_flag, min, max]`, with TOPAS's default
-  limits on each `null` side ([Bounds](recipe-format.md#topas-default-limits)).
-- **Phase fields**: `scale`, `peak_broadening` (`CS_L`, `CS_G`, `Strain_L`,
-  `Strain_G`), `scattering_types` (ions in TOPAS 6's table) and
-  `preferred_orientation` (TOPAS's `PO` macro).
-- **Instrument**: one emission line, optional goniometer radii, corrections
-  keyed by TOPAS macro, and a peak type (`TCHZ_Peak_Type`, `PV_Peak_Type` or
-  `PVII_Peak_Type`) with its parameters.
-- **Background**: Chebyshev, `One_on_X` and background peaks.
-- **Controls**: `iters`, `chi2_convergence_criteria`, `x_calculation_step`,
-  all required; `iters: 0` is a simulation.
-- **No defaults**: a block left out is not modelled.
-- **Space groups**: 541 settings accepted; 23 that TOPAS cannot name, or reads
-  as another setting, are refused.
-
-### easydiffraction engine schema 0.1.0
-
-Introduced in PowderLine 0.2.0, on core 0.1.0. Recipes use easydiffraction's
-own names and units.
-
-- **Workflow**: `easydiffraction.rietveld` (phases); no single-peak fitting.
-- **Parameters**: `[value, refine_flag, min, max]`, with easydiffraction's
-  physical limits on each `null` side
-  ([Bounds](recipe-format.md#easydiffraction-physical-limits)).
-- **Phase fields**: `scale`, `scattering_types` and `preferred_orientation`
-  (with `march_random_fract`); the last two with the CrysPy calculator only.
-- **Instrument**: `radiation` (with an optional Kα2 line), `polarization`,
-  `corrections`, `absorption` and `broadening` (a peak type and its
-  parameters).
-- **Background**: Chebyshev.
-- **Controls**: `calculator` (`cryspy` or `crysfml`), `minimizer`,
-  `max_iterations` and three tolerances, all required. A recipe with no
-  refine flag set is a simulation.
-- **No defaults**: a block left out is not modelled.
-- **Space groups**: each calculator accepts only the settings it was verified
-  to compute: 428 for CrysPy, 230 for CrysFML.
+| Schema | Summary | Details |
+|---|---|---|
+| Core 0.1.0 | The frame, the parameter shapes, `xrd_data`, `fit_range`, the Chebyshev background and the phase block (`space_group`, `unit_cell`, `atoms`) with its symmetry rules. Every engine schema builds on it. | [Recipe format](recipe-format.md), [Validation](../concepts/validation.md) |
+| `gsasii` 0.1.0, on core 0.1.0 | `gsasii.rietveld` and `gsasii.spf`; `[value, refine_flag]`, no bounds; documented defaults, each with a warning. | [GSAS-II](../engines/gsasii.md) |
+| `topas` 0.1.0, on core 0.1.0 | `topas.rietveld` and `topas.spf`; `[value, refine_flag, min, max]` with TOPAS's default limits; `engine_version: "6"`; no defaults. | [TOPAS](../engines/topas.md) |
+| `easydiffraction` 0.1.0, on core 0.1.0 | `easydiffraction.rietveld` with the `cryspy` or `crysfml` calculator; `[value, refine_flag, min, max]` with physical limits; no defaults. | [easydiffraction](../engines/easydiffraction.md) |
 
 ## The split from the single schema
 

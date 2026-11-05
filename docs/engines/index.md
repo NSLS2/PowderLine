@@ -112,12 +112,10 @@ Edge cases:
   - `Fe+3` is an error that names `Fe3+`;
   - `Na+`, with no number, is an error: write `Na1+`;
   - `element` must be the ion's element.
-- **Moving a phase between engines** (`powderline.recipes.with_block`)
-  copies the whole phase, engine fields included. The target engine's schema
-  then validates it, so an ion that engine has no form factor for is an
-  error there. Engine fields written in another engine's form, such as
-  gsasii's `[value, flag]` against `[value, flag, min, max]`, must be
-  rewritten for the target.
+- **A phase moved to another engine** is validated by that engine's schema,
+  so an ion it has no form factor for is an error there. What carries over
+  is on
+  [Move a structure between engines](../reference/recipe-format.md#move-a-structure-between-engines).
 - **TOPAS's table can be edited.** `ATMSCAT.CPP` sits in the TOPAS folder,
   and you can change it. PowderLine checks against the file as shipped with
   TOPAS 6.
@@ -163,7 +161,7 @@ Each entry carries a status:
 |---|---|
 | {bdg-success}`handled` | PowderLine prevents or corrects it: a validation error, a translation, or a check that stops the run. |
 | {bdg-warning}`warned` | The run goes ahead, and the result carries a warning that names it. |
-| {bdg-secondary}`open` | Documented only. The engine's behaviour stands, and the entry tells you what to expect. |
+| {bdg-secondary}`documented` | Documented only. The engine's behaviour stands, and the entry tells you what to expect. |
 | {bdg-info}`fixed upstream` | Fixed in the engine version PowderLine pins. |
 
 The behaviours were established on GSAS-II 5.7.9, TOPAS 6 (TOPAS 7 where

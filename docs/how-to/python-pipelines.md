@@ -134,7 +134,7 @@ not take is a `TypeError`.
 
 | Engine | Option | Meaning |
 |---|---|---|
-| GSAS-II | `execution_mode` | `"auto"` (default), `"server"` or `"subprocess"`; see [Run at a beamline](beamline-operation.md) |
+| GSAS-II | `execution_mode` | `"auto"` (default), `"server"` or `"subprocess"` (in-process); see [Run at a beamline](beamline-operation.md#2-use-the-gsas-ii-server) |
 | GSAS-II | `server_timeout` | seconds to wait for the GSAS-II server's answer; default no limit |
 | TOPAS | `topas_dir` | the folder holding `tc.exe` |
 | TOPAS | `topas_version` | the installed TOPAS version, `"6"` |
@@ -147,12 +147,8 @@ result = powderline.run(topas_recipe, Path("out"), topas_version="6", topas_dir=
 
 ## 4. Handle failures
 
-A failed run never returns a result. It raises one of two errors:
-
-| Error | Meaning | Example `.reason` |
-|---|---|---|
-| `EngineExecutionError` | the engine ran and failed | `diverged`, `unusable_site`, `engine_crashed` |
-| `ExecutionBackendError` | the engine never ran | `server_unavailable`, `timeout` |
+A failed run never returns a result. It raises `EngineExecutionError` when
+the engine ran and failed, and `ExecutionBackendError` when it never ran:
 
 ```python
 try:
@@ -163,8 +159,9 @@ except powderline.ExecutionBackendError as e:
     print("could not run the engine:", e.reason)
 ```
 
-- `.reason` is a short code. [Messages](../reference/messages.md) lists
-  them all.
+- `.reason` is a short code, such as `diverged` or `timeout`.
+  [Messages](../reference/messages.md#failure-reasons) lists every reason
+  and what it means.
 - `.result` is the full failure record. `.result["failure"]` holds the
   `kind`, `reason`, `message` and `traceback`. For GSAS-II it also holds
   `console_tail`, the last of what GSAS-II printed.
@@ -205,30 +202,50 @@ result["output_recipe"]["metadata"]
 #                            'powderline_version': '0.2.0', 'created': '2026-…'}}
 ```
 
-| Field | Meaning |
-|---|---|
-| `parent_run_id` | the `run_id` of the run that produced this recipe; `None` in a validate-only summary |
-| `schema_name`, `engine` | the recipe's workflow and engine |
-| `engine_version` | the engine version the run used (TOPAS: the declared one); `None` in a validate-only summary |
-| `powderline_version` | the PowderLine version that ran |
-| `created` | when, in UTC |
+[Results](../concepts/results.md#provenance) explains every provenance key
+and the output recipe. Every result has its own `run_id`, and its output
+recipe names that run as `parent_run_id`. Store the `run_id` with your
+results, and a chain of analyses leads back to the data and the recipe that
+started it. A `failure.json` carries the same provenance
+([Outputs](../reference/outputs.md#when-a-run-fails)).
 
-Every result has its own `run_id`. A `failure.json` carries a
-`powderline_provenance` block too, with `schema_name`, `engine`,
-`engine_version`, `powderline_version`, `created` and `run_id`. Store the
-`run_id` with your results and a chain of analyses leads back to the data
-and the recipe that started it.
+## Use the GSAS-II server client directly
 
-```mermaid
-flowchart LR
-    DATA["Measurement<br/>scan ID in metadata"] --> R1["Recipe"]
-    R1 --> RUN1["Run<br/>run_id = A"]
-    RUN1 --> O1["Output recipe<br/>parent_run_id = A"]
-    O1 --> RUN2["Run<br/>run_id = B"]
+`powderline.run()` is the way to run recipes from Python. For `gsasii.*`
+recipes it already uses the GSAS-II server in its default `auto` mode
+([Run at a beamline](beamline-operation.md#2-use-the-gsas-ii-server)).
+
+A tool that talks to the server itself can use its client, `GSASClient`:
+
+```python
+from pathlib import Path
+from powderline.gateways.gsasii.client import GSASClient
+
+client = GSASClient(fallback_to_subprocess=True)   # run in-process if the server cannot be used
+result = client.submit_simulation(
+    recipe=Path("my_sample/input.json"),   # also a dict, or a validated gsasii recipe model
+    output_dir=Path("my_sample/output"),
+    auto_start_server=True,                # start the server if it is not running
+)
+if result["status"] == "ok":
+    print(result["method"], result["rwp"])            # "server" or "subprocess"
+else:
+    failure = result["failure"]
+    print(failure["kind"], failure["reason"], failure["message"])
 ```
 
-[Results](../concepts/results.md) explains the output recipe and its
-dispositions.
+The client differs from `powderline.run()`:
+
+- It **returns** a failed result instead of raising. Check
+  `result["status"]`, `"ok"` or `"failed"`.
+- `fallback_to_subprocess=False` behaves like `execution_mode="server"`: no
+  in-process run. `request_timeout=600` behaves like `server_timeout=600`.
+- `use_server=False` in `submit_simulation` skips the server and runs
+  in-process.
+- The tables come back as plain lists and dicts, not DataFrames.
+- It builds no output recipe and no parameter dispositions, and it writes no
+  `failure.json`. It does not clear earlier results from the output
+  directory.
 
 ## Example scripts
 

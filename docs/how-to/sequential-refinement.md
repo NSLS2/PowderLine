@@ -53,10 +53,11 @@ for i, xrd_data in enumerate(patterns):          # your xrd_data blocks, in orde
 ## 2. Stop on an output recipe that is not valid
 
 `result["output_recipe_valid"]` says whether the output recipe validates as
-written. It is `False` when the engine returned a value the recipe format
+written. It is `false` when the engine returned a value the recipe format
 refuses, for example:
 
-- an occupancy above 1, or a negative size or `Uiso`;
+- an occupancy outside 0 to 1, or a crystallite size of zero or below;
+- a negative `Uiso` in an easydiffraction recipe;
 - a profile that makes a peak width negative
   ({ref}`EB-87 <eb-87>`, easydiffraction);
 - a split atom that refined to within 2e-3 of its special position
@@ -137,8 +138,8 @@ reference, every refined cell lies within 1.5 ESD of the programmed value.
 The output recipe keeps your `metadata` block and adds
 `metadata.powderline_provenance`. Its `parent_run_id` is the `run_id` of the
 run that produced it. Each step's output recipe therefore names the step it
-came from. [Use PowderLine from Python](python-pipelines.md#carry-metadata-and-provenance-through)
-lists every provenance field.
+came from. [Results](../concepts/results.md#provenance) lists every
+provenance key.
 
 **Next:** [Run at a beamline](beamline-operation.md) to run series
 unattended.

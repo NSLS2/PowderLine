@@ -19,7 +19,7 @@ statistics. Nothing is translated between engines.
 - `docs/reference/versions.md` — schema versions, history, support matrix.
 - `docs/engines/*.md` + `docs/catalog/engine_behaviour.yaml` — what each
   engine does and PowderLine's policy (`EB-NN`).
-- `docs/development/known-issues.md` + `docs/catalog/known_issues.yaml` —
+- `docs/reference/known-issues.md` + `docs/catalog/known_issues.yaml` —
   known, deliberately deferred behaviours (`KI-NN`). Check before "fixing" a
   quirk.
 - The code under `src/` and `pixi.toml`: where a page and the code disagree,
@@ -81,7 +81,7 @@ Install with `pixi install --frozen -e <env>`.
 - `pixi run powderline <recipe.json> --topas-version 6 [--topas-dir DIR] [--topas-timeout S]` — without `tc.exe`: status `generated`, exit 0.
 - `pixi run powderline --doctor`. The tasks `kicker` and `doctor` run the same `main`.
 - `pixi run test` (engine-free: `core or topas_gen`); `pixi run -e gsasii test-gsasii`; `pixi run -e easydiffraction test-easydiffraction`; `pixi run test-topas` (runs `tc.exe` only with `POWDERLINE_TOPAS_DIR` and `POWDERLINE_TOPAS_VERSION` set); `pixi run test-all` (`dev`).
-- `pixi run -e gsasii gsas-server start|status|stop|restart|logs`.
+- `pixi run -e gsasii gsas-server start|status|stop|restart|logs`. `start` and `restart` run the server in the foreground until stopped; to replace a stale server, `stop` it and the next run starts a fresh one.
 - `pixi run docs` / `pixi run docs-clean` — Sphinx, `-W`, zero warnings.
 - `pixi run fields-check`, `pixi run catalog-check`, `pixi run figures-check` — generated docs are current; regenerate with the matching script without `--check`.
 - `pixi run update-code-hash` — after any edit to a frozen gsasii module.
@@ -101,8 +101,10 @@ do GSAS-II's project-dictionary work. Rules (`docs/development/policies.md#froze
   `tests/test_code_hash.py` guards it).
 - New behaviour goes into the non-frozen modules (`fit_report`, `sites`,
   `routing`, `paths`, `gateway`).
-- Restart the GSAS-II server after any edit it runs (a stale server is
-  detected and refused).
+- Replace the GSAS-II server after any edit it runs (a stale server is
+  detected and refused): `gsas-server stop`; the next run starts a fresh one.
+  `gsas-server restart` blocks in the foreground, so never chain a command
+  after it.
 
 ## Environment notes
 
@@ -141,8 +143,7 @@ do GSAS-II's project-dictionary work. Rules (`docs/development/policies.md#froze
 - Docs follow the writing rules in
   `docs/development/contributing.md#writing-documentation`.
 - Don't commit secrets: `.powderline_config.yaml` is gitignored.
-- The private devkit is reserved under `_dev/` (gitignored). Never commit it
-  or anything under it.
+- `_dev/` is reserved and gitignored. Never commit it or anything under it.
 - Never commit TOPAS's own files (console text, `tc.log`, `TOPAS.INC`,
   `ATMSCAT.CPP`): they are licensed with TOPAS.
 
@@ -153,8 +154,8 @@ PowderLine follows the NSLS-II policy for AI coding assistants:
 - A human is responsible for every change, reviews every line, and confirms
   that the tests passed. AI output gets no shortcut through review.
 - Agents work on a feature branch and commit unsigned, if they commit at all.
-  They never push, tag, force-push or rewrite published history; the
-  maintainer pushes.
+  They never sign, push, tag, force-push or rewrite published history; the
+  maintainer signs and pushes.
 - Commit messages follow Conventional Commits and end with one trailer line
   per model that contributed: `Assisted-by: <agent>:<model>` (e.g.
   `Assisted-by: claude-code:claude-opus-5-5`). Never `Co-authored-by` for

@@ -39,8 +39,12 @@ calibrant, which has negligible sample broadening.
 ## 3. Run it
 
 ```bash
-pixi run -e gsasii powderline examples/example_LaB6/input.json
+pixi run -e gsasii powderline examples/example_LaB6/input.json --output my_lab6
 ```
+
+`--output` sends the results to a folder of your own. Without it they go
+next to the recipe, into `examples/example_LaB6/output/`, which holds the
+example's committed reference results.
 
 GSAS-II prints its progress for each refinement cycle. The run takes a few
 seconds and ends like this (long lines shortened):
@@ -62,7 +66,7 @@ explains what to do about correlated parameters.
 
 ## 4. Look at the results
 
-The results are in `examples/example_LaB6/output/`:
+The results are in `my_lab6/`:
 
 | File | What it holds |
 |---|---|
@@ -86,7 +90,7 @@ Always look at a fit, not just its Rwp. In the same environment:
 import pandas as pd
 import matplotlib.pyplot as plt
 
-fit = pd.read_csv("examples/example_LaB6/output/fit_profile.txt", sep="\t")
+fit = pd.read_csv("my_lab6/fit_profile.txt", sep="\t")
 plt.plot(fit.two_theta, fit.y_obs, ".", ms=2, label="observed")
 plt.plot(fit.two_theta, fit.y_calc, label="calculated")
 plt.plot(fit.two_theta, fit.y_diff - fit.y_obs.max() * 0.1, label="difference")
@@ -95,7 +99,7 @@ plt.legend()
 plt.show()
 ```
 
-Run it with `pixi run -e gsasii python plot_fit.py`.
+Save it as `plot_fit.py` and run it with `pixi run -e gsasii python plot_fit.py`.
 
 ### Run it from Python instead
 
@@ -107,7 +111,7 @@ from pathlib import Path
 import powderline
 
 recipe = powderline.load_recipe_asset(Path("examples/example_LaB6/input.json"))
-result = powderline.run(recipe, Path("lab6_out"))
+result = powderline.run(recipe, Path("my_lab6_py"))
 
 print(result["rwp"])                  # PowderLine's Rwp, in percent
 print(result["unit_cell_data"]["LaB6"])
@@ -120,7 +124,7 @@ The same refinement written for the other engines is in
 
 ```bash
 pixi install --frozen -e easydiffraction
-pixi run -e easydiffraction powderline examples/example_LaB6/easydiffraction/input.json
+pixi run -e easydiffraction powderline examples/example_LaB6/easydiffraction/input.json --output my_lab6_ed
 ```
 
 Each recipe is written in its own engine's terms, so the instrument blocks

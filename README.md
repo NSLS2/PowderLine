@@ -8,83 +8,54 @@ person, script or machine can write, check and run.**
 [How it works](https://nsls2.github.io/PowderLine/concepts/how-powderline-works.html) ·
 [Paper](https://doi.org/10.48550/arXiv.2608.17009)
 
-## Why PowderLine
+## What and why
 
 Rietveld refinement extracts structure, phase fractions and microstructure from
 powder data. Doing it reliably takes expertise in a particular program, and
-doing it at scale usually means custom code written for one project.
-
-No refinement program offered a single, validated, machine-writable
-description of a whole refinement. PowderLine provides one: the **recipe**.
-
-## What it does
+doing it at scale has meant custom code for each project. No refinement
+program offered a single, validated, machine-writable description of a whole
+refinement. PowderLine provides one: the **recipe**.
 
 ```mermaid
 flowchart LR
-    subgraph drivers["Who drives it"]
-        direction TB
-        D1[GUIs]
-        D2[Notebooks and scripts]
-        D3[Automated pipelines]
-        D4[Autonomous experiments]
-        D5[LLM agents]
-    end
-    subgraph pl["PowderLine"]
-        direction TB
-        R["Recipe<br/><i>structured, versioned</i><br/>data · model · instrument · flags · metadata"]
-        V{{"Validate<br/>schema + symmetry"}}
-        X{{Run}}
-        R --> V --> X
-    end
-    subgraph engines["Refinement engines"]
-        direction TB
-        E1[GSAS-II]
-        E2[TOPAS]
-        E3[easydiffraction]
-    end
-    subgraph out["Results"]
-        direction TB
-        O1["Tables and uniform statistics"]
-        O2["Output recipe<br/>refined values written back"]
-        O3["Provenance<br/>run IDs · versions · your metadata"]
-    end
-    drivers --> R
-    X <--> engines
-    X --> out
-    O2 -. next step .-> R
+    D["GUIs · notebooks · pipelines<br/>autonomous experiments · LLM agents"] --> R["Recipe<br/>structured · versioned"]
+    R --> V{{Validate}} --> X{{Run}}
+    X <--> E["GSAS-II · TOPAS<br/>easydiffraction"]
+    X --> O["Results<br/>tables · uniform Rwp · provenance"]
+    O -. "output recipe" .-> R
 ```
 
-1. **Describe.** A recipe is a structured document holding the data, the
-   structural model, the instrument, what to refine and any metadata you
-   attach. In Python it is a dictionary. On disk or over the wire it is
-   JSON. It can come from a file, a database record or a live data stream.
+1. **Describe.** A recipe holds the data, the structural model, the
+   instrument, what to refine and any metadata you attach. It is structured
+   data: a dictionary in Python, JSON when stored or sent. It can come from a
+   file, a database record or a live data stream.
 2. **Validate.** PowderLine checks the recipe against a versioned schema and
    against the crystallography: the cell against the space group, atoms on
    special positions, symmetry-tied parameters. No engine needs to be
    installed. Each problem is reported at its field, with the fix.
-3. **Run.** PowderLine hands the recipe to the engine it names (GSAS-II,
-   TOPAS or easydiffraction) and returns the same structured results whichever
-   engine ran.
-4. **Chain.** Every result includes an *output recipe*, with the refined
-   values written back and provenance attached. That is the next step's
-   input: calibrant → sample → temperature series.
+3. **Run.** PowderLine hands the recipe to the engine it names and returns
+   the same structured results whichever engine ran.
+4. **Chain.** Every result includes an *output recipe* with the refined
+   values written back and provenance attached: the next step's input.
 
-## Why it matters
+What that gives you:
 
 - **One interface for every driver.** A GUI, a notebook, a beamline pipeline,
-  an autonomous experiment and an LLM agent all drive PowderLine the same
-  way, with the same recipe, and get the same result.
-- **Modular.** PowderLine sits between data and decisions. It takes data
-  from your reduction step and hands structured results to whatever comes
-  next: plotting, databases, decision-making for the next measurement.
-- **Machine-checkable.** Validation names every problem and how to fix it, so
-  a program or an LLM can write a recipe, check it and correct it without a
-  person in the loop.
-- **Traceable.** Your metadata (sample, measurement, data IDs) travels with
-  the recipe into the results, and every run records what produced it. Data,
-  analyses and their order stay linked.
+  an autonomous experiment and an LLM agent drive PowderLine the same way and
+  get the same result.
+- **A component, not a silo.** PowderLine takes data from your reduction step
+  and hands structured results to whatever comes next: plots, databases, the
+  decision about the next measurement.
+- **Machine-checkable.** Every validation error names its fix, so a program or
+  an LLM can write a recipe, check it and correct it.
+- **Traceable.** Your metadata travels with the recipe into the results, and
+  every run records what produced it, so data and analyses stay linked.
 - **Comparable.** Every engine reports Rwp, Rexp and GoF computed the same way
   over the same points.
+
+PowderLine handles constant-wavelength X-ray powder data on a 2θ axis.
+Neutron and time-of-flight data are not supported; see
+[Scope and limitations](https://nsls2.github.io/PowderLine/reference/scope.html).
 
 ## Try it
 
@@ -94,10 +65,10 @@ You need [pixi](https://pixi.sh) and git.
 git clone https://github.com/NSLS2/PowderLine.git
 cd PowderLine
 pixi install --frozen -e gsasii
-pixi run -e gsasii powderline examples/example_LaB6/input.json
+pixi run -e gsasii powderline examples/example_LaB6/input.json --output my_lab6
 ```
 
-The results are in `examples/example_LaB6/output/`.
+The results are in `my_lab6/`.
 [Your first refinement](https://nsls2.github.io/PowderLine/getting-started/first-refinement.html)
 walks through them.
 

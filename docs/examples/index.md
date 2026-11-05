@@ -1,11 +1,19 @@
 # Examples
 
 Every example is a real recipe with its committed results. Run any of them
-from a PowderLine checkout:
+from a PowderLine checkout, into a folder of your own:
 
 ```bash
-pixi run -e gsasii powderline examples/<name>/input.json
+pixi run -e gsasii powderline examples/<name>/input.json --output my_run
 ```
+
+Your results are then in `my_run/`.
+
+:::{warning}
+Always pass `--output` when you run a committed example. Without it, the
+results go to the example's own `output/` folder and overwrite the committed
+results there.
+:::
 
 Examples with a TOPAS or easydiffraction version keep it in a subfolder
 (`topas/`, `easydiffraction/`). Run an easydiffraction recipe in the
@@ -13,16 +21,17 @@ Examples with a TOPAS or easydiffraction version keep it in a subfolder
 Windows:
 
 ```bash
-pixi run -e easydiffraction powderline examples/<name>/easydiffraction/input.json
-pixi run powderline examples/<name>/topas/input.json --topas-version 6 --topas-dir C:/TOPAS6
+pixi run -e easydiffraction powderline examples/<name>/easydiffraction/input.json --output my_run_ed
+pixi run powderline examples/<name>/topas/input.json --topas-version 6 --topas-dir C:/TOPAS6 --output my_run_topas
 ```
 
-Validate any of them without an engine:
+Validate any of them without an engine. Validation writes nothing:
 `pixi run powderline examples/<name>/input.json --validate-only`.
 
 Each example folder has a `DESCRIPTION.md` that explains the case and the
-results you should get. Its `output/` folder holds the committed results. They
-are also the regression references, so a change to them is a deliberate change.
+results you should get. Its `output/` folder holds the committed results.
+They are also the regression references, so a change to them is a
+deliberate change.
 
 The figures show the committed fit over the fit window: the observed pattern
 in grey, the calculated pattern in blue and the difference curve in orange,
@@ -100,6 +109,7 @@ These examples show what an ill-posed refinement looks like.
 
 :::{admonition} These examples are ill-posed on purpose
 :class: caution
+
 They ask the data for more than it can determine. They are kept as they are,
 so you can see what that looks like and which signals PowderLine gives. Each
 one names its well-posed variant where one exists. Don't copy their

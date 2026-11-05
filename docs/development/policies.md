@@ -74,9 +74,11 @@ So these functions change only with the maintainers' explicit consent.
   `src/powderline/_code_hash.json` with the change. The hash covers the raw
   bytes, so a comment edit changes it too. `tests/test_code_hash.py` fails
   until the hash is updated.
-- **Restart the GSAS-II server** after the edit:
-  `pixi run -e gsasii gsas-server restart`. A server started earlier still
-  runs the old code.
+- **Replace the GSAS-II server** after the edit. A server started earlier
+  still runs the old code. Stop it with `pixi run -e gsasii gsas-server stop`,
+  and the next run starts a fresh one. `gsas-server restart` also works, but
+  it runs the new server in the foreground of that terminal until you stop
+  it.
 
 ## Engine-version pins
 
@@ -156,7 +158,9 @@ Per engine:
 - **TOPAS.** The goldens live under
   `tests/data/topas/native/golden/<version>/`, chosen by each fixture's
   `engine_version`. Adding TOPAS 7 needs a TOPAS 7 installation for the
-  `topas_exec` run, its own goldens, and a check of TOPAS 7's convergence. The
+  `topas_exec` run, its own goldens, and a check of TOPAS 7's convergence. It
+  also needs every behaviour on the [TOPAS page](../engines/topas.md) marked
+  unverified for TOPAS 7 to be checked on TOPAS 7. The
   generation suite (`topas_gen`) runs anywhere and compares INPs byte for byte
   with the TOPAS 6 goldens, so a change in what is written shows without
   TOPAS.

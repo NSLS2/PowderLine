@@ -25,16 +25,19 @@ put your pattern into its `xrd_data` block.
 
 :::{tab-item} GSAS-II
 :sync: gsasii
+
 `examples/example_LaB6_singlepeakfit/input.json` (`gsasii.spf`): 36 LaB6
 peaks, a Chebyshev background and one background peak.
 :::
 :::{tab-item} TOPAS
 :sync: topas
+
 `examples/example_LaB6_singlepeakfit/topas/input.json` (`topas.spf`): the
 same 36 peaks in TOPAS's terms.
 :::
 :::{tab-item} easydiffraction
 :sync: easydiffraction
+
 Not available: easydiffraction has no single-peak workflow.
 :::
 ::::
@@ -49,6 +52,7 @@ write peaks differently:
 
 :::{tab-item} GSAS-II
 :sync: gsasii
+
 Four lists of the same length, one entry per peak:
 
 ```json
@@ -84,6 +88,7 @@ GSAS-II ignores a flag on the side not in use without saying so
 :::
 :::{tab-item} TOPAS
 :sync: topas
+
 A list of peaks. Each is a TOPAS `xo_Is` peak, the instrument's peak type
 convolved with the peak's own widths:
 
@@ -115,6 +120,7 @@ List peaks above.
 
 :::{tab-item} GSAS-II
 :sync: gsasii
+
 ```bash
 pixi run powderline my_peaks/input.json --validate-only
 pixi run -e gsasii powderline my_peaks/input.json
@@ -122,6 +128,7 @@ pixi run -e gsasii powderline my_peaks/input.json
 :::
 :::{tab-item} TOPAS
 :sync: topas
+
 ```bash
 pixi run powderline my_peaks/input.json --validate-only
 pixi run powderline my_peaks/input.json --topas-version 6 --topas-dir C:/TOPAS6
@@ -130,6 +137,7 @@ See [Run TOPAS recipes](run-topas.md).
 :::
 :::{tab-item} easydiffraction
 :sync: easydiffraction
+
 Not available.
 :::
 ::::
@@ -141,6 +149,7 @@ Not available.
 
 :::{tab-item} GSAS-II
 :sync: gsasii
+
 - `single_peaks_report.txt`: tab-separated, one row per peak. A comment line
   says how many peaks converged and how many have aphysical values. The
   columns are `position_2theta`, `intensity`, `sigma`, `sigma_squared`,
@@ -159,6 +168,7 @@ and ESD.
 :::
 :::{tab-item} TOPAS
 :sync: topas
+
 - `single_peaks_report.csv`: one row per peak, with `position_2theta`,
   `intensity`, `gauss_fwhm`, `lor_fwhm`, `fwhm` and `integral_breadth`, each
   followed by its ESD.
@@ -169,6 +179,7 @@ No unit-cell report and no reflection list.
 :::
 :::{tab-item} easydiffraction
 :sync: easydiffraction
+
 Not available.
 :::
 ::::

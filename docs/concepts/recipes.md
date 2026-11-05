@@ -67,9 +67,10 @@ flowchart LR
     end
 ```
 
-The shared blocks mean the same thing everywhere. A structure written for
-GSAS-II can be moved into a TOPAS recipe unchanged, apart from the extra
-bound entries TOPAS parameters carry (see below).
+The shared blocks mean the same thing everywhere, so a structure written
+for one engine carries over to another. Its parameters gain or lose the two
+limit entries (see below), and the engine's own phase fields are rewritten.
+[Recipe format](../reference/recipe-format.md) gives the exact rule.
 
 ## Every refinable value carries its flag
 

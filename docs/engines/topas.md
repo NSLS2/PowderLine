@@ -258,16 +258,6 @@ TOPAS 6 write nothing. Latin-1 names and spaces work.
 ({ref}`KI-16 <ki-16>`). TOPAS 7 needs an explicit widening, with its own
 compatibility run.
 
-## Upstream status
-
-PowderLine has written up 10 of these behaviours for TOPAS's developers, each
-with a standalone reproduction: the PVII formula, the e0 and LVol-IB
-formulas, the TCHZ absolute value, the `lg`-alone crash, silent zeroing and
-the negative-FWHM abort, the limit markers, the last-point loss, the three
-misread settings, the exit code, messages and version, and the undocumented
-`Get`. None has been posted yet. Until a fix lands upstream and PowderLine's
-supported version moves to it, every behaviour below stands as documented.
-
 ## Behaviours
 
 Each entry says what TOPAS does on its own and what PowderLine does about it.

@@ -131,7 +131,7 @@ A base name that is not ASCII is replaced by `topas`, with the warning
 
 ## What to expect in the result
 
-- `converged` is always `None`: TOPAS 6 writes no convergence signal
+- `converged` is always `null`: TOPAS 6 writes no convergence signal
   ({ref}`EB-85 <eb-85>`).
 - `engine_details["tc_path"]` names the `tc.exe` that ran.
 - TOPAS reports success and failure with the same exit code, so PowderLine

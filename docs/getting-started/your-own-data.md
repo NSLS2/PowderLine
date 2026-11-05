@@ -23,8 +23,8 @@ flowchart LR
 
 ## 1. Choose the engine and copy an example
 
-A recipe is written for one engine, so choose it first. GSAS-II is the
-reference engine and the easiest to start with. [Engines](../engines/index.md)
+A recipe is written for one engine, so choose it first. GSAS-II installs
+with pixi on every platform, so it is the easiest to start with. [Engines](../engines/index.md)
 compares them.
 
 Copy the example closest to your case into a folder of your own:

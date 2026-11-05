@@ -52,7 +52,10 @@ ESD, s.u.
 
 Execution mode
 : Where a GSAS-II recipe runs: `auto` (the default: try the GSAS-II server,
-  else run in-process), `server` or `subprocess` (in-process).
+  else run in-process), `server` (the server only) or `subprocess`. Despite
+  its name, `subprocess` runs the refinement in PowderLine's own process
+  (in-process). See
+  [Run at a beamline](../how-to/beamline-operation.md).
 
 Fit window
 : The 2θ range that is fitted, set by `fit_range`. Every engine fits exactly
@@ -129,7 +132,9 @@ Setting, origin choice
 
 Simulation
 : A run that refines nothing and only calculates the pattern from the stated
-  values.
+  values. A recipe is a simulation when it sets `refinement_cycles: 1`
+  (GSAS-II), `iters: 0` (TOPAS), or no refine flag (easydiffraction); the
+  result then has `simulation_mode: True`.
 
 Single-peak fitting (SPF)
 : Fitting individual peaks, each with its own position, intensity and widths,

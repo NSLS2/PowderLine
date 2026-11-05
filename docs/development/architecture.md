@@ -83,9 +83,21 @@ Every gateway has the same two layers.
 | `topas/` (TOPAS 6) | `native_writer.py` (model to INP and `.xye`), `native_run.py` (runs `tc.exe`, reads its files), `peak_list.py`, `runner.py` (finds `tc.exe`), `scattering.py` |
 | `easydiffraction/` (0.21.1) | `native_builder.py` (model to an easydiffraction project), `native_run.py`, `space_group_table.py`, `space_group_support.py`, `scattering.py` |
 
-`gsasii/simulation_builder.py` turns a crystal-structure dict (space group,
-cell, atoms, formula) into a `gsasii.rietveld` simulation recipe. It reduces
-the cell to symmetry-unique sites and writes every default explicitly.
+`gsasii/simulation_builder.py` (`SimulationRecipeBuilder`) turns a
+crystal-structure dict into a `gsasii.rietveld` simulation recipe, with
+`refinement_cycles: 1` and every refine flag `false`:
+
+- **Input:** `space_group`, `unit_cell`, `formula`, an optional
+  `material_id`, and `sites`, which lists every atom of the full conventional
+  cell. The builder reduces `sites` to one atom per orbit, and refuses a list
+  whose atom count does not match each site's multiplicity.
+- **Space group:** written as its canonical name. A group with two origins,
+  given in origin choice 1, is moved to origin choice 2, because GSAS-II
+  cannot use origin 1.
+- **Defaults:** every value is stated in the recipe, in GSAS-II's units. SH/L
+  is 0.002, GSAS-II's floor. The built-in defaults are overridden by a
+  `simulation_defaults` dict, which `config_loader.ConfigLoader` reads from
+  `.powderline_config.yaml`. Unknown keys there are errors.
 
 ### No engine at import time
 
@@ -186,18 +198,30 @@ flowchart TD
 | `server` | `--use-server` | Server only; fails if the server cannot be used |
 | `subprocess` | `--no-server` | Skips the server; GSAS-II runs in the calling process, despite the name |
 
-The server keeps GSAS-II imported in one process, so a batch of runs pays
-GSAS-II's import once. It is per user, binds the loopback address, and signs
-every request and response. Output files travel back inside the response, so
-client and server need no shared filesystem. `POWDERLINE_NO_SERVER=1` turns
-the server off. Operating the server is covered in
-[Run at a beamline](../how-to/beamline-operation.md).
+The server (`server.py`, with `client.py` as its client) keeps GSAS-II
+imported in one process, so a batch of runs pays GSAS-II's import once. Its
+security model:
+
+| Aspect | What the code does |
+|---|---|
+| Owner | One server per user. A kernel-held lock in the state directory allows a single server. |
+| Network | Binds the loopback address `127.0.0.1` only, on a free port or `POWDERLINE_SERVER_PORT`. |
+| Authentication | A random token, made at each start, signs every request and every response with an HMAC over method, path, nonce, timestamp and body. The token never travels. A client never trusts a listener that cannot sign. |
+| Unsigned requests | A request without well-formed signing headers is refused before its body is read. |
+| Token storage, Linux and macOS | A private state directory, mode 0700. The server refuses one that another user owns or can reach, or that is a symlink. |
+| Token storage, Windows | `%LOCALAPPDATA%\powderline`, protected by the user profile's ACL. PowderLine does not check that ACL. |
+| Files | Each job runs in a private scratch directory. Output files travel back inside the signed response, so client and server need no shared filesystem. |
+
+`POWDERLINE_NO_SERVER=1` turns the server off. Operating the server is
+covered in [Run at a beamline](../how-to/beamline-operation.md).
 
 ```{warning}
-The server caches the code it loaded. After editing anything it runs, restart
-it: `pixi run -e gsasii gsas-server restart`. The client compares the
-server's PowderLine version and source-tree hash with its own. A stale server
-is skipped in `auto` mode and refused in `server` mode.
+The server caches the code it loaded. After editing anything it runs, stop
+it with `pixi run -e gsasii gsas-server stop`; the next `auto` or `server` run
+starts a fresh one in the background. `gsas-server restart` and `start` run
+the server in the foreground of that terminal until you stop it. The client
+compares the server's PowderLine version and source-tree hash with its own. A
+stale server is skipped in `auto` mode and refused in `server` mode.
 ```
 
 A server timeout never falls back to an in-process run. The job is still

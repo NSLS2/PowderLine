@@ -29,7 +29,7 @@ Run a recipe with the command users run:
 
 ```bash
 pixi run powderline examples/example_LaB6/input.json --validate-only
-pixi run -e gsasii powderline examples/example_LaB6/input.json
+pixi run -e gsasii powderline examples/example_LaB6/input.json --output my_lab6
 ```
 
 The pixi task `kicker` runs the same command. Every option is on
@@ -45,7 +45,13 @@ The pixi task `kicker` runs the same command. Every option is on
 | `pixi run test-topas` | TOPAS input generation, and `tc.exe` runs where TOPAS is installed | any; runs TOPAS only on its machine |
 | `pixi run test-all` | Every suite | `dev` |
 
-Extra pytest arguments pass through: `pixi run test -x -k schema`.
+Extra pytest arguments pass through: `pixi run test -x -k schema`. A later
+`-m` replaces the task's own, so this runs the GSAS-II suite without its slow
+regressions:
+
+```bash
+pixi run -e gsasii test-gsasii -m "gsasii and not slow"
+```
 
 Every test carries exactly one suite marker (`core`, `gsasii`, `topas_gen`,
 `topas_exec`, `easydiffraction`), plus the optional `slow`. The markers are
@@ -77,12 +83,27 @@ The example outputs under `examples/**/output/` are committed on purpose. The
 regression tests run each example again and compare against them.
 Refinements are byte-deterministic on one machine. Between builds and
 platforms, GSAS-II, scipy or BLAS can shift refined values at the last
-digits. So refined parameters and unit cells are compared within a
-tolerance, with `refined_params_match` and `unit_cell_match` in
-`tests/subprocess_utils.py`. Correlated size and strain terms get a looser
-tolerance than the rest. Peak lists are compared by row count. TOPAS and
-easydiffraction are compared against their goldens under
-`tests/data/{topas,easydiffraction}/native/golden/`.
+digits. So refined values are compared within a tolerance. Peak lists are
+compared by row count. TOPAS and easydiffraction are compared against their
+goldens under `tests/data/{topas,easydiffraction}/native/golden/`.
+
+A value passes when |test − reference| ≤ atol + rtol·|reference|.
+
+| Comparison | Where | Tolerance |
+|---|---|---|
+| Unit-cell reports | `unit_cell_match`, `tests/subprocess_utils.py` | rtol 1e-4, atol 1e-6 |
+| `refined_parameters.csv`, output recipe, dispositions | `refined_params_match` and its siblings, `tests/subprocess_utils.py` | rtol 1e-3, atol 1e-4 |
+| Correlated size and strain broadening (category `other`: Size, Mustrain) | the same functions, `loose_rtol` | rtol 1e-2, atol 1e-4 |
+| GSAS-II uniform Rwp | `UNIFORM_RWP_TOLERANCE`, `tests/test_example_LaB6_regression.py` | within 0.1 percentage point |
+| GSAS-II's own wR in `dummy.lst` | `tests/test_esd_extraction.py`, a tripwire on the frozen code | within 0.1 percentage point of the same reference |
+| easydiffraction goldens: values, ESDs, Rwp, Rexp, GoF, χ²_red | `GOLDEN_RTOL`, `tests/test_easydiffraction_native.py` | rtol 1e-3; a value near zero also passes within 1 % of its ESD |
+| easydiffraction goldens: unit cell | `GOLDEN_CELL_RTOL` | rtol 1e-4 |
+
+Size and strain get the loose tolerance because they are ill-conditioned:
+the two separate poorly, and they reproduce across builds only to about 1 %.
+Every other class keeps the tight guard. CrysFML refinements stop at
+start-dependent points ({ref}`EB-90 <eb-90>`), so their goldens compare only
+the counts, the warnings and the cell.
 
 A reference moves only as a deliberate change, with an equivalence check
 ([Policies](policies.md#deliberate-behaviour-changes)).
@@ -113,6 +134,36 @@ declarations:
 ```bash
 PYTHONPATH=src python scripts/gen_schema_field_tables.py
 ```
+
+The engine-behaviour entries, the [ID index](../reference/ids.md) and
+[Known issues](../reference/known-issues.md) are generated from
+`docs/catalog/engine_behaviour.yaml` and `docs/catalog/known_issues.yaml`.
+Edit the YAML, never the generated pages, then run
+`python scripts/gen_catalog.py`.
+
+### Regenerate the cross-engine comparison
+
+The tables on [Comparing engines](../concepts/comparing-engines.md) come from
+`scripts/cross_engine_comparison.py`:
+
+```bash
+pixi run -e gsasii python scripts/cross_engine_comparison.py
+pixi run -e easydiffraction python scripts/cross_engine_comparison.py --no-run --rerun-easydiffraction
+python scripts/cross_engine_comparison.py --no-run
+```
+
+1. The first command runs GSAS-II on the committed examples. It rebuilds the
+   TOPAS and easydiffraction rows from the goldens.
+2. The second re-runs the easydiffraction fixtures, keeps the GSAS-II rows
+   just recorded, and reports how close the rerun is to its golden.
+3. The third rebuilds the tables from committed files only: the goldens and
+   the JSON record of the last GSAS-II run.
+
+The TOPAS rows come from the committed TOPAS 6 goldens
+(`tests/data/topas/native/golden/6/`). They change only when the goldens are
+regenerated on a TOPAS machine. The docs build never runs an engine.
+`tests/test_cross_engine_comparison.py` runs the `--no-run` path and checks
+that both cases and all three engines are present.
 
 ### Writing documentation
 
@@ -234,13 +285,16 @@ the script from [Build the docs](#build-the-docs) without `--check`, then
 
 ### My fix has no effect on a GSAS-II run
 
-A GSAS-II server started before your edit still runs the old code. Restart
-it, or run with `--no-server`:
+A GSAS-II server started before your edit still runs the old code.
+`pixi run -e gsasii gsas-server status` prints `Code: STALE` when the
+server's code differs from the working tree. Stop it, or run with
+`--no-server`:
 
 ```bash
-pixi run -e gsasii gsas-server restart
-pixi run -e gsasii gsas-server status
+pixi run -e gsasii gsas-server stop
 ```
 
-`status` prints `Code: STALE` when the server's code differs from the
-working tree.
+The next run in `auto` or `server` mode starts a fresh server in the
+background. `gsas-server restart` and `start` run the server in the
+foreground of that terminal until you stop it, so run them in a terminal of
+their own.

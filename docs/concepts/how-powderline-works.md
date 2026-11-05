@@ -25,7 +25,7 @@ flowchart TB
     end
 ```
 
-Because it is plain data, a recipe can be built by a script, stored in a
+Because it is structured data, a recipe can be built by a script, stored in a
 database, sent between services, filled from a live data stream, or written
 by a GUI or an LLM. In Python it is a `dict`. When it is saved or sent it is
 JSON. The data arrays are inside the recipe, so nothing depends on file paths.
@@ -37,24 +37,39 @@ A refinable value is a short list: the value, then `true` to refine it or
 minimum and a maximum (`null` for no limit):
 
 ::::{tab-set}
+:sync-group: engine
 
 :::{tab-item} GSAS-II
+:sync: gsasii
+
 ```json
 "a": [4.15682, true]
 ```
 `[value, refine]`. GSAS-II recipes have no limits.
 :::
-:::{tab-item} TOPAS · easydiffraction
+
+:::{tab-item} TOPAS
+:sync: topas
+
 ```json
 "a": [4.15682, true, 4.10, 4.20]
 ```
-`[value, refine, min, max]`. What a limit means differs between the engines;
-see [Recipe format](../reference/recipe-format.md#bounds).
+`[value, refine, min, max]`.
+:::
+
+:::{tab-item} easydiffraction
+:sync: easydiffraction
+
+```json
+"a": [4.15682, true, null, null]
+```
+`[value, refine, min, max]`; `null` means no limit.
 :::
 ::::
 
-Which shape a recipe uses is set by its engine. See the
-[Engines](../engines/index.md) overview.
+Support differs per engine: GSAS-II takes no limits, and what a limit means
+differs between TOPAS and easydiffraction (see
+[Recipe format](../reference/recipe-format.md#bounds)).
 
 → More in [Recipes](recipes.md).
 
@@ -69,8 +84,9 @@ A GSAS-II recipe states GSAS-II's numbers.
 
 PowderLine never translates between engines. Translating would mean guessing,
 and guessing is how two programs end up refining two different models. The
-structural part (space group, cell, atoms) is shared, so a structure moves
-between engines' recipes unchanged.
+structural part (space group, cell, atoms) is shared, so a structure
+carries over from one engine's recipe to another's. [Recipe format](../reference/recipe-format.md)
+says exactly what moves and what must be rewritten.
 
 ## 3. Check first, then run
 

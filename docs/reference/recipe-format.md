@@ -7,7 +7,9 @@ whatever its engine. Every individual field, with its unit, is on
 
 ## The frame
 
-Every recipe has the same five top-level keys:
+Every recipe has four required top-level keys (`schema_name`,
+`core_schema_version`, `engine_schema_version`, `payload`) and an optional
+`metadata`. A `topas.*` recipe adds a required `engine_version`.
 
 ```json
 {
@@ -75,11 +77,23 @@ flowchart TB
   Chebyshev, the phase's own engine fields and the controls. They use the
   engine's names and units. They are never translated between engines.
 
+### Move a structure between engines
+
 Only the core blocks move between recipes of different engines:
 `payload.xrd_data`, `payload.fit_range` and a whole `payload.phases.<name>`
-block. The helpers `powderline.recipes.block` and
-`powderline.recipes.with_block` copy exactly these
-(see [Python API](api.md#recipe-helpers)).
+block. Within a phase, the parts that carry over are these:
+
+| Carries over unchanged | Rewrite for the target engine |
+|---|---|
+| `space_group`, `unit_cell`, `atoms` (the structure) | The parameter shape: `[value, flag]` in `gsasii.*`, `[value, flag, min, max]` in `topas.*` and `easydiffraction.*` |
+| | The engine's own phase fields: `scale`, `peak_broadening`, `scattering_types`, `preferred_orientation` |
+
+The helpers `powderline.recipes.block` and `powderline.recipes.with_block`
+copy a core block (see [Python API](api.md#recipe-helpers)). `with_block`
+copies the whole phase block, engine fields included, and does not validate
+the result. The target recipe's schema then validates it: a parameter of the
+other engine's shape, or an ion the target engine has no form factor for, is
+an error there.
 
 ### Phase and histogram parameters
 
@@ -91,6 +105,56 @@ block. The helpers `powderline.recipes.block` and
 
 In a multi-phase refinement each phase has its own phase parameters, and all
 phases share the histogram parameters.
+
+## Diffraction data
+
+`payload.xrd_data` carries the pattern inline, as three arrays of equal
+length:
+
+| Key | Meaning | Unit |
+|---|---|---|
+| `tth` | 2θ of each point, strictly increasing | `degree 2theta` |
+| `Itth` | Measured intensity | `arbitrary` |
+| `Itth_weights` | The least-squares weight of each point, 1/σ² | `1/intensity^2` |
+| `filename` | Optional free text: the file the arrays came from | — |
+
+PowderLine never repairs data. It accepts or rejects it. Validation rejects:
+
+- empty arrays;
+- arrays of unequal length;
+- any non-finite value in any array (a weight computed as 1/0² is `inf`);
+- a `tth` that is not strictly increasing;
+- a negative weight;
+- weights that are all zero.
+
+Sorting, de-duplicating, unit conversion and deriving weights are the job of
+whatever builds the block.
+
+| Data rule | GSAS-II | TOPAS | easydiffraction |
+|---|---|---|---|
+| A point with weight 0 | handed to GSAS-II with zero weight | dropped from the `.xye` file | not handed to easydiffraction |
+| A negative intensity | accepted | accepted | refused when the point would be handed to the engine (give it weight 0) |
+| A weight above 1e8 (σ < 1e-4) | accepted | accepted | refused: easydiffraction would replace σ by 1.0 without saying so; rescale intensities and weights together |
+
+A point with weight 0 is never counted in the
+[uniform statistics](../concepts/results.md). Use weight 0 to mask a detector
+gap or an impurity peak, rather than deleting the points.
+
+## The fit window
+
+`payload.fit_range` is `[min, max]` in degrees 2θ.
+
+- Either end may be `null`, an open end: the window then runs to the data's
+  first or last point with a positive weight. Left out, the window is the
+  data's first to last weighted point.
+- Both stated ends lie inside the data's 2θ span.
+- `max` is greater than `min`.
+- The window holds at least two points with a positive weight.
+- PowderLine moves each limit onto a data point before it hands it to the
+  engine: `min` to the first weighted point with 2θ ≥ `min`, `max` to the
+  last weighted point with 2θ ≤ `max`. Every engine then fits the same
+  points, and the statistics count the same points.
+- Background peaks and single peaks lie inside the window.
 
 ## Parameters
 
@@ -134,6 +198,27 @@ engine does.
 | A `null` side | — | keeps TOPAS's default limit | keeps the physical limit |
 | A value outside the engine's limit | — | refused when refined from outside a fixed default limit on a `null` side | refused, even when the parameter is fixed |
 | A refined value that ends at a limit | — | warning `topas_parameter_at_limit` | warning `easydiffraction_parameter_at_limit` |
+
+### Bounds that symmetry constrains
+
+These rules hold in every engine with bounds.
+
+- **Cell bounds** lie in the cell's own range: a length's `min` is greater
+  than 0, and an angle's `min` and `max` lie strictly between 0 and 180.
+  `null` means no bound.
+- **A parameter fixed by symmetry** has no bounds: `min` and `max` are
+  `null`.
+- **Tied members' bounds follow the tie**, as their values do. For a member
+  `y = k·x + c` of a tie group whose first member is `x`, x's `[min, max]`
+  maps to y's `[k·min + c, k·max + c]`. The two are swapped for negative `k`.
+  An open side stays open, on the matching side.
+- A tied member's bounds are stated within the tolerance of their kind:
+  5e-6 for coordinates, 1e-6 Å² for Uij, 1e-9 (relative) for cell lengths
+  and 1e-9° for cell angles. They are then read as the mapped values.
+  Otherwise the error gives the values to write.
+
+For example, at (x, x + 1/2, z) with x bounded `[0, 0.2]`, y must be bounded
+`[0.5, 0.7]`. At (x, −x + 1/2, z), y must be bounded `[0.3, 0.5]`.
 
 ### GSAS-II: no bounds
 

@@ -15,9 +15,9 @@ powderline --doctor
 Run it in the pixi environment of the recipe's engine:
 
 ```bash
-pixi run -e gsasii powderline examples/example_LaB6/input.json
-pixi run -e easydiffraction powderline examples/example_LaB6/easydiffraction/input.json
-pixi run powderline examples/example_LaB6/topas/input.json --topas-version 6 --topas-dir C:/TOPAS6
+pixi run -e gsasii powderline examples/example_LaB6/input.json --output my_lab6
+pixi run -e easydiffraction powderline examples/example_LaB6/easydiffraction/input.json --output my_lab6_ed
+pixi run powderline examples/example_LaB6/topas/input.json --topas-version 6 --topas-dir C:/TOPAS6 --output my_lab6_topas
 pixi run powderline my_recipe.json --validate-only
 pixi run powderline --doctor
 ```
@@ -69,8 +69,9 @@ TOPAS version, and it must equal the recipe's `engine_version`. When no
 |---|---|
 | 0 | The run finished with `status` `"ok"`, or `"generated"` (TOPAS input written, TOPAS not run). |
 | 0 | `--validate-only`: the recipe is valid. Warnings do not change the status. |
-| 0 | `--doctor` found no problem. |
-| 1 | Anything else: an unreadable or invalid recipe, a template, an engine option for another engine, a missing engine, a failed run, or a problem found by `--doctor`. |
+| 0 | `--doctor` found no problem, or `--help` printed the usage. |
+| 1 | An unreadable or invalid recipe, a template, an engine option for another engine, a missing engine, a failed run, or a problem found by `--doctor`. |
+| 2 | A usage error, reported before anything runs: no recipe and no `--doctor`, both `--use-server` and `--no-server`, an unknown option, or a timeout that is not a number. |
 
 A failed run prints its [failure reason](messages.md#failure-reasons) and the
 files kept for diagnosis. For GSAS-II it also prints the engine's last console
@@ -86,6 +87,11 @@ The command refuses to run a recipe that looks like a template:
   `single_peaks` (single-peak fitting).
 
 Copy a template into your own directory and fill it in before you run it.
+
+:::{note}
+Only the command refuses templates. `powderline.run()` does not check for
+them: it runs any recipe that validates, whatever its path.
+:::
 
 ## Doctor
 

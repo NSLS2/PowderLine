@@ -259,28 +259,29 @@ GSAS-II's last console lines. That is where GSAS-II says what went wrong:
 "Refinement failed - singular matrix", "Removing parameter: …". In Python
 the same text is `e.result["failure"]["console_tail"]`.
 
+[Messages](../reference/messages.md#failure-reasons) says what each reason
+means. What to do:
+
 ### The engine ran and failed
 
-| Reason | What happened | What to do |
-|---|---|---|
-| `unusable_site` | GSAS-II reads an atom's site differently from PowderLine, for example some 2-fold sites in R32, R-3m and R-3c. The run stops before refining. | Write the equivalent position the message names. |
-| `diverged` | The calculated pattern is not finite inside the fit window, or GSAS-II aborted because no step lowered χ². | Refine fewer parameters, start closer to the data, check correlations in `dummy.lst` (GSAS-II). |
-| `peak_fit_failed` | GSAS-II's peak fit returned nothing. | Check the peaks' starting values ([Fit single peaks](single-peak-fitting.md)). |
-| `engine_crashed` | The engine raised an error or exited abnormally, or `tc.exe` could not start. | Read the message and the traceback in `failure.json`. |
-| `output_missing` | TOPAS wrote none of its expected files. | Read `failure.console_tail` in `failure.json`, TOPAS's console window and `tc.log`. |
-| `output_malformed` | An engine file could not be read strictly. | Read the message: it names the file and the problem. |
+| Reason | What to do |
+|---|---|
+| `unusable_site` | Write the equivalent position the message names. |
+| `diverged` | Refine fewer parameters, start closer to the data, check correlations in `dummy.lst` (GSAS-II). |
+| `peak_fit_failed` | Check the peaks' starting values ([Fit single peaks](single-peak-fitting.md)). |
+| `engine_crashed` | Read the message and the traceback in `failure.json`. |
+| `output_missing` | Read `failure.console_tail` in `failure.json`, TOPAS's console window and `tc.log`. |
+| `output_malformed` | Read the message: it names the file and the problem. |
 
 ### The engine never ran
 
-| Reason | What happened | What to do |
-|---|---|---|
-| `server_unavailable` | `--use-server`: no GSAS-II server, none could be started, or the server is stale. | See [The GSAS-II server](#the-gsas-ii-server). |
-| `server_disabled` | Server mode was asked for while `POWDERLINE_NO_SERVER` is set. | Run in-process (`--no-server`), or unset the variable. |
-| `communication_failed` | The server was found, but the exchange failed. | Read the server log: `pixi run -e gsasii gsas-server logs`. |
-| `timeout` | The server's answer took longer than `--server-timeout`, or `tc.exe` ran longer than `--topas-timeout` (default 3600 s). | Raise the limit. For TOPAS, look for a dialog waiting for input. A server timeout never falls back to an in-process run, because the job is still running in the server. |
-| `backend_error` | Anything else before the engine ran, for example an output folder the client cannot write. | Read the message. |
-
-[Messages](../reference/messages.md) lists every reason.
+| Reason | What to do |
+|---|---|
+| `server_unavailable` | See [The GSAS-II server](#the-gsas-ii-server). |
+| `server_disabled` | Run in-process (`--no-server`), or unset `POWDERLINE_NO_SERVER`. |
+| `communication_failed` | Read the server log: `pixi run -e gsasii gsas-server logs`. |
+| `timeout` | Raise `--server-timeout` or `--topas-timeout`. For TOPAS, look for a dialog waiting for input. |
+| `backend_error` | Read the message. |
 
 :::{note}
 `ℹ️ Generated the engine input only (topas_generate_only, …)` is not a
@@ -316,9 +317,10 @@ The result says `output_recipe_valid: false`, with the warning
 `output_recipe_not_valid`.
 
 **Cause:** the engine returned a value the recipe format refuses: an
-occupancy outside 0 to 1, a negative size or `Uiso`, a profile that makes a
-width negative ({ref}`EB-87 <eb-87>`), or a split atom inside the 2e-3 band
-of a special position ({ref}`KI-18 <ki-18>`). The result itself is
+occupancy outside 0 to 1, a crystallite size of zero or below, a negative
+`Uiso` in an easydiffraction recipe, a profile that makes a width negative
+({ref}`EB-87 <eb-87>`), or a split atom inside the 2e-3 band of a special
+position ({ref}`KI-18 <ki-18>`). The result itself is
 unaffected. `output_recipe.json` is still written, so you can see what the
 engine produced, and `parameter_dispositions.csv` shows each value with its
 ESD.
@@ -364,7 +366,7 @@ alone. The command line prints `Executed using subprocess mode`.
 1. Check the server: `pixi run -e gsasii gsas-server status`.
 2. If `POWDERLINE_NO_SERVER` is set, for example by a facility launcher,
    in-process runs are by design.
-3. If the status says `Code: STALE`, restart the server (below).
+3. If the status says `Code: STALE`, stop the server (below).
 4. Read the server log: `pixi run -e gsasii gsas-server logs`.
 
 ### The server is stale
@@ -376,11 +378,20 @@ reason `server_unavailable`, or `gsas-server status` printing `Code: STALE`.
 update of PowderLine it still runs the old code, so PowderLine will not use
 it.
 
-**Fix:**
+**Fix:** stop the stale server.
 
 ```bash
-pixi run -e gsasii gsas-server restart
+pixi run -e gsasii gsas-server stop
 ```
+
+The next run in auto or server mode starts a current server in the
+background.
+
+:::{note}
+`gsas-server restart`, like `gsas-server start`, runs the server in the
+terminal you type it in. The command does not return while the server runs.
+Use it only in a terminal of its own.
+:::
 
 ### The server will not start
 
@@ -391,8 +402,9 @@ pixi run -e gsasii gsas-server restart
 **Fix:**
 1. Check whether a server is running: `pixi run -e gsasii gsas-server status`.
 2. Stop a hung server: `pixi run -e gsasii gsas-server stop`.
-3. Run `pixi run -e gsasii gsas-server start` in a terminal to see its
-   messages as it starts.
+3. Run `pixi run -e gsasii gsas-server start` in a terminal of its own to
+   see its messages as it starts. The server then runs in that terminal
+   until you press Ctrl+C.
 4. Meanwhile, run in-process: add `--no-server`.
 
 If the message names `POWDERLINE_SERVER_PORT`, the pinned port is malformed

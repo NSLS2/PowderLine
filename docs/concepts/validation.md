@@ -137,7 +137,7 @@ stated:
 - a parameter **fixed** by symmetry (a cubic angle, `x` of an atom at the
   origin) has flag `false`, and no bounds where the engine has them;
 - where the engine has bounds, tied members' bounds follow the tie like their
-  values;
+  values (the exact rule is in [Recipe format](../reference/recipe-format.md#bounds));
 - atoms at the same position are independent: PowderLine never ties them.
 
 ## Elements, occupancies, displacement parameters
@@ -147,9 +147,12 @@ stated:
   [Engines](../engines/index.md).
 - `occupancy` is required and lies between 0 and 1.
 - `ADP` chooses `Uiso` or all six `Uij` (Å²), which follow the site symmetry
-  by the same rules as coordinates. A `Uaniso` that isn't positive definite,
-  or a negative `Uiso`, is accepted with a warning: it can be a sign that the
-  parameter is absorbing something the model lacks.
+  by the same rules as coordinates. A `Uaniso` that isn't positive definite
+  is accepted with the warning `uaniso_not_positive_definite`: it can be a
+  sign that the parameter is absorbing something the model lacks. A negative
+  `Uiso` is accepted as stated in GSAS-II and TOPAS recipes; easydiffraction
+  recipes refuse it, because easydiffraction limits displacement parameters
+  to physical values.
 
 ## Validation is not judgement
 
