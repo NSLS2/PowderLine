@@ -90,16 +90,26 @@ def _write_file(path: Path, data: bytes) -> None:
         raise
 
 
+#: Time limit (s) on the connect, write and pool phases of a ``/simulate`` request: loopback, so generous.
+#: The read phase is the refinement itself and is bounded only by ``GSASClient(request_timeout=...)``.
+REQUEST_PHASE_TIMEOUT = 30.0
+
+
 class GSASClient:
     """Client for communicating with GSAS-II server."""
 
-    def __init__(self, fallback_to_subprocess: bool = True):
+    def __init__(self, fallback_to_subprocess: bool = True, request_timeout: Optional[float] = None):
         """Initialize client.
 
         Args:
             fallback_to_subprocess: If True, use subprocess when server unavailable
+            request_timeout: seconds to wait for the server's answer to a submitted job
+                (the read phase of the ``/simulate`` request). ``None``: no limit, as for
+                an in-process run. A limit does not free the server: the job keeps running
+                there, which is why a timeout never falls back in-process.
         """
         self.fallback_to_subprocess = fallback_to_subprocess
+        self.request_timeout = request_timeout
         self._state_warning_shown = False
         self._start_error: Optional[str] = None  # why the last auto-start could not even be attempted
 
@@ -255,7 +265,7 @@ class GSASClient:
         except httpx.TimeoutException as e:
             return envelopes.failure_envelope(
                 "backend", "timeout",
-                f"the GSAS-II server did not answer within the request timeout ({e}); not falling back "
+                f"the GSAS-II server did not answer within server_timeout ({e}); not falling back "
                 f"in-process because the job is still running on the server (a second run would double the work)",
                 method="server")
         except Exception as e:
@@ -527,6 +537,12 @@ class GSASClient:
                 print(f"   Could not auto-start server: {e}")
             return False
 
+    def _simulate_timeout(self):
+        """The ``/simulate`` request's httpx timeout: ``REQUEST_PHASE_TIMEOUT`` on connect, write and
+        pool; ``request_timeout`` on the read phase (the refinement), ``None`` = no limit."""
+        import httpx
+        return httpx.Timeout(REQUEST_PHASE_TIMEOUT, read=self.request_timeout)
+
     def _submit_to_server(self, recipe_dict: dict) -> Dict[str, Any]:
         """Submit simulation to server via HTTP with retry logic.
 
@@ -549,7 +565,7 @@ class GSASClient:
                 if endpoint is None:
                     raise httpx.ConnectError("No GSAS-II server endpoint for this user")
                 resp = self._signed_request(endpoint, 'POST', '/simulate',
-                                            payload, timeout=300.0)
+                                            payload, timeout=self._simulate_timeout())
                 resp.raise_for_status()
                 return resp.json()
             except httpx.ConnectError as e:

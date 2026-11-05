@@ -3,8 +3,8 @@
 ::
 
     powderline <recipe.json> [--output DIR] [--validate-only] [--verbose]
-                             [--use-server | --no-server] [--topas-dir DIR] [--topas-version V]
-                             [--topas-timeout SECONDS]
+                             [--use-server | --no-server] [--server-timeout SECONDS]
+                             [--topas-dir DIR] [--topas-version V] [--topas-timeout SECONDS]
     powderline --doctor      (what this environment can do: gateways, engines, server; re/27)
 
 (``pixi run kicker ...`` / ``python src/powderline/kicker.py ...`` run the same
@@ -40,11 +40,12 @@ from powderline.recipes import load_recipe_asset
 _FLAG_GATEWAYS = {
     "use_server": "gsasii",
     "no_server": "gsasii",
+    "server_timeout": "gsasii",
     "topas_dir": "topas",
     "topas_version": "topas",
     "topas_timeout": "topas",
 }
-_FLAG_NAMES = {"use_server": "--use-server", "no_server": "--no-server",
+_FLAG_NAMES = {"use_server": "--use-server", "no_server": "--no-server", "server_timeout": "--server-timeout",
                "topas_dir": "--topas-dir", "topas_version": "--topas-version", "topas_timeout": "--topas-timeout"}
 
 
@@ -102,6 +103,7 @@ def engine_options_from_args(args: argparse.Namespace, gateway_name: str) -> dic
 
     ``--no-server`` / ``--use-server`` → gsasii ``execution_mode`` (``'subprocess'``
     / ``'server'``; neither → the gateway's default, ``'auto'``);
+    ``--server-timeout`` → gsasii ``server_timeout``;
     ``--topas-dir`` / ``--topas-version`` / ``--topas-timeout`` → topas ``topas_dir`` /
     ``topas_version`` / ``topas_timeout``.
 
@@ -126,6 +128,8 @@ def engine_options_from_args(args: argparse.Namespace, gateway_name: str) -> dic
         if server_disabled():
             raise ValueError(f"--use-server: {NO_SERVER_MESSAGE}")
         options["execution_mode"] = "server"
+    if given["server_timeout"] is not None:
+        options["server_timeout"] = given["server_timeout"]
     if given["topas_dir"] is not None:
         options["topas_dir"] = given["topas_dir"]
     if given["topas_version"] is not None:
@@ -146,6 +150,8 @@ Engine flags (accepted only for a recipe of that engine):
             --use-server: server only (fail if it cannot be started)
             --no-server:  in-process only (skip the server)
             POWDERLINE_NO_SERVER=1 (env): never use a server; the default mode runs in-process
+            --server-timeout SECONDS: stop waiting for the server's answer after this long
+            (default: no limit, as in-process; the job itself keeps running on the server)
   topas.*   --topas-dir DIR / --topas-version V: the TOPAS installation to run
             (a run needs a declared version: --topas-version or .powderline_config.yaml)
             --topas-timeout SECONDS: stop tc.exe after this long (default 3600; 0 = no limit)
@@ -172,6 +178,9 @@ Examples:
                             help='gsasii: server mode only (auto-start enabled, fail if still unavailable)')
     mode_group.add_argument('--no-server', action='store_true',
                             help='gsasii: in-process mode only (skip the server entirely)')
+    parser.add_argument("--server-timeout", type=float, default=None, metavar="SECONDS",
+                        help="gsasii: stop waiting for the server's answer after this many seconds "
+                             "(default: no limit; 0 = no limit)")
     parser.add_argument("--topas-dir", type=Path, default=None, help="topas: directory containing tc.exe")
     parser.add_argument("--topas-version", default=None, help="topas: the installed TOPAS version to run")
     parser.add_argument("--topas-timeout", type=float, default=None, metavar="SECONDS",

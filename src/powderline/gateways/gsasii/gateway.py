@@ -94,6 +94,7 @@ def run(
     verbose: bool = False,
     validate_only: bool = False,
     execution_mode: Literal['auto', 'server', 'subprocess'] = 'auto',
+    server_timeout: float | None = None,
     allow_unsupported_engine_version: bool = False,
 ) -> dict:
     """Execute a GSAS-II refinement from an in-memory recipe.
@@ -135,6 +136,12 @@ def run(
             ``POWDERLINE_NO_SERVER`` environment variable is truthy
             (``1``/``true``/``yes``/``on``), ``'auto'`` runs in-process without
             starting a server and ``'server'`` returns an error result.
+        server_timeout: seconds to wait for the server's answer to a
+            submitted job (``'auto'`` / ``'server'``). ``None`` (default) or
+            ``0``: no limit, as for an in-process run. Past the limit the run
+            raises ``ExecutionBackendError`` ``timeout`` and never falls back
+            in-process: the job is still running on the server (one job at a
+            time), so a second run would double the work.
         allow_unsupported_engine_version: test-only bypass of the engine
             version check. Not reachable through ``powderline.run()``.
 
@@ -179,7 +186,7 @@ def run(
 
     Raises:
         pydantic.ValidationError: the recipe fails schema validation.
-        ValueError: an invalid ``execution_mode``.
+        ValueError: an invalid ``execution_mode`` or ``server_timeout``.
         EngineNotAvailableError: GSAS-II is not importable (not for ``validate_only``).
         EngineVersionError: the installed GSAS-II is outside ``ENGINE_VERSION_SPEC``.
         EngineExecutionError: the engine ran and failed (``.reason``: ``diverged``,
@@ -190,12 +197,13 @@ def run(
             ``timeout``, ``backend_error``).
         OSError: ``output_dir`` cannot be created.
     """
-    # 0. Validate execution_mode early to catch typos
+    # 0. Validate execution_mode and server_timeout early to catch typos
     if execution_mode not in EXECUTION_MODES:
         raise ValueError(
             f"Invalid execution_mode={execution_mode!r}. "
             f"Must be one of: {', '.join(EXECUTION_MODES)}"
         )
+    server_timeout = _server_timeout_seconds(server_timeout)
 
     # 1. The installed engine must be a supported version (skipped for validate_only)
     if not validate_only:
@@ -241,7 +249,7 @@ def run(
         result['warnings'] = warnings + list(result.get('warnings') or [])  # GSASClient adds them on its paths
     else:
         from powderline.gateways.gsasii.client import GSASClient
-        client = GSASClient(fallback_to_subprocess=execution_mode != 'server')
+        client = GSASClient(fallback_to_subprocess=execution_mode != 'server', request_timeout=server_timeout)
         result = client.submit_simulation(
             recipe=recipe,
             output_dir=output_dir,
@@ -251,6 +259,23 @@ def run(
 
     envelopes.raise_if_failed(result)
     return _frames(result, recipe, output_dir)
+
+
+def _server_timeout_seconds(value) -> float | None:
+    """The ``server_timeout`` option as seconds for the client: ``None`` for no limit (``None`` or ``0``).
+
+    Raises:
+        ValueError: not a number, or negative.
+    """
+    if value is None:
+        return None
+    try:
+        seconds = float(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"Invalid server_timeout={value!r}: a number of seconds (0 = no limit)") from None
+    if seconds != seconds or seconds < 0:  # NaN or negative
+        raise ValueError(f"Invalid server_timeout={value!r}: seconds must be >= 0 (0 = no limit)")
+    return None if seconds == 0 else seconds
 
 
 def _frames(result: dict, model=None, output_dir=None) -> dict:

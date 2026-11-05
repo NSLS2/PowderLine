@@ -11,8 +11,9 @@ recipe and hand the recipe to it:
   warnings the validation produced.
 - :func:`run` uses the gateway's **runtime layer**; engine options are
   forwarded to the gateway unchanged. Around the gateway it owns the output
-  directory's PowderLine files (re/30): it removes the fixed-name outputs
-  before dispatch and, when the run fails, writes the failed envelope to
+  directory's PowderLine files (re/30): once the recipe has validated and the
+  gateway's engine is importable here, it removes the fixed-name outputs before
+  dispatch; when the run fails, it writes the failed envelope to
   ``failure.json`` beside the engine's own files before re-raising.
 
 This module imports no engine and no gateway module at import time (enforced
@@ -149,7 +150,11 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
     options as explicit keywords, so an option it does not know is a
     ``TypeError`` naming it:
 
-    - ``gsasii``: ``execution_mode`` (``'auto'`` | ``'server'`` | ``'subprocess'``);
+    - ``gsasii``: ``execution_mode`` (``'auto'`` | ``'server'`` | ``'subprocess'``)
+      and ``server_timeout`` (seconds to wait for the GSAS-II server's answer;
+      default none, as for an in-process run, 0 = none; past it the run raises
+      ``ExecutionBackendError`` ``timeout`` and does not fall back in-process,
+      the job being still on the server);
     - ``topas``: ``topas_dir`` (the folder holding ``tc.exe``), ``topas_version``
       (the installed TOPAS release, e.g. ``"6"``; a real run needs it declared,
       here or in ``.powderline_config.yaml``) and ``topas_timeout`` (seconds per
@@ -160,6 +165,13 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
     ``allow_unsupported_engine_version`` is the gateways' test-only bypass of the
     engine version check and is refused here (``TypeError``); call the
     gateway's ``run`` directly for compatibility testing.
+
+    Before anything on disk changes, the recipe is validated and the gateway's
+    engine is checked to be importable here: an invalid recipe or a run in an
+    environment without the engine raises and leaves the output directory's
+    previous results in place. Then PowderLine's own fixed-name outputs are
+    removed from ``output_dir`` (the engine's files and anything else stay), so
+    a reused directory holds one run's results (re/30).
 
     Args:
         recipe: a recipe dict or a validated model.
@@ -205,6 +217,10 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
     gateway = gateway_for(recipe)
     if validate_only:
         return gateway.run(recipe, output_dir, verbose=verbose, validate_only=True, **engine_options)
+    # Nothing on disk changes until the run can start: an invalid recipe (ValidationError) or an engine that
+    # is not importable here (EngineNotAvailableError) must not cost the directory its previous results.
+    gateway.validate(recipe, verbose=verbose)
+    _engine_importable(gateway)
     from powderline import reports
     reports.clear_fixed_outputs(output_dir)       # one run's results per directory (re/30); the engine's files stay
     try:
@@ -212,6 +228,23 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
     except (EngineExecutionError, ExecutionBackendError) as exc:
         _record_failure(output_dir, exc, _schema_name_of(recipe), engine_options)
         raise
+
+
+def _engine_importable(gateway) -> None:
+    """Raise ``EngineNotAvailableError`` when the gateway's engine is not importable here.
+
+    Called before the output directory is touched. The probe is what the module that defines the
+    gateway's ``run`` exposes as ``installed_engine_version`` (the in-tree gsasii and easydiffraction
+    gateways; the same function :func:`_engine_version_of` reads). A gateway whose module has none
+    (TOPAS, which needs no Python engine; a registered replacement; an out-of-tree gateway) is left
+    to its own ``run``.
+    """
+    import sys
+
+    module = sys.modules.get(getattr(gateway.run, "__module__", None) or "")
+    probe = getattr(module, "installed_engine_version", None)
+    if probe is not None:
+        probe()
 
 
 def _schema_name_of(recipe) -> str:

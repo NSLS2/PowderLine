@@ -37,8 +37,8 @@ Core (engine-free; `import powderline` imports no engine):
   topas `topas_dir`, `topas_version`, `topas_timeout`); `allow_unsupported_engine_version` is
   refused (test-only, on the gateway's own `run`).
 - `kicker.py` — the one CLI: `powderline <recipe.json> [--output DIR]
-  [--validate-only] [--verbose] [--use-server|--no-server] [--topas-dir DIR]
-  [--topas-version V] [--topas-timeout SECONDS]` and `powderline --doctor` (`doctor.py`: gateways,
+  [--validate-only] [--verbose] [--use-server|--no-server] [--server-timeout SECONDS]
+  [--topas-dir DIR] [--topas-version V] [--topas-timeout SECONDS]` and `powderline --doctor` (`doctor.py`: gateways,
   engine versions vs pins, server state; non-zero on a stale install, KI-13);
   `pixi run kicker` / `pixi run doctor` run the same `main`. Refuses
   templates; an engine flag for another engine's recipe exits 1.
@@ -223,9 +223,11 @@ compares the server's source-tree hash with its own and refuses a stale one).
   gsasii `dummy.gpx`/`dummy.lst`; topas `<base>.inp` etc.).
   `unit_cell_data`/`peak_list_data` from `run()` are dicts keyed by phase name.
   `powderline.run()` removes PowderLine's own fixed-name files from the output
-  directory before every run (`reports.clear_fixed_outputs`) and, when a run
-  fails, writes the failed envelope to `failure.json` beside the engine's own
-  files; no result table is written for a failed run on any engine.
+  directory before every run (`reports.clear_fixed_outputs`) — only once the
+  recipe has validated and the engine is importable, so a typo or a wrong
+  environment costs nothing — and, when a run fails, writes the failed envelope
+  to `failure.json` beside the engine's own files; no result table is written
+  for a failed run on any engine.
 - Known, deliberately-deferred behaviours are registered with stable `KI-NN`
   ids in `docs/known_issues.md` — check it before "fixing" a quirk; engine
   quirks and PowderLine's policy are on `docs/engine-behavior.md`.

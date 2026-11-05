@@ -257,8 +257,10 @@ def test_submit_to_server_does_not_retry_on_http_status_error(
 
 # ─── execution_mode validation tests ─────────────────────────────────────────
 
-def test_run_invalid_execution_mode_raises(recipe_LaB6_dict, tmp_path):
+def test_run_invalid_execution_mode_raises(recipe_LaB6_dict, tmp_path, monkeypatch):
     """run() raises ValueError immediately for an invalid execution_mode."""
+    from powderline import api
+    monkeypatch.setattr(api, "_engine_importable", lambda gateway: None)  # without GSAS-II the probe would answer first
     with pytest.raises(ValueError, match="Invalid execution_mode"):
         powderline.run(
             recipe_LaB6_dict,
@@ -316,3 +318,66 @@ def test_validate_only_summary_carries_the_resolved_recipe(tmp_path):
     assert out["schema_name"] == "gsasii.rietveld" and out["metadata"]["powderline_provenance"]["parent_run_id"] is None
     assert powderline.validate(out).recipe.model_dump(mode="json") == out
     assert not (tmp_path / "out").exists()
+
+
+# ─── the server request's time limit (PR #13 review) ──────────────────────────
+
+def _simulate_timeout_of(client, recipe):
+    """The httpx timeout the client puts on its ``/simulate`` POST (the POST itself is refused)."""
+    import httpx
+    with patch.object(GSASClient, "_endpoint", return_value=_FAKE_ENDPOINT), \
+         patch("httpx.post", side_effect=httpx.ConnectError("refused")) as mock_post:
+        with pytest.raises(httpx.ConnectError):
+            client._submit_to_server(recipe)
+    return mock_post.call_args.kwargs["timeout"]
+
+
+def test_simulate_request_has_no_read_limit_by_default(recipe_LaB6_dict):
+    """A refinement takes as long as it takes, as in-process: only the connect/write/pool phases are bounded."""
+    from powderline.gateways.gsasii.client import REQUEST_PHASE_TIMEOUT
+    timeout = _simulate_timeout_of(GSASClient(), recipe_LaB6_dict)
+    assert timeout.read is None
+    assert timeout.connect == timeout.write == timeout.pool == REQUEST_PHASE_TIMEOUT
+
+
+def test_simulate_request_read_limit_is_the_request_timeout(recipe_LaB6_dict):
+    timeout = _simulate_timeout_of(GSASClient(request_timeout=600.0), recipe_LaB6_dict)
+    assert timeout.read == 600.0
+
+
+@pytest.mark.parametrize("value,expected", [(None, None), (0, None), (0.0, None), (7200, 7200.0), ("90", 90.0)])
+def test_gateway_server_timeout_option_in_seconds(value, expected):
+    from powderline.gateways.gsasii.gateway import _server_timeout_seconds
+    assert _server_timeout_seconds(value) == expected
+
+
+@pytest.mark.parametrize("value", [-1, "soon", float("nan")])
+def test_gateway_refuses_a_bad_server_timeout(recipe_LaB6_dict, tmp_path, value):
+    """Refused at step 0, before validation and the engine: also with validate_only (engine-free)."""
+    from powderline.gateways.gsasii import gateway
+    with pytest.raises(ValueError, match="Invalid server_timeout"):
+        gateway.run(recipe_LaB6_dict, tmp_path / "out", validate_only=True, server_timeout=value)
+
+
+def test_gateway_hands_server_timeout_to_the_client(recipe_LaB6_dict, tmp_path, monkeypatch):
+    """The option reaches ``GSASClient(request_timeout=...)``; engine-free: the version check and the client are stubbed."""
+    from powderline.exceptions import ExecutionBackendError
+    from powderline.gateways.gsasii import client as client_module, gateway
+    from powderline.results import failure_envelope
+    seen = {}
+
+    class FakeClient:
+        def __init__(self, fallback_to_subprocess=True, request_timeout=None):
+            seen.update(fallback=fallback_to_subprocess, request_timeout=request_timeout)
+
+        def submit_simulation(self, **kwargs):
+            return failure_envelope("backend", "server_unavailable", "stub", method="none")
+    monkeypatch.setattr(gateway, "check_engine_version", lambda **kw: None)
+    monkeypatch.setattr(gateway, "installed_engine_version", lambda: "5.7.9")
+    monkeypatch.setattr(client_module, "GSASClient", FakeClient)
+    with pytest.raises(ExecutionBackendError):
+        gateway.run(recipe_LaB6_dict, tmp_path / "out", execution_mode="server", server_timeout=1800)
+    assert seen == {"fallback": False, "request_timeout": 1800.0}
+    with pytest.raises(ExecutionBackendError):
+        gateway.run(recipe_LaB6_dict, tmp_path / "out", execution_mode="auto")
+    assert seen == {"fallback": True, "request_timeout": None}

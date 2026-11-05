@@ -168,3 +168,57 @@ def test_failure_json_records_the_engine_version_the_gateway_reported(fake, tmp_
         powderline.run(RECIPE, out)
     prov = json.loads((out / "failure.json").read_text(encoding="utf-8"))[roundtrip.PROVENANCE_KEY]
     assert prov["engine"] == "fake" and prov["engine_version"] == "9.1"
+
+
+# ─── nothing on disk changes until the run can start (PR #13 review) ───────────
+
+def test_an_invalid_recipe_leaves_the_previous_results_in_place(tmp_path):
+    """An invalid recipe raises before the directory is touched: a typo must not cost the previous run's tables."""
+    from pydantic import ValidationError
+
+    def validate(recipe, **opts):
+        raise ValidationError.from_exception_data("Fake", [{"type": "missing", "loc": ("payload", "phases"), "input": {}}])
+    registry.register_gateway("fakeinvalid", lambda: registry.Gateway(
+        name="fakeinvalid", capabilities=lambda: {"name": "fakeinvalid", "workflows": ["fakeinvalid.rietveld"]},
+        validate=validate, run=lambda *a, **k: pytest.fail("an invalid recipe must not reach run()")))
+    try:
+        out = tmp_path / "out"
+        _seed(out)
+        with pytest.raises(ValidationError):
+            powderline.run({**RECIPE, "schema_name": "fakeinvalid.rietveld"}, out)
+        assert (out / "refined_parameters.csv").read_text(encoding="utf-8") == "stale\n"
+        assert (out / "output_recipe.json").read_text(encoding="utf-8") == "stale\n"
+        assert (out / "failure.json").read_text(encoding="utf-8") == "stale\n"       # no failure record written either
+    finally:
+        registry.unregister_gateway("fakeinvalid")
+        registry._instances.pop("fakeinvalid", None)
+
+
+def test_a_missing_engine_leaves_the_previous_results_in_place(fake, tmp_path, monkeypatch):
+    """A run in an environment without the engine raises before the directory is touched."""
+    from powderline import api
+    from powderline.exceptions import EngineNotAvailableError
+
+    def probe(gateway):
+        raise EngineNotAvailableError(gateway=gateway.name, dependency="Fake", env="fake", install_command="pixi install -e fake")
+    monkeypatch.setattr(api, "_engine_importable", probe)
+    fake(lambda recipe, output_dir, **kwargs: pytest.fail("a missing engine must not reach run()"))
+    out = tmp_path / "out"
+    _seed(out)
+    with pytest.raises(EngineNotAvailableError):
+        powderline.run(RECIPE, out)
+    assert (out / "refined_parameters.csv").read_text(encoding="utf-8") == "stale\n"
+
+
+def test_engine_probe_reports_a_gsasii_engine_that_is_not_importable(monkeypatch):
+    """The probe is the ``installed_engine_version`` of the module defining the gateway's run(); a gateway whose
+    module has none (TOPAS, a registered replacement) is left to its own run()."""
+    import sys
+    from powderline import api
+    from powderline.exceptions import EngineNotAvailableError
+
+    monkeypatch.setitem(sys.modules, "GSASII", None)          # ``import GSASII`` raises ImportError, whatever is installed
+    with pytest.raises(EngineNotAvailableError):
+        api._engine_importable(registry.get("gsasii"))
+    assert api._engine_importable(registry.get("topas")) is None                       # no Python engine
+    assert api._engine_importable(_gateway("gsasii", lambda *a, **k: None)) is None    # a replacement under the real name
