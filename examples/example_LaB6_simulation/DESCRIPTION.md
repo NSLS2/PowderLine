@@ -52,10 +52,10 @@ This example demonstrates simulation mode capabilities:
 
 ```bash
 # Standard invocation
-pixi run -e gsasii powderline examples/example_LaB6_simulation/input.json
+pixi run -e gsasii powderline examples/example_LaB6_simulation/input.json --output my_lab6_sim
 
 # With verbose output
-pixi run -e gsasii powderline examples/example_LaB6_simulation/input.json --verbose
+pixi run -e gsasii powderline examples/example_LaB6_simulation/input.json --output my_lab6_sim --verbose
 
 # Validate without running
 pixi run powderline examples/example_LaB6_simulation/input.json --validate-only

@@ -81,7 +81,9 @@ or `"subprocess"` the same way.
 
 ### When auto mode runs in-process
 
-In auto mode a run goes in-process, with a message, when:
+In auto mode a run goes in-process when any of the following happens. The
+result's `method` then says `subprocess`, and the CLI prints
+`Executed using subprocess mode`:
 
 - no server can be started, for example because a pinned port is busy;
 - a server it has just started is not answering yet. It goes on loading
@@ -158,7 +160,7 @@ The server is per user:
 - Every request and every answer is signed with that token (an HMAC). The
   token itself never travels.
 - The server refuses a request that is not signed with the token. A request
-  without valid signing headers is refused before its body is read.
+  without well-formed signing headers is refused before its body is read.
 - A client trusts only an answer signed with the token. Another process on
   the same port cannot pose as your server.
 

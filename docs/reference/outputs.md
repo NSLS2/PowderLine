@@ -21,7 +21,7 @@ result["status"], result["rwp"], result["unit_cell_data"]["LaB6"]
 | Key | Type | Value |
 |---|---|---|
 | `status` | str | `"ok"`, or `"generated"` when the TOPAS input was written but TOPAS was not run. |
-| `converged` | bool or None | `True` or `False`. `None` when the engine cannot tell (TOPAS 6, a GSAS-II peak fit), for an easydiffraction simulation, and when TOPAS was not run. |
+| `converged` | bool or None | `True` or `False`. `None` for any simulation, when the engine cannot tell (TOPAS 6, a GSAS-II peak fit), and when TOPAS was not run. |
 | `envelope_version` | str | `"1"`: the version of this result's shape. |
 | `run_id` | str | A UUID4 that identifies this run. |
 | `rwp`, `r_exp` | float or None | PowderLine's uniform Rwp and Rexp over the fit window, in percent. |

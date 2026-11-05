@@ -68,8 +68,8 @@ uses them. `gsas-server status` and `stop` cannot see them, so one may still
 be running unnoticed, perhaps auto-started. It runs as `gsas_server.py`
 (0.1.1) or `gateways/gsasii/server.py`.
 
-Stop your current server first, then end every remaining server process of
-yours once.
+Stop your current server first. Then list your remaining server processes,
+check the list, and end each one by its process ID.
 
 ::::{tab-set}
 
@@ -77,7 +77,8 @@ yours once.
 
 ```bash
 pixi run -e gsasii gsas-server stop
-pkill -u "$USER" -f "gsas_server.py|gsasii[/.]server"
+ps -u "$(id -un)" -o pid=,args= | grep -E "python[^ ]* .*(gsas_server\.py|gsasii[/.]server)"
+kill <PID>        # for each process listed
 ```
 
 :::
@@ -86,9 +87,11 @@ pkill -u "$USER" -f "gsas_server.py|gsasii[/.]server"
 
 ```powershell
 pixi run -e gsasii gsas-server stop
-Get-CimInstance Win32_Process |
-  Where-Object CommandLine -match 'gsas_server.py|gsasii[/\\.]server' |
-  ForEach-Object { Stop-Process -Id $_.ProcessId }
+Get-CimInstance Win32_Process -Filter "Name LIKE 'python%'" |
+  Where-Object CommandLine -match 'gsas_server\.py|gsasii[/\\.]server' |
+  Where-Object { (Invoke-CimMethod -InputObject $_ -MethodName GetOwner).User -eq $env:USERNAME } |
+  Select-Object ProcessId, CommandLine
+Stop-Process -Id <ProcessId>    # for each process listed
 ```
 
 You can also end the `python … gsas_server.py start` or `… server.py start`
