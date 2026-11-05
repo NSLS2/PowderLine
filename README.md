@@ -76,9 +76,11 @@ walks through them.
 
 | Engine | Workflows | Runs on |
 |---|---|---|
-| GSAS-II 5.7.9 | Rietveld, single-peak fitting | Linux, Windows, macOS |
+| GSAS-II 5.7.9 | Rietveld, single-peak fitting | Linux, Windows, macOS\* |
 | TOPAS 6 | Rietveld, single-peak fitting | Windows with a TOPAS licence (input files are written anywhere) |
-| easydiffraction 0.21.1 | Rietveld | Linux, Windows, macOS |
+| easydiffraction 0.21.1 | Rietveld | Linux, Windows, macOS\* |
+
+\* macOS (Apple Silicon) is expected to work but is not routinely tested.
 
 ## Cite
 

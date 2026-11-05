@@ -102,7 +102,7 @@ To convert any refinement recipe to simulation mode:
 
 ## Data Source
 
-- **XRD Data**: LaB6 standard reference material (660c), collected at beam line 28-ID-2 (Pair Distribution Function, National Synchrotron Light Source II)
+- **XRD Data**: LaB6 standard reference material (660c), collected at beam line 28-ID-1 (Pair Distribution Function, National Synchrotron Light Source II)
 - **Crystal Structure**: LaB6, cubic, space group Pm-3m, a ≈ 4.15682 Å
 - **Instrument**: High-energy X-rays (74.46 keV, λ ≈ 0.1665 Å)
 

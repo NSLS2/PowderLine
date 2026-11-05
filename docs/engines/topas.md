@@ -5,7 +5,7 @@
 | Version | TOPAS 6. The recipe states `"engine_version": "6"`. TOPAS is installed separately: it has no Python package. |
 | Workflows | `topas.rietveld` (Rietveld refinement), `topas.spf` (single-peak fitting) |
 | Parameters | `[value, flag, min, max]` |
-| Platforms | Validation and input files: Linux, Windows, macOS. Running TOPAS: Windows, with `tc.exe`. |
+| Platforms | Validation and input files: Linux, Windows, macOS (not routinely tested). Running TOPAS: Windows, with `tc.exe`. |
 | Run | `pixi run powderline <recipe.json> --topas-version 6 --topas-dir C:/TOPAS6` |
 | Cite | Coelho (2018), see [Citing](../about/citing.md) |
 

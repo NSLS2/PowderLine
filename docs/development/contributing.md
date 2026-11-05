@@ -200,7 +200,8 @@ These rules keep the pages consistent. They apply to every page under
 ## Write portable pixi tasks
 
 PowderLine ships for `linux-64`, `win-64` and `osx-arm64`. Everything must
-work on Linux and Windows. The one exception is TOPAS execution, which needs
+work on Linux and Windows, where it is tested; macOS is not routinely
+tested. The one exception is TOPAS execution, which needs
 `tc.exe` on Windows.
 
 - Set environment variables through the task-level `env` dict, which pixi

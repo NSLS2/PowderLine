@@ -100,7 +100,7 @@ This two-phase simulation produces:
 
 - **XRD Data**: Experimental synchrotron powder diffraction from a two-phase composite sample
 - **Phases**: DRX_33 (face centered cubic, Fm-3m) and Li4MgWO6_SG12 (monoclinic structure)
-- **Instrument**: Pair distribution function beamline 28-ID-2 at NSLS-II (λ = 0.1665 Å)
+- **Instrument**: Pair distribution function beamline 28-ID-1 at NSLS-II (λ = 0.1665 Å)
 - **Temperature**: Room temperature
 
 ## Comparison with Single-Phase Simulation

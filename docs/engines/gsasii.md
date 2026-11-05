@@ -5,7 +5,7 @@
 | Version | 5.7.9, installed by `pixi install --frozen -e gsasii` |
 | Workflows | `gsasii.rietveld` (Rietveld refinement), `gsasii.spf` (single-peak fitting) |
 | Parameters | `[value, flag]`, no bounds |
-| Platforms | Linux, Windows, macOS |
+| Platforms | Linux, Windows; macOS expected to work, not routinely tested |
 | Run | `pixi run -e gsasii powderline <recipe.json>` |
 | Cite | Toby & Von Dreele (2013) and O'Donnell et al. (2018), see [Citing](../about/citing.md) |
 

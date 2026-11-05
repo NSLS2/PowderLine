@@ -6,7 +6,7 @@
 | Workflow | `easydiffraction.rietveld` (Rietveld refinement); no single-peak fitting |
 | Calculators | `cryspy` or `crysfml`, stated in the recipe |
 | Parameters | `[value, flag, min, max]` |
-| Platforms | Linux, Windows, macOS |
+| Platforms | Linux, Windows; macOS expected to work, not routinely tested |
 | Run | `pixi run -e easydiffraction powderline <recipe.json>` |
 | Cite | easydiffraction 0.21.1 (Zenodo) and the calculator you used, see [Citing](../about/citing.md) |
 

@@ -63,6 +63,12 @@ these pages are the same on every platform. Run them from the repository
 folder in your terminal: bash or zsh on Linux and macOS, PowerShell or
 Command Prompt on Windows.
 
+:::{note}
+PowderLine is tested on Linux and Windows. macOS is expected to work, but it
+is not routinely tested. If something fails on a Mac, please
+[open an issue](https://github.com/NSLS2/PowderLine/issues).
+:::
+
 ## TOPAS
 
 TOPAS is commercial software with no Python package, so no environment

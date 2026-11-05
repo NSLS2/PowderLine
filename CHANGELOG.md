@@ -5,9 +5,23 @@ follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and PowderLine
 versions follow [Semantic Versioning](https://semver.org/).
 
 The recipe **schemas** are versioned separately from the package and have their
-own history, [`docs/SCHEMA_HISTORY.md`](docs/reference/versions.md).
+own history, on the [versions page](docs/reference/versions.md).
 
 ## [Unreleased]
+
+### Changed
+
+- The documentation is rebuilt around its readers: Get started, Concepts,
+  How-to guides, Examples, Engines, Reference and Development, on
+  pydata-sphinx-theme with diagrams and per-engine tabs
+  ([docs](https://nsls2.github.io/PowderLine/)).
+- Every engine behaviour (`EB-NN`) and known issue (`KI-NN`) has its own
+  entry and link, listed in the
+  [ID index](docs/reference/ids.md).
+- CLI and GSAS-II server messages name the current commands: `pixi run
+  powderline …`, `pixi install --frozen -e <env>`, `pixi run -e gsasii
+  gsas-server stop` for a stale server (the next run starts a fresh one),
+  and `pixi reinstall powderline --all`.
 
 ## [0.2.0] - 2026-11-04
 
