@@ -2,7 +2,7 @@
 
 Three things must agree: the registry, every ``code="..."`` literal emitted
 under ``src/powderline``, and the "Warnings you may see" table in
-``docs/engine-behavior.md`` (code, engine, level).
+``docs/reference/messages.md`` (code, engine, level).
 """
 import re
 from pathlib import Path
@@ -15,7 +15,7 @@ pytestmark = pytest.mark.core
 
 REPO = Path(__file__).resolve().parents[1]
 SRC = REPO / "src" / "powderline"
-DOC = REPO / "docs" / "engine-behavior.md"
+DOC = REPO / "docs" / "reference" / "messages.md"
 EMITTED = re.compile(r'code="([a-z0-9_]+)"')
 DOC_ROW = re.compile(r"^\| `([a-z0-9_]+)` \| (\w+) \| (warning|info) \|", re.M)
 OWNERS = ("core", "gsasii", "topas", "easydiffraction")

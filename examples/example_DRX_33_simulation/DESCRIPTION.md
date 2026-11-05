@@ -69,13 +69,13 @@ With all parameters locked and `refinement_cycles = 1`:
 
 ```bash
 # Run simulation
-pixi run -e gsasii kicker examples/example_DRX_33_simulation/input.json
+pixi run -e gsasii powderline examples/example_DRX_33_simulation/input.json
 
 # Validate without running
-pixi run kicker examples/example_DRX_33_simulation/input.json --validate-only
+pixi run powderline examples/example_DRX_33_simulation/input.json --validate-only
 
 # Verbose output (see all GSAS-II logs)
-pixi run -e gsasii kicker examples/example_DRX_33_simulation/input.json --verbose
+pixi run -e gsasii powderline examples/example_DRX_33_simulation/input.json --verbose
 ```
 
 Expected runtime: **~1 second** (single cycle, all phases locked)

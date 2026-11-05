@@ -1,6 +1,6 @@
 # ⚠️ **This is a Template File**
 
-**This template is NOT meant to be run directly.** Copy this directory and fill in your refinement details to create a working example. `input.json` is the `gsasii.rietveld` skeleton; `topas/input.json` and `easydiffraction/input.json` are the per-engine skeletons (delete the ones you do not fill in). Validate your copy with `powderline <your_dir>/input.json --validate-only` (or `pixi run kicker ... --validate-only`); the element `X` and the empty data arrays are the blanks you must fill.
+**This template is NOT meant to be run directly.** Copy this directory and fill in your refinement details to create a working example. `input.json` is the `gsasii.rietveld` skeleton; `topas/input.json` and `easydiffraction/input.json` are the per-engine skeletons (delete the ones you do not fill in). Validate your copy with `powderline <your_dir>/input.json --validate-only` (or `pixi run powderline ... --validate-only` from a checkout); the element `X` and the empty data arrays are the blanks you must fill.
 
 ---
 
@@ -69,12 +69,12 @@ Document any quirks, edge cases, or special considerations:
 - **GSAS-II version requirements**: Does this need a specific version?
 - **Convergence issues**: Are there known problems with parameter correlations?
 - **Data preparation**: Does the data need special processing before refinement?
-- **Space group quirks**: Does normalization occur? (e.g., R-3m → R-3c for rhombohedral)
+- **Space group setting**: Which setting does the recipe state (gemmi's canonical name, e.g. `R -3 m:H`)?
 - **Workarounds**: Any tricks needed to make this work?
 
 ## Reference Files
 
-After running this example successfully with `powderline input.json` (or `pixi run -e gsasii kicker input.json` for a gsasii recipe), the `output/` directory should contain:
+After running this example successfully with `powderline input.json` (or `pixi run -e gsasii powderline input.json` for a gsasii recipe), the `output/` directory should contain:
 - `.gpx`: GSAS-II project file (can be reopened in GUI)
 - `.lst`: Refinement log with final parameters and Rwp
 - `refined_parameters.csv`: every refined parameter with its ESD (9 columns); absent for a simulation

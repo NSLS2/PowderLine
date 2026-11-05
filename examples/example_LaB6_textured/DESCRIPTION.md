@@ -50,7 +50,7 @@ last accepted values (here the start) but storing the rejected step's
 calculated pattern — finite but worthless, wR printed at its 100 % cap — so no
 statistic belongs to the parameters. GSAS-II's GUI keeps such a result behind
 a "Minimizer halted" warning; PowderLine reports it as a `diverged` failure
-(EB-99; before PowderLine 0.2.0 it returned `status: ok` with an astronomical Rwp). The same happens on the real,
+(EB-99). The same happens on the real,
 untextured `example_LaB6` data. From 0.9 the pattern goes non-finite
 (`diverged` as before); from 1.2 the refinement settles on the needle-side
 minimum r = 1.73 (Rwp far above the true solution). Start on the side of 1

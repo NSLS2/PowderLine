@@ -5,7 +5,7 @@ follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and PowderLine
 versions follow [Semantic Versioning](https://semver.org/).
 
 The recipe **schemas** are versioned separately from the package and have their
-own history, [`docs/SCHEMA_HISTORY.md`](docs/SCHEMA_HISTORY.md).
+own history, [`docs/SCHEMA_HISTORY.md`](docs/reference/versions.md).
 
 ## [Unreleased]
 
@@ -14,15 +14,15 @@ own history, [`docs/SCHEMA_HISTORY.md`](docs/SCHEMA_HISTORY.md).
 PowderLine 0.2.0 is a clean break from the unified recipe schema 0.26.0: a
 recipe names one engine and is written in that engine's own conventions, and
 nothing is translated between engines. Recipes written for 0.1.x do not
-validate; see the [migration guide](docs/migration-0.1-to-0.2.md). Known
-limitations are listed in the [known-issues register](docs/known_issues.md).
+validate; see the [migration guide](docs/development/migrating-from-0.1.md). Known
+limitations are listed in the [known-issues register](docs/development/known-issues.md).
 
 ### Highlights
 
 - **One recipe, one engine:** `gsasii.*`, `topas.*` and `easydiffraction.*`
   recipes, each in its engine's own names and units, through one API and one CLI.
 - **New schemas, starting at 0.1.0:** a core schema plus one schema per engine
-  replace the single 0.1–0.26.0 schema ([schemas](docs/schemas.md)).
+  replace the single 0.1–0.26.0 schema ([schemas](docs/engines/index.md)).
 - **Validation states what the engine computes:** symmetry, engine floors and
   silent defaults become errors or structured warnings, never silent changes.
 - **Uniform fit statistics:** `rwp`, `r_exp`, `gof`, `chi2_red` are computed by
@@ -34,7 +34,7 @@ limitations are listed in the [known-issues register](docs/known_issues.md).
 
 ### Upgrading
 
-- Read the [migration guide](docs/migration-0.1-to-0.2.md): a 0.26.0 recipe
+- Read the [migration guide](docs/development/migrating-from-0.1.md): a 0.26.0 recipe
   (`GSASII_Rietveld` / `GSASII_SPF`) is refused at `schema_name`.
 - Convert gsasii recipes with `python scripts/convert_recipe_026.py IN.json -o
   OUT.json`; it reports every change and stops where 0.1.1's refinement cannot
@@ -52,10 +52,10 @@ limitations are listed in the [known-issues register](docs/known_issues.md).
 
 - Engine schemas `gsasii.rietveld` / `gsasii.spf` (GSAS-II 5.7.9),
   `topas.rietveld` / `topas.spf` (TOPAS 6) and `easydiffraction.rietveld`
-  (easydiffraction 0.21.1), on a shared core phase block ([fields](docs/fields.md)).
+  (easydiffraction 0.21.1), on a shared core phase block ([fields](docs/reference/fields.md)).
 - Declared schema compatibility: each gateway states the core and engine schema
   versions it accepts, `validate()` enforces them, and `powderline.support_matrix()`
-  lists them ([support matrix](docs/support-matrix.md)).
+  lists them ([support matrix](docs/reference/versions.md)).
 - `powderline.validate()`, engine-free, returning `ValidationResult(recipe,
   warnings)`; an invalid recipe raises pydantic's `ValidationError` listing every
   problem at its field path.
@@ -74,7 +74,7 @@ limitations are listed in the [known-issues register](docs/known_issues.md).
   with value and ESD, by GSAS-II's own name.
 - Ionic `scattering_types` (CIF spelling, e.g. `La3+`) per atom label in the
   gsasii and easydiffraction (`cryspy`) phase blocks, checked against each
-  engine's ion table ([input guidance](docs/input-guidance.md); EB-94–EB-96).
+  engine's ion table ([input guidance](docs/engines/index.md); EB-94–EB-96).
 - March–Dollase `preferred_orientation` (`hkl`, `ratio`) in the gsasii and
   easydiffraction (`cryspy`) phase blocks (EB-97, EB-98).
 - TOPAS accepts ionic `scattering_types` (TOPAS 6's table, 113 ions, written as
@@ -95,16 +95,16 @@ limitations are listed in the [known-issues register](docs/known_issues.md).
 - Examples: per-engine recipes under `examples/<case>/{topas,easydiffraction}/`,
   `example_LaB6_temperature_series` (sequential refinement), `example_LaB6_ionic`
   and `example_LaB6_textured`, with easydiffraction references.
-- Documentation: [schemas](docs/schemas.md), [fields](docs/fields.md), [input
-  guidance](docs/input-guidance.md), [engine behaviour](docs/engine-behavior.md),
-  [cross-engine comparison](docs/cross-engine-comparison.md), [policies](docs/policies.md).
-- Engine citations in `CITATION.cff` and on the [citing page](docs/citing.md) (#12).
+- Documentation: [schemas](docs/reference/outputs.md), [fields](docs/reference/fields.md), [input
+  guidance](docs/concepts/validation.md), [engine behaviour](docs/engines/index.md),
+  [cross-engine comparison](docs/concepts/comparing-engines.md), [policies](docs/development/policies.md).
+- Engine citations in `CITATION.cff` and on the [citing page](docs/about/citing.md) (#12).
 
 ### Changed
 
 - The recipe schema is split: the single 0.1–0.26.0 schema is replaced by a
   core schema and one schema per engine, each starting at **0.1.0** and told
-  apart by `schema_name`; the 0.x bump rule is in [policies](docs/policies.md).
+  apart by `schema_name`; the 0.x bump rule is in [policies](docs/development/policies.md).
 - A recipe names its engine and workflow in `schema_name` (`<engine>.<workflow>`)
   and states that engine's own terms and units; unknown keys are errors at
   every level.

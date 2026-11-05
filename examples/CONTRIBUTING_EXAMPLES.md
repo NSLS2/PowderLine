@@ -10,9 +10,9 @@ committed examples use:
 
 | `schema_name` | Engine | Where |
 |---|---|---|
-| `gsasii.rietveld`, `gsasii.spf` | GSAS-II (reference engine; has committed output) | `examples/<case>/input.json` |
+| `gsasii.rietveld`, `gsasii.spf` | GSAS-II (every example has committed output) | `examples/<case>/input.json` |
 | `topas.rietveld`, `topas.spf` | TOPAS 6 | `examples/<case>/topas/input.json` |
-| `easydiffraction.rietveld` | easydiffraction | `examples/<case>/easydiffraction/input.json` |
+| `easydiffraction.rietveld` | easydiffraction (committed output in `easydiffraction/output/`) | `examples/<case>/easydiffraction/input.json` |
 
 ### Key points
 
@@ -57,9 +57,10 @@ committed examples use:
 }
 ```
 
-For the schema rules and the migration from schema 0.26.0 (the
-`scripts/convert_recipe_026.py` converter), see
-[docs/SCHEMA_HISTORY.md](../docs/SCHEMA_HISTORY.md).
+For the schema versions, see
+[docs/reference/versions.md](../docs/reference/versions.md). To convert a
+recipe written for PowderLine 0.1, see
+[docs/development/migrating-from-0.1.md](../docs/development/migrating-from-0.1.md).
 
 ### Validating a recipe
 
@@ -67,7 +68,7 @@ Every recipe validates in any environment, no engine needed:
 
 ```bash
 powderline my_refinement_name/input.json --validate-only            # installed command
-pixi run kicker my_refinement_name/input.json --validate-only       # from a checkout
+pixi run powderline my_refinement_name/input.json --validate-only   # from a checkout
 ```
 
 This works the same for a `gsasii.*`, `topas.*` or `easydiffraction.*` recipe
@@ -75,15 +76,15 @@ This works the same for a `gsasii.*`, `topas.*` or `easydiffraction.*` recipe
 and the structured warnings (e.g. a default that was applied). The template
 files are refused on purpose (`template` in the path): copy the template into
 your own directory first, then validate the copy. A *run* needs the engine's
-environment: `pixi run -e gsasii kicker ...` for GSAS-II, `tc.exe` on win-64
-for TOPAS (with `--topas-version 6`), `pixi run -e easydiffraction kicker ...`
+environment: `pixi run -e gsasii powderline ...` for GSAS-II, `tc.exe` on win-64
+for TOPAS (with `--topas-version 6`), `pixi run -e easydiffraction powderline ...`
 for easydiffraction. The default environment validates but runs nothing.
 
 ## Purpose
 
 This directory collects real-world refinement scenarios from collaborators. These examples drive the development of the recipe schemas (core + per engine) and are the regression references of the GSAS-II path.
 
-The schemas evolve based on actual use cases rather than premature abstraction; a change in what an example computes is a deliberate change (see `docs/policies.md`).
+The schemas evolve based on actual use cases rather than premature abstraction; a change in what an example computes is a deliberate change (see [docs/development/policies.md](../docs/development/policies.md)).
 
 ## How to Contribute an Example
 
@@ -106,10 +107,10 @@ The schemas evolve based on actual use cases rather than premature abstraction; 
    - Expected behavior (what should GSAS-II do?)
    - Known issues or special considerations
 
-4. **Run the refinement**: `pixi run -e gsasii kicker my_refinement_name/input.json`
+4. **Run the refinement**: `pixi run -e gsasii powderline my_refinement_name/input.json`
    writes `output/` next to the recipe; commit it (it becomes a regression
    reference). For an `easydiffraction.*` recipe, `pixi run -e easydiffraction
-   kicker my_refinement_name/easydiffraction/input.json` writes
+   powderline my_refinement_name/easydiffraction/input.json` writes
    `easydiffraction/output/`; commit it too. For a `topas.*` recipe, commit the
    recipe and its README only (its reference comes from the TOPAS machine).
 
@@ -151,7 +152,7 @@ they were derived. An easydiffraction recipe's results are committed in
 no TOPAS output is committed under `examples/` (the TOPAS goldens live in
 `tests/data/topas/native/golden/<version>/`, produced on a TOPAS machine).
 
-**`output/`**: After running the refinement, the GSAS-II output files go here. **These output files should be committed to the repository** (except `dummy.gpx`, which is gitignored) - they are the regression references, compared within the tolerances of `docs/regression-tolerance.md`; they move only as a recorded deliberate change.
+**`output/`**: After running the refinement, the GSAS-II output files go here. **These output files should be committed to the repository** (except `dummy.gpx`, which is gitignored) - they are the regression references, compared within the tolerances of [docs/development/regression-tolerance.md](../docs/development/contributing.md#regression-references-and-tolerance); they move only as a recorded deliberate change.
 
 PowderLine generates fixed output filenames:
 
@@ -159,7 +160,7 @@ PowderLine generates fixed output filenames:
 - `dummy.gpx` - GSAS-II project file (reopenable in GUI)
 - `dummy.lst` - Human-readable refinement log with Rwp and parameter tables
 - `refined_parameters.csv` - All refined parameters with ESDs (9 columns: parameter_name, descriptive_name, phase_name, phase_idx, atom_name, atom_idx, value, esd, category)
-- `<phase_name>_unit_cell_report.csv` - Unit cell parameters with ESDs (3 columns: parameter, value, esd; seven rows `cell_a` … `cell_volume`, the same for every engine — `docs/schemas.md`, "Two vocabularies, one bridge")
+- `<phase_name>_unit_cell_report.csv` - Unit cell parameters with ESDs (3 columns: parameter, value, esd; seven rows `cell_a` … `cell_volume`, the same for every engine — see [docs/reference/outputs.md](../docs/reference/outputs.md))
 - `<phase_name>_peak_list_report.csv` - Reflection lists (hkl, d-spacing, 2θ, intensities) per phase
 - `fit_profile.txt` - Observed/calculated/background/difference intensities
 - `output_recipe.json` - The resolved recipe with the refined values written back (KI-04); its `metadata.powderline_provenance` block (run id, timestamp, engine version) is run-specific. When a refinement ends on a value the schema refuses, it is written anyway and is not valid as written (KI-15)
@@ -205,7 +206,7 @@ When setting up your refinement, understand the distinction between scale factor
 - Example: `"scale": [1.0, true]`
 
 **Histogram Scale Factor**: Refines detector response (detector efficiency, air absorption)
-- Set at histogram level (currently fixed in Phase 1B)
+- Not a recipe field: the gsasii gateway holds it at 1.0, not refined
 - One value per histogram (multiple phases can share one histogram)
 - Typically kept fixed or refined last
 
@@ -390,7 +391,7 @@ When adding your example, help future users by noting in your DESCRIPTION.md:
   - Rwp smoothly decreases
 
 - **Known Issues**:
-  - Space group normalization behavior (e.g., R-3m → R-3c)
+  - Space group setting (gemmi's canonical name)
   - Phase fractions vs mass fractions
   - Data quality limitations
 ```

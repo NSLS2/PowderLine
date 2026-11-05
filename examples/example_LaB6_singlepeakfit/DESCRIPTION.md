@@ -1,5 +1,14 @@
 # LaB6 Single Peak Fitting with File-less Payload
 
+> **Teaching example.** This refinement is ill-posed on purpose. Its one
+> background peak refines all four parameters, and its σ² runs to about
+> −2676 centideg², far below the 0.01 floor GSAS-II silently computes with
+> (EB-35). The output recipe is therefore not valid (`output_recipe_valid:
+> false`, warning `output_recipe_not_valid`). The well-posed variant holds the
+> background peak's widths and the last Peak List peak's γ; see *Known
+> Issues*. More in
+> [Teaching examples](../../docs/examples/index.md#teaching-examples).
+
 ## Scientific Purpose
 
 This example demonstrates **single peak fitting** capabilities in PowderLine using LaB6 calibrant data (NIST SRM 660c).
@@ -29,7 +38,9 @@ With `use_instrument_profile: false`, the peak widths are refined directly rathe
 
 ## Expected Behavior
 
-- All single peak parameters should refine successfully
+- The 36 Peak List peaks converge: the committed `single_peaks_report.txt`
+  reports 36 of 36 peaks converged and none with aphysical values
+- The background peak's σ² goes negative (see *Known Issues*)
 - Output includes `single_peaks_report.txt` with refined peak parameters plus calculated:
   - FWHM values (Gaussian, Lorentzian, pseudo-Voigt)
   - Integral breadths (Gaussian, Lorentzian, pseudo-Voigt)
@@ -62,10 +73,10 @@ This example demonstrates single peak fitting capabilities:
 `gsasii.spf` 0.1.0 (core 0.1.0). Every parameter is `[value, refine_flag]`; the
 Peak List (`payload.single_peaks`) and the background peaks
 (`payload.background.single_peaks`) both state `pv_gaussian_sigma_sq`
-(centideg², the value always was σ²) and `pv_lorentzian_gamma` (centideg).
+(centideg²; the value is σ²) and `pv_lorentzian_gamma` (centideg).
 With `use_instrument_profile: false` a refine flag on the instrument's U..Z is
-an error (GSAS-II would ignore it silently). Converted from the schema-0.26.0
-recipe with `scripts/convert_recipe_026.py` (SH/L 0.0 → 0.002).
+an error (GSAS-II would ignore it silently). SH/L is 0.002, the smallest value
+GSAS-II computes with.
 
 ## Output Files
 
@@ -91,6 +102,14 @@ near −2700 centideg² — which the schema refuses. The output recipe is writt
 returned with that value and the warning names it; the 36 Peak List peaks and the
 Chebyshev background come back with ESDs (`peak_fit`). The reference is kept
 as posed.
+
+The well-posed variant holds the background peak's widths
+(`background.single_peaks.pv_gaussian_sigma_sq` and `pv_lorentzian_gamma`)
+and the Lorentzian width of the last, weak Peak List peak at the window edge
+(`single_peaks.pv_lorentzian_gamma` entry 36), which otherwise goes negative
+once the background peak is physical. Its output recipe is valid and, fed back,
+reproduces the fit with Rwp unchanged within 0.05 percentage points
+(`tests/test_api_gsasii_run.py`).
 
 ## Per-engine recipes
 

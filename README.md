@@ -1,258 +1,137 @@
 # PowderLine
 
-[![Docs](https://img.shields.io/badge/docs-live-blue)](https://nsls2.github.io/PowderLine/)
+**A complete powder diffraction refinement, as structured data that any
+person, script or machine can write, check and run.**
 
-Automated powder X-ray diffraction refinement. You describe a refinement in a
-JSON "recipe"; PowderLine runs it through the refinement engine the recipe
-names — [GSAS-II](https://gsasii.github.io/), Bruker TOPAS 6, or the
-open-source [easydiffraction](https://easydiffraction.org) — and returns
-standardized result tables.
+[Documentation](https://nsls2.github.io/PowderLine/) ·
+[Get started](https://nsls2.github.io/PowderLine/getting-started/) ·
+[How it works](https://nsls2.github.io/PowderLine/concepts/how-powderline-works.html) ·
+[Paper](https://doi.org/10.48550/arXiv.2608.17009)
 
-**Documentation:** [nsls2.github.io/PowderLine](https://nsls2.github.io/PowderLine/)
-· **New here? Start with the [Quickstart](docs/quickstart.md).**
+## Why PowderLine
 
-PowderLine gives you a programmatic, reproducible way to run Rietveld refinements
-and single-peak fits without hand-driving the underlying refinement software.
+Rietveld refinement extracts structure, phase fractions and microstructure from
+powder data. Doing it reliably takes expertise in a particular program, and
+doing it at scale usually means custom code written for one project.
 
-- **One recipe = one engine.** A recipe's `schema_name` names the engine and
-  workflow (`gsasii.rietveld`, `gsasii.spf`, `topas.rietveld`, `topas.spf`,
-  `easydiffraction.rietveld`) and is written in that engine's own
-  conventions and units; nothing is translated between engines.
-- **Refine what you need:** unit cell, atom coordinates, occupancies, isotropic and
-  anisotropic displacement parameters, background, peak broadening and
-  March–Dollase preferred orientation, with ionic scattering types per atom —
-  each parameter individually flagged, and checked against the space-group
-  symmetry before any engine runs.
-- **Honest statistics:** every engine returns the same uniform Rwp / Rexp /
-  GoF over the same data points, with the engine's own values kept alongside.
-- **Strict validation, engine-free:** a recipe validates in a core-only
-  environment; every problem is reported at its field, and engine quirks are
-  refused or warned about, never papered over.
-- **Standardized outputs:** fixed-filename CSV/TXT reports plus each engine's
-  native artifacts (the GSAS-II `.gpx`, the TOPAS `.inp` and output files).
+No refinement program offered a single, validated, machine-writable
+description of a whole refinement. PowderLine provides one: the **recipe**.
 
-## 1. Install
+## What it does
 
-PowderLine uses [pixi](https://pixi.sh) for reproducible conda environments.
-The **default environment is core-only** (schema validation, the CLI, no
-engine); each engine lives in its own environment:
+```mermaid
+flowchart LR
+    subgraph drivers["Who drives it"]
+        direction TB
+        D1[GUIs]
+        D2[Notebooks and scripts]
+        D3[Automated pipelines]
+        D4[Autonomous experiments]
+        D5[LLM agents]
+    end
+    subgraph pl["PowderLine"]
+        direction TB
+        R["Recipe<br/><i>structured, versioned</i><br/>data · model · instrument · flags · metadata"]
+        V{{"Validate<br/>schema + symmetry"}}
+        X{{Run}}
+        R --> V --> X
+    end
+    subgraph engines["Refinement engines"]
+        direction TB
+        E1[GSAS-II]
+        E2[TOPAS]
+        E3[easydiffraction]
+    end
+    subgraph out["Results"]
+        direction TB
+        O1["Tables and uniform statistics"]
+        O2["Output recipe<br/>refined values written back"]
+        O3["Provenance<br/>run IDs · versions · your metadata"]
+    end
+    drivers --> R
+    X <--> engines
+    X --> out
+    O2 -. next step .-> R
+```
+
+1. **Describe.** A recipe is a structured document holding the data, the
+   structural model, the instrument, what to refine and any metadata you
+   attach. In Python it is a dictionary. On disk or over the wire it is
+   JSON. It can come from a file, a database record or a live data stream.
+2. **Validate.** PowderLine checks the recipe against a versioned schema and
+   against the crystallography: the cell against the space group, atoms on
+   special positions, symmetry-tied parameters. No engine needs to be
+   installed. Each problem is reported at its field, with the fix.
+3. **Run.** PowderLine hands the recipe to the engine it names (GSAS-II,
+   TOPAS or easydiffraction) and returns the same structured results whichever
+   engine ran.
+4. **Chain.** Every result includes an *output recipe*, with the refined
+   values written back and provenance attached. That is the next step's
+   input: calibrant → sample → temperature series.
+
+## Why it matters
+
+- **One interface for every driver.** A GUI, a notebook, a beamline pipeline,
+  an autonomous experiment and an LLM agent all drive PowderLine the same
+  way, with the same recipe, and get the same result.
+- **Modular.** PowderLine sits between data and decisions. It takes data
+  from your reduction step and hands structured results to whatever comes
+  next: plotting, databases, decision-making for the next measurement.
+- **Machine-checkable.** Validation names every problem and how to fix it, so
+  a program or an LLM can write a recipe, check it and correct it without a
+  person in the loop.
+- **Traceable.** Your metadata (sample, measurement, data IDs) travels with
+  the recipe into the results, and every run records what produced it. Data,
+  analyses and their order stay linked.
+- **Comparable.** Every engine reports Rwp, Rexp and GoF computed the same way
+  over the same points.
+
+## Try it
+
+You need [pixi](https://pixi.sh) and git.
 
 ```bash
 git clone https://github.com/NSLS2/PowderLine.git
 cd PowderLine
-pixi install                      # core only: validate recipes, no engine
-pixi install -e gsasii            # + GSAS-II (built as a conda package by pixi-build)
-pixi install -e easydiffraction   # + easydiffraction (Python >= 3.12)
-pixi install -e all               # every engine
-# fresh checkout: add --frozen (e.g. `pixi install --frozen -e gsasii`) so the committed lock is used as is
+pixi install --frozen -e gsasii
+pixi run -e gsasii powderline examples/example_LaB6/input.json
 ```
 
-Platforms: `linux-64`, `win-64`, `osx-arm64`. TOPAS has no Python package:
-`topas.*` recipes validate everywhere and their input files are written
-everywhere, but running them needs a Windows machine with TOPAS 6 (`tc.exe`).
+The results are in `examples/example_LaB6/output/`.
+[Your first refinement](https://nsls2.github.io/PowderLine/getting-started/first-refinement.html)
+walks through them.
 
-## 2. Getting started
+## Engines
 
-Run the bundled LaB6 calibrant example with GSAS-II:
+| Engine | Workflows | Runs on |
+|---|---|---|
+| GSAS-II 5.7.9 | Rietveld, single-peak fitting | Linux, Windows, macOS |
+| TOPAS 6 | Rietveld, single-peak fitting | Windows with a TOPAS licence (input files are written anywhere) |
+| easydiffraction 0.21.1 | Rietveld | Linux, Windows, macOS |
 
-```bash
-pixi run -e gsasii kicker examples/example_LaB6/input.json
-```
+## Cite
 
-Results are written next to the recipe in `examples/example_LaB6/output/`:
-
-| File | What it is |
-|---|---|
-| `refined_parameters.csv` | Every refined parameter with its ESD (9-column table) |
-| `LaB6_unit_cell_report.csv` | Per-phase unit-cell parameters + ESDs |
-| `LaB6_peak_list_report.csv` | Reflection list (hkl, d-spacing, 2θ, intensity) |
-| `fit_profile.txt` | Observed / calculated / background / difference |
-| `output_recipe.json`, `parameter_dispositions.csv` | The recipe with the refined values written back, and how each value came about |
-| `dummy.lst` | Human-readable GSAS-II refinement log (Rwp, parameter tables) |
-| `dummy.gpx` | GSAS-II project — reopenable in the GSAS-II GUI |
-
-PowderLine removes its own fixed-name files from the output directory before
-each run, so a reused directory holds one run's results. A failed run raises,
-and its directory holds the engine's own files plus `failure.json` (the reason,
-the message and the engine's last console lines) — never a result table.
-
-The same case as a TOPAS and an easydiffraction recipe sits in
-`examples/example_LaB6/topas/` and `examples/example_LaB6/easydiffraction/`.
-
-> `examples/example_template/` holds fill-in-the-blanks skeletons for the
-> three engines, not runnable recipes — copy one to start your own.
-
-**Bringing your own CIF, calibrant and data files?** PowderLine has no
-built-in recipe builder; [Building a recipe](docs/input-guidance.md#building-a-recipe)
-walks through writing one and validating it.
-
-## 3. Ways to use PowderLine
-
-**Command line** — one command for every engine; the recipe's `schema_name`
-decides where it runs:
-
-```bash
-pixi run kicker <recipe.json> --validate-only     # check a recipe; needs no engine
-pixi run -e gsasii kicker <recipe.json>           # run a gsasii.* recipe
-pixi run -e easydiffraction kicker <recipe.json>  # run an easydiffraction.* recipe
-pixi run kicker <recipe.json> --topas-dir C:/TOPAS6 --topas-version 6   # run a topas.* recipe (tc.exe on Windows)
-pixi run -e gsasii doctor                                                  # what this environment can do (gateways, engines, server)
-```
-
-After `pixi reinstall powderline` the same program is the installed command
-`powderline <recipe.json> …`. Flags: `--output DIR` (default: `output/` next
-to the recipe), `--verbose`, `--validate-only`; gsasii `--use-server` /
-`--no-server` / `--server-timeout SECONDS` (default: no limit); topas
-`--topas-dir DIR` / `--topas-version V` /
-`--topas-timeout SECONDS` (default 3600; 0 = no limit). A flag given
-for a recipe of another engine is an error.
-
-**Python API** — load a recipe, run it, get pandas DataFrames back:
-
-```python
-import powderline, tempfile
-from pathlib import Path
-
-recipe = powderline.load_recipe_asset(Path("examples/example_LaB6/input.json"))
-
-# Engine-free check: every problem at its field path; warnings for defaults applied
-checked = powderline.validate(recipe)
-print(checked.recipe.schema_name, checked.warnings)
-
-# run() writes its file reports into the directory you give it; the engine is
-# the one the recipe names, so this needs the gsasii environment:
-result = powderline.run(recipe, Path(tempfile.mkdtemp()))
-
-print(result["rwp"])                      # PowderLine's uniform Rwp (%)
-print(result["engine_details"])           # GSAS-II's own statistics, parameters requested vs varied
-print(result["refined_parameters"])       # DataFrame of refined values + ESDs
-```
-
-The returned dict holds the fit metadata (`status`, `converged`, `rwp`, `r_exp`,
-`gof`, `chi2_red`, `simulation_mode`, `engine_details`, `warnings`, elapsed time,
-which execution path ran, the output recipe with its parameter dispositions; a
-failed run raises instead of returning) plus every
-tabular report in memory — the refined-parameter table with ESDs, the fit
-profile, per-phase unit-cell and peak-list tables (dicts keyed by phase
-name), and the SPF peak tables when single-peak fitting. Everything the
-CSV/TXT files contain, without touching disk yourself.
-
-The public API (`powderline.__all__`) is `run`, `validate`,
-`ValidationResult`, `load_recipe_asset`, `support_matrix` and the exceptions
-`PowderLineError`, `GatewayNotInstalledError`, `EngineNotAvailableError`,
-`EngineVersionError`, `EngineExecutionError`. `import powderline` imports no
-engine.
-
-**The GSAS-II server (used by default for gsasii recipes)** — refinements go
-through a persistent server that keeps GSAS-II resident in memory
-(auto-started as needed), a large speedup across many refinements. Manage it
-directly, or opt out per run with `--no-server`:
-
-```bash
-pixi run -e gsasii gsas-server status                 # start | status | stop | restart | logs
-pixi run -e gsasii kicker <recipe.json> --no-server   # force an isolated in-process run
-```
-
-The server is per-user: it listens on loopback only and accepts only requests
-signed with a secret token kept in a directory only you can read; your client
-in turn only accepts results signed with that token, so other users on the
-same machine can neither use your server nor impersonate it. To switch it off
-— e.g. on a shared workstation — set `POWDERLINE_NO_SERVER=1`: default
-(`auto`) runs then go in-process, explicit server mode (`--use-server` /
-`execution_mode='server'`) fails, and nothing is auto-started.
-
-## 4. Refinement engines
-
-| Engine | Schemas | Environment | Notes |
-|---|---|---|---|
-| **GSAS-II 5.7.9** | `gsasii.rietveld`, `gsasii.spf` | `gsasii` | The reference engine; the committed examples carry its outputs as regression references. |
-| **TOPAS 6** (Bruker) | `topas.rietveld`, `topas.spf` | any (writing the INP); Windows + `tc.exe` (running) | The recipe states `engine_version: "6"`; the run needs the installed version and location declared (`--topas-version 6 --topas-dir DIR`, or `topas.version` / `topas.dir` in `.powderline_config.yaml`); PowderLine never guesses where `tc.exe` is. |
-| **easydiffraction 0.21.1** | `easydiffraction.rietveld` | `easydiffraction` | The recipe states the calculator (`cryspy` or `crysfml`); no single-peak fitting. |
-
-The structural part of a recipe (space group, cell, atoms) is identical in
-every engine; the instrument, background and controls are each engine's
-own, with its own units. The
-[cross-engine comparison](docs/cross-engine-comparison.md) refines the same
-two data sets with every engine and explains why the numbers differ:
-**compare lattice parameters, and read Rwp as a property of the model, not
-of the engine.** What each engine does with your recipe, and what PowderLine
-refuses on its behalf, is on the
-[engine behaviour page](docs/engine-behavior.md).
-
-For the engine architecture and how to add a backend, see
-[Adding a refinement engine](docs/DEVELOPMENT.md#adding-a-refinement-engine).
-Maintainers keep design records in a separate private repository.
-
-## Documentation
-
-- **[Quickstart](docs/quickstart.md)** — clone → install → run → read the output.
-- **[Getting Started](docs/getting-started.rst)** — recipe structure, output
-  files, and the Python API.
-- **[Recipe schemas](docs/schemas.md)**, **[Fields and features](docs/fields.md)**,
-  **[Input guidance](docs/input-guidance.md)** — the five schemas, every field
-  with its unit, how to supply data / structures / instruments.
-- **[Engine behaviour notes](docs/engine-behavior.md)** — what each engine
-  does, and PowderLine's policy toward it.
-- **[Troubleshooting](docs/TROUBLESHOOTING.md)** — common errors and fixes.
-- **[Citing PowderLine](docs/citing.md)** — PowderLine, the engines and the
-  libraries behind them.
-- **[Migration guide](docs/migration-0.1-to-0.2.md)** — from PowderLine 0.1.1
-  (unified schema 0.26.0) to 0.2.0 (core + engine schemas 0.1.0).
-- **[Schema History](docs/SCHEMA_HISTORY.md)** and the
-  **[support matrix](docs/support-matrix.md)** — schema versions and declared
-  compatibility.
-- **[Using PowderLine as a library](docs/integration-guide.md)** — install it into
-  another project.
-- **[Developer Guide](docs/DEVELOPMENT.md)** and **[Policies](docs/policies.md)**
-  — architecture, how to add an engine, versioning, frozen code, review
-  gates. See also the [known-issues register](docs/known_issues.md)
-  (`KI-NN` ids referenced from code and docs).
-
-## Citation
-
-If you use PowderLine in your research, please cite the preprint:
+PowderLine is described in a paper accepted for publication in the *Journal
+of Applied Crystallography*. Until it appears, please cite the preprint:
 
 > A. A. Corrao, J. A. Perez, J. D. Langhout, M. M. Butala, T. A. Caswell, and
-> D. Olds. *PowderLine: a programmatic powder diffraction analysis application.*
-> arXiv:2608.17009 (2026).
+> D. Olds. *PowderLine: a programmatic powder diffraction analysis
+> application.* arXiv:2608.17009 (2026).
 > [doi:10.48550/arXiv.2608.17009](https://doi.org/10.48550/arXiv.2608.17009)
 
+**Please cite the engine you used too:**
+
+| Engine | Cite |
+|---|---|
+| GSAS-II | Toby & Von Dreele, *J. Appl. Cryst.* **46**, 544 (2013), [doi](https://doi.org/10.1107/S0021889813003531); O'Donnell et al., *J. Appl. Cryst.* **51**, 1244 (2018), [doi](https://doi.org/10.1107/S1600576718008075) |
+| TOPAS | Coelho, *J. Appl. Cryst.* **51**, 210 (2018), [doi](https://doi.org/10.1107/S1600576718000183) |
+| easydiffraction | easydiffraction 0.21.1, Zenodo (2026), [doi](https://doi.org/10.5281/zenodo.22905049), plus the calculator your recipe names (CrysPy or CrysFML) |
+
+Full references, including the calculators and gemmi, are on
+[Citing PowderLine](https://nsls2.github.io/PowderLine/about/citing.html).
 Machine-readable metadata is in [`CITATION.cff`](CITATION.cff).
 
-### Cite the refinement engine too
+## Contributing and licence
 
-PowderLine drives an underlying refinement engine: the one your recipe's
-`schema_name` names. Please cite the engine you used in addition to
-PowderLine.
-
-- **GSAS-II** (`gsasii.*` recipes; GSAS-II 5.7.9 in the `gsasii` environment):
-  > B. H. Toby and R. B. Von Dreele. *GSAS-II: the genesis of a modern
-  > open-source all purpose crystallography software package.* J. Appl. Cryst.
-  > **46**, 544–549 (2013).
-  > [doi:10.1107/S0021889813003531](https://doi.org/10.1107/S0021889813003531)
-
-  PowderLine drives GSAS-II through its scripting interface, so please also cite:
-  > J. H. O'Donnell, R. B. Von Dreele, M. K. Y. Chan, and B. H. Toby. *A
-  > scripting interface for GSAS-II.* J. Appl. Cryst. **51**, 1244–1250 (2018).
-  > [doi:10.1107/S1600576718008075](https://doi.org/10.1107/S1600576718008075)
-- **TOPAS** (`topas.*` recipes; TOPAS 6):
-  > A. A. Coelho. *TOPAS and TOPAS-Academic: an optimization program
-  > integrating computer algebra and crystallographic objects written in C++.*
-  > J. Appl. Cryst. **51**, 210–218 (2018).
-  > [doi:10.1107/S1600576718000183](https://doi.org/10.1107/S1600576718000183)
-- **easydiffraction** (`easydiffraction.*` recipes): the easydiffraction
-  project asks you to cite the specific version you used, through its
-  [Zenodo archive](https://doi.org/10.5281/zenodo.16806521) (all versions).
-  PowderLine's `easydiffraction` environment installs version 0.21.1:
-  > A. Sazonov, E. Lindgren, P. Rozyczko, and M. Seth. *easydiffraction
-  > 0.21.1.* Zenodo (2026).
-  > [doi:10.5281/zenodo.22905049](https://doi.org/10.5281/zenodo.22905049)
-
-  Please also cite the calculator your recipe names in
-  `refinement_controls.calculator`: CrysPy (`cryspy`) or CrysFML (`crysfml`).
-  The references are on the [citing page](docs/citing.md), which also covers
-  gemmi, the library behind PowderLine's space-group checks.
-
-## License
-
-BSD 3-Clause — see [LICENSE](LICENSE).
+See the [developer guide](https://nsls2.github.io/PowderLine/development/).
+BSD 3-Clause licence, see [LICENSE](LICENSE).

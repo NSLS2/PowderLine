@@ -11,11 +11,11 @@ identical; only the **peak-broadening parameterization** changes.
 In the base example both **size** and **strain** broadening are refined per
 phase. That refinement is ill-conditioned over this limited 1-15 deg 2-theta,
 low-Q synchrotron range (lambda = 0.1665 A): size and strain broadening are
-strongly correlated, so the isotropic size parameters drift to bounds — the DRX
-size runs off to ~10 um (i.e. negligible size broadening, with a runaway
-LG-mixing coefficient), while the Li4MgWO6 size rails to the ~1 nm floor and
-absorbs peak width that strain should carry. Neither refined crystallite size is
-physically meaningful.
+strongly correlated, so the isotropic size parameters run away. In the
+committed base reference the DRX size ends near 253 um with a runaway
+LG-mixing coefficient (about 15 000), and the Li4MgWO6 size goes negative
+(about −1356 um). Neither refined crystallite size is physically meaningful.
+The base example is kept as a teaching example of this posing.
 
 This variant removes that degeneracy: **crystallite size is fixed** (10 um,
 LG_eta = 1.0, both held) so no size broadening is refined, and **only the strain
@@ -107,7 +107,7 @@ Same standardized outputs as `example_DRX_33`:
 ## Reproduce
 
 ```
-pixi run -e gsasii kicker examples/example_DRX_33_strainonly/input.json --no-server --output examples/example_DRX_33_strainonly/output
+pixi run -e gsasii powderline examples/example_DRX_33_strainonly/input.json --no-server --output examples/example_DRX_33_strainonly/output
 ```
 
 ## Known Issues
@@ -138,10 +138,6 @@ when the recipe is validated: a refined strict subset of a tie group (e.g. only
 `a` of a cubic cell) or a refined symmetry-fixed parameter is an error, so the
 recipe states exactly what GSAS-II refines. This example uses that mechanism directly: the size parameters are
 present with `refine_flag=false`, pinning crystallite size while strain refines.
-
-The recipe was converted from its schema-0.26.0 form with
-`scripts/convert_recipe_026.py` at PowderLine 0.2.0; the converter's
-notes for each example are in `docs/SCHEMA_HISTORY.md`'s gsasii section.
 
 ## Data citation
 

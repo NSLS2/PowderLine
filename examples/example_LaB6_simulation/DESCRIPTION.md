@@ -2,7 +2,7 @@
 
 ## Overview
 
-This example demonstrates **powder diffraction pattern simulation** using PowderLine's kicker workflow. Instead of refining parameters against experimental data, this recipe generates a calculated powder diffraction pattern using a fixed crystal structure and instrument configuration.
+This example demonstrates **powder diffraction pattern simulation** using PowderLine's `gsasii.rietveld` workflow. Instead of refining parameters against experimental data, this recipe generates a calculated powder diffraction pattern using a fixed crystal structure and instrument configuration.
 
 ## What is Simulation Mode?
 
@@ -52,13 +52,13 @@ This example demonstrates simulation mode capabilities:
 
 ```bash
 # Standard invocation
-pixi run -e gsasii kicker examples/example_LaB6_simulation/input.json
+pixi run -e gsasii powderline examples/example_LaB6_simulation/input.json
 
 # With verbose output
-pixi run -e gsasii kicker examples/example_LaB6_simulation/input.json --verbose
+pixi run -e gsasii powderline examples/example_LaB6_simulation/input.json --verbose
 
 # Validate without running
-pixi run kicker examples/example_LaB6_simulation/input.json --validate-only
+pixi run powderline examples/example_LaB6_simulation/input.json --validate-only
 ```
 
 ## Output Files
@@ -82,7 +82,7 @@ This example is based on the refinement example (`examples/example_LaB6/`), but 
 - `refinement_cycles: 1` (schema requires ≥1; with all params locked, no optimization occurs)
 - Same LaB6 structure, instrument setup, and XRD data
 - Same background model (Chebyshev coefficients)
-- Like `example_LaB6`, the background peak of the schema-0.26.0 recipe was removed at the conversion to `gsasii.rietveld` (PowderLine 0.2.0): invisible here (0.0126 counts high), undeterminable there
+- Like `example_LaB6`, no background peak: the data have no feature below the first Bragg peak for one to describe
 
 To convert any refinement recipe to simulation mode:
 1. Recursively set all `refine_flag` values to `false` (structure, background, instrument, broadening)
@@ -118,5 +118,5 @@ Simulation mode enables several uses, some already demonstrated:
 ## See Also
 
 - [Refinement Example](../example_LaB6/DESCRIPTION.md) - Extracting parameters from experimental data
-- [DEVELOPMENT.md](../../docs/DEVELOPMENT.md) - Architecture and parameter format documentation
-- [TROUBLESHOOTING.md](../../docs/TROUBLESHOOTING.md) - Common issues and solutions
+- [Architecture](../../docs/development/architecture.md) - How PowderLine is built
+- [Troubleshooting](../../docs/how-to/troubleshooting.md) - Common issues and solutions

@@ -102,7 +102,7 @@ whose output recipe is not valid (none here). The committed reference
 ```bash
 pixi run -e gsasii python examples/example_LaB6_temperature_series/make_series.py   # regenerate data/ and input.json (deterministic for a given GSAS-II build)
 pixi run -e gsasii python examples/example_LaB6_temperature_series/run_series.py    # the chain; writes output/
-pixi run -e gsasii kicker examples/example_LaB6_temperature_series/input.json --validate-only  # the first step alone
+pixi run powderline examples/example_LaB6_temperature_series/input.json --validate-only        # the first step alone
 ```
 
 `tests/test_example_temperature_series.py` checks the data against
@@ -116,7 +116,7 @@ regression tolerance.
   is deterministic for a given GSAS-II build, but the patterns are GSAS-II's
   calculated profile: a change of the GSAS-II pin changes every data file and
   therefore every number in `output/`. Regenerating is a deliberate change
-  (`docs/policies.md`), not a refresh.
+  ([policies](../../docs/development/policies.md)), not a refresh.
 - **The copied instrument profile has a negative Lorentzian width above
   ≈ 10.7° 2θ.** The committed `example_LaB6` refinement gives Y = −10.26
   centideg, so γ = X/cos θ + Y tan θ + Z crosses zero near 10.7°; GSAS-II
