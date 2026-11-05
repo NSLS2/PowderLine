@@ -31,7 +31,7 @@ Where each row comes from
 
 Usage (from the repo root)::
 
-    python scripts/cross_engine_comparison.py            # runs GSAS-II (default env)
+    python scripts/cross_engine_comparison.py            # runs GSAS-II (the gsasii env)
     python scripts/cross_engine_comparison.py --no-run   # committed goldens + JSON record only
     python scripts/cross_engine_comparison.py --out-dir /tmp/x --no-run
 

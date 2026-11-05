@@ -34,20 +34,20 @@ Performance:
 - 4-6x speedup for batch operations
 
 Usage:
-    # Start server (daemon mode)
-    pixi run gsas-server start
+    # Start server (runs in the foreground of this terminal until stopped)
+    pixi run -e gsasii gsas-server start
 
-    # Stop server
-    pixi run gsas-server stop
+    # Stop server (the next auto-mode run starts a fresh one in the background)
+    pixi run -e gsasii gsas-server stop
 
     # Check status (also prints the log file location)
-    pixi run gsas-server status
+    pixi run -e gsasii gsas-server status
 
     # View logs
-    pixi run gsas-server logs
+    pixi run -e gsasii gsas-server logs
 
-    # Restart server
-    pixi run gsas-server restart
+    # Restart server (stop, then start in the foreground)
+    pixi run -e gsasii gsas-server restart
 """
 
 import base64
@@ -1163,7 +1163,7 @@ def _start_foreground() -> None:
         print("Server is already running")
         print(f"   PID: {read_pid() or '(starting)'}")
         print(f"   URL: {_server_url()}")
-        print(f"\n   To view logs: pixi run gsas-server logs")
+        print(f"\n   To view logs: pixi run -e gsasii gsas-server logs")
         sys.exit(1)
     # Release the lock and state files even if the GSAS-II import below fails.
     atexit.register(_release_state_files)
@@ -1217,7 +1217,7 @@ def _run_action(action: str) -> None:
             print("Server is starting (loading GSAS-II; no PID recorded yet)")
             print(f"   URL: {info['url']}")
             print(f"   Log file: {info['log_file']}")
-            print(f"\n   To view logs: pixi run gsas-server logs")
+            print(f"\n   To view logs: pixi run -e gsasii gsas-server logs")
         elif info:
             print(f"Server is running")
             print(f"   PID: {info['pid']}")
@@ -1233,10 +1233,10 @@ def _run_action(action: str) -> None:
             stale = GSASClient().server_is_stale()
             if stale is True:
                 print("   Code: STALE - the server runs other PowderLine code than this checkout (it caches modules); "
-                      "run: pixi run gsas-server restart")
+                      "run: pixi run -e gsasii gsas-server stop (the next run starts a fresh one)")
             elif stale is False:
                 print("   Code: current (matches this checkout)")
-            print(f"\n   To view logs: pixi run gsas-server logs")
+            print(f"\n   To view logs: pixi run -e gsasii gsas-server logs")
         else:
             print("Server is not running")
             print(f"\n   To start: pixi run gsas-server start")

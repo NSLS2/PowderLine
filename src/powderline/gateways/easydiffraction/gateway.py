@@ -24,7 +24,7 @@ ENGINE_VERSION_SPEC = "==0.21.1"
 WORKFLOWS = tuple(schema.SCHEMA_NAMES)
 #: pixi environment providing easydiffraction + how to install it (re/08, A42).
 ENV = "easydiffraction"
-INSTALL_COMMAND = "pixi install -e easydiffraction"
+INSTALL_COMMAND = "pixi install --frozen -e easydiffraction"
 
 
 def capabilities() -> dict:

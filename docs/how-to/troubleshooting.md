@@ -201,7 +201,7 @@ Fill in the blanks and validate.
 ### The engine is not installed in this environment
 
 ```
-❌ the 'gsasii' gateway needs GSAS-II, which is not installed in this environment; use the 'gsasii' pixi environment (install it with: pixi install -e gsasii; run with: pixi run -e gsasii ...)
+❌ the 'gsasii' gateway needs GSAS-II, which is not installed in this environment; use the 'gsasii' pixi environment (install it with: pixi install --frozen -e gsasii; run with: pixi run -e gsasii ...)
 ```
 
 **Cause:** the default environment validates every recipe but runs no

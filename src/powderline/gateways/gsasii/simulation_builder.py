@@ -1,7 +1,7 @@
 """Build ``gsasii.rietveld`` simulation recipes from crystal structures.
 
 This module converts crystal structure data (a plain dict: ``space_group``, ``unit_cell``,
-``atoms``, ``formula``, optional ``material_id``; any source, e.g. a Materials Project fetch, or other
+``sites`` (every atom of the conventional cell), ``formula``, optional ``material_id``; any source, e.g. a Materials Project fetch, or other
 sources) into PowderLine recipes configured for simulation mode
 (``refinement_cycles`` 1, every refine flag false). It ships with the GSAS-II
 gateway (master plan A43): the simulation runs through GSAS-II, so every

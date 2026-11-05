@@ -41,7 +41,7 @@ ENGINE_VERSION_SPEC = "==5.7.9"
 WORKFLOWS = tuple(schema.SCHEMA_NAMES)
 #: pixi environment providing GSAS-II + how to install it (re/08, A31).
 ENV = "gsasii"
-INSTALL_COMMAND = "pixi install -e gsasii"
+INSTALL_COMMAND = "pixi install --frozen -e gsasii"
 
 EXECUTION_MODES = ('auto', 'server', 'subprocess')
 

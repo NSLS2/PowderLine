@@ -7,7 +7,7 @@
                              [--topas-dir DIR] [--topas-version V] [--topas-timeout SECONDS]
     powderline --doctor      (what this environment can do: gateways, engines, server; re/27)
 
-(``pixi run kicker ...`` / ``python src/powderline/kicker.py ...`` run the same
+(``pixi run powderline ...``, the pixi task ``pixi run kicker ...`` and ``python src/powderline/kicker.py ...`` run the same
 ``main``; re/08 binds the task names.) The CLI loads the recipe
 (:func:`powderline.load_recipe_asset`), refuses template files, maps the
 engine flags onto the gateway's run options and calls :func:`powderline.run`;
@@ -274,7 +274,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  2. Edit examples/example_template/input.json with your refinement parameters")
         print(f"  3. See examples/example_template/DESCRIPTION.md for guidance")
         print(f"\nOr run an existing example:")
-        print(f"     pixi run kicker examples/example_LaB6/input.json\n")
+        print(f"     pixi run -e gsasii powderline examples/example_LaB6/input.json --output my_lab6\n")
         return 1
 
     try:
@@ -336,8 +336,7 @@ def main(argv: list[str] | None = None) -> int:
             print()
             print(traceback.format_exc())
         else:
-            print(f"\nTry running with --verbose for the full traceback:")
-            print(f"  pixi run kicker {args.input_json} --verbose\n")
+            print(f"\nAdd --verbose to the same command for the full traceback.\n")
         return 1
 
     if args.validate_only:

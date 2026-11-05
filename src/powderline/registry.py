@@ -17,7 +17,7 @@ entry point of the same name.
 
 Entry-point metadata is written when the package is installed: after editing
 ``[project.entry-points]`` in ``pyproject.toml``, re-install the editable
-package (``pixi reinstall powderline``) or discovery finds nothing.
+package (``pixi reinstall powderline --all``) or discovery finds nothing.
 """
 
 from __future__ import annotations
@@ -155,7 +155,7 @@ def _not_installed_message(name: str, eps: Dict[str, Any]) -> str:
             f"no PowderLine gateway named {name!r}: no {ENTRY_POINT_GROUP!r} entry "
             "points were found at all, although powderline is importable. The "
             "package's install metadata is stale or missing; re-install it "
-            "(`pixi reinstall powderline`, or `pip install -e .`)."
+            "(`pixi reinstall powderline --all`, or `pip install -e .`)."
         )
     return (
         f"no PowderLine gateway named {name!r} is installed (available: "

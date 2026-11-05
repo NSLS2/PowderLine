@@ -174,7 +174,7 @@ def test_pixi_env_names_match_gateway_constants():
     envs = manifest["environments"]
     for gateway in (gsasii_gateway, easydiff_gateway):
         assert gateway.ENV in envs, f"{gateway.NAME}: pixi env {gateway.ENV!r} not in pixi.toml"
-        assert gateway.INSTALL_COMMAND == f"pixi install -e {gateway.ENV}"
+        assert gateway.INSTALL_COMMAND == f"pixi install --frozen -e {gateway.ENV}"
     assert "GSAS-II" not in manifest["dependencies"], "the default env must stay engine-free (A31)"
     assert "GSAS-II" in manifest["feature"][gsasii_gateway.ENV]["dependencies"]
 
@@ -326,7 +326,7 @@ def test_easydiff_not_installed_raises_engine_not_available_error(tmp_path):
     with pytest.raises(EngineNotAvailableError) as exc_info:
         easydiff_gateway.run(_load(EASY_LAB6), str(tmp_path), validate_only=False)
     assert isinstance(exc_info.value, ImportError)
-    assert "pixi install -e easydiffraction" in str(exc_info.value)
+    assert "pixi install --frozen -e easydiffraction" in str(exc_info.value)
 
 
 @easydiffraction_absent_only

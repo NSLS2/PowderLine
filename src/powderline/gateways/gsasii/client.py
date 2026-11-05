@@ -173,7 +173,7 @@ class GSASClient:
                     f"{MAX_BODY_BYTES} bytes): reduce the recipe's embedded data, or run in-process")
             raise ServerRejectedRequest(
                 "the GSAS-II server rejected the request as unauthenticated: its token does not match this "
-                "client's (a restarted server? run `pixi run -e gsasii gsas-server restart` and retry)")
+                "client's (a restarted server? stop it with `pixi run -e gsasii gsas-server stop` and retry; the run starts a fresh one)")
         expected = sign_response(token, nonce, resp.status_code, resp.content)
         if not secrets.compare_digest(got.encode('utf-8', 'replace'), expected.encode()):
             raise ServerIdentityError(
@@ -237,16 +237,16 @@ class GSASClient:
 
     STALE_SERVER_MESSAGE = (
         "GSAS-II server is stale: it runs other PowderLine code (version or source tree) than this "
-        "process, and it caches its modules. Restart it with: pixi run gsas-server restart"
+        "process, and it caches its modules. Stop it with: pixi run -e gsasii gsas-server stop (the next run starts a fresh one)"
     )
 
     def _handle_stale_server(self) -> Dict[str, Any] | None:
         """Warn about a stale server; None when the caller may fall back in-process, else the failure envelope."""
         print("   WARNING: the GSAS-II server is stale (it runs other PowderLine code than this process).")
         if self.fallback_to_subprocess:
-            print("   Falling back to in-process execution. To fix the server: pixi run gsas-server restart")
+            print("   Falling back to in-process execution. To fix the server: pixi run -e gsasii gsas-server stop (the next run starts a fresh one)")
             return None
-        print("   In-process fallback is disabled. To fix the server: pixi run gsas-server restart")
+        print("   In-process fallback is disabled. To fix the server: pixi run -e gsasii gsas-server stop (the next run starts a fresh one)")
         return envelopes.failure_envelope("backend", "server_unavailable", self.STALE_SERVER_MESSAGE, method="none")
 
     def _server_attempt(self, recipe_dict: dict, output_dir: Path, verbose: bool) -> Dict[str, Any] | None:
