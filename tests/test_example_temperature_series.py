@@ -69,7 +69,7 @@ def test_series_runs_sequentially_through_the_output_recipe(tmp_path):
     for got, ref in zip(rows, reference):
         assert got["output_recipe_valid"] is True
         assert got["a_refined"] == pytest.approx(ref["a_refined"], abs=3 * ref["a_esd"])
-        assert got["rwp"] == pytest.approx(ref["rwp"], abs=0.1)  # docs/regression-tolerance.md
+        assert got["rwp"] == pytest.approx(ref["rwp"], abs=0.1)  # docs/development/contributing.md, "Regression references and tolerance"
         assert abs(got["a_refined"] - got["a_true"]) <= 3 * got["a_esd"]
     final = json.loads((tmp_path / "out" / "final_output_recipe.json").read_text(encoding="utf-8"))
     assert final["payload"]["xrd_data"]["filename"] == "simulated_LaB6_500C"

@@ -11,7 +11,7 @@ like the tables beside it. Two checks:
   carries the two files reproduces ``output_recipe.json`` (the run-specific
   ``metadata.powderline_provenance`` block excluded) and ``parameter_dispositions.csv``
   within the regression tolerances of ``refined_params_match``
-  (docs/regression-tolerance.md), and the CLI reports the recipe's validity as KI-15
+  (docs/development/contributing.md, "Regression references and tolerance"), and the CLI reports the recipe's validity as KI-15
   says.
 """
 

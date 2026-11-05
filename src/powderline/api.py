@@ -171,7 +171,7 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
     environment without the engine raises and leaves the output directory's
     previous results in place. Then PowderLine's own fixed-name outputs are
     removed from ``output_dir`` (the engine's files and anything else stay), so
-    a reused directory holds one run's results (re/30).
+    a reused directory holds one run's results.
 
     Args:
         recipe: a recipe dict or a validated model.
@@ -190,7 +190,7 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
         ``engine_details``, ``warnings``, ``elapsed_time``, ``method``,
         ``output_files``, ``fit_profile``, ``unit_cell_data``, ``peak_list_data``,
         ``refined_parameters``, ``spf_peaks``, ``spf_convergence_diagnostics``.
-        A failed run never returns: it raises (below). See docs/schemas.md.
+        A failed run never returns: it raises (below). See docs/reference/outputs.md.
 
     Raises:
         pydantic.ValidationError: the recipe is invalid, or ``schema_name`` is

@@ -2,7 +2,7 @@
 """Generate the docs' field tables and support matrix from the schemas themselves (re/10 §1.2; P-27).
 
 The user docs must not drift from the code, so the field-by-field tables on
-``docs/fields.md`` and the matrix on ``docs/support-matrix.md`` are not
+``docs/reference/fields.md`` and the matrix on ``docs/reference/versions.md`` are not
 hand-written: this script derives them from each schema's pydantic JSON
 Schema (``model_json_schema()``, including the ``json_schema_extra={"unit":
 ...}`` metadata every quantity carries, A19) and from

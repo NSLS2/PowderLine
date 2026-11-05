@@ -72,7 +72,7 @@ def _walk(recipe: dict, keys: list, create: bool = False) -> dict:
 
 def block(recipe: dict, path: str) -> dict:
     """A deep copy of the core block at ``path`` (``payload.xrd_data``, ``payload.fit_range``,
-    ``payload.phases.<name>``) of a recipe dict -- the chaining currency between tools (re/20a, KI-04).
+    ``payload.phases.<name>``) of a recipe dict -- the chaining currency between tools (KI-04).
 
     Raises:
         ValueError: ``path`` is not a core block (engine blocks are never shared between engines).

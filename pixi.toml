@@ -25,7 +25,7 @@ preview = ["pixi-build"]
 # engine's feature, so without `-e` pixi reports them as ambiguous and prints
 # the `--environment` form to use. Tasks only the dev env has (`test-all`,
 # `docs`) resolve to it automatically. All tasks use the task-level `env` dict
-# for PYTHONPATH (cross-platform; docs/cross-platform-guide.md Issue B).
+# for PYTHONPATH (cross-platform; docs/development/contributing.md, "Write portable pixi tasks").
 #
 # Test suites (markers declared in pyproject.toml, one per test):
 #   pixi run test                              core + topas_gen, engine-free, any env;

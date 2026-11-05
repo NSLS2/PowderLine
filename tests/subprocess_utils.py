@@ -113,7 +113,7 @@ _NUMERIC_COLS = ("value", "esd")
 # Correlated size/strain broadening (GSAS-II Size/Mustrain terms, emitted under
 # the "other" category) is ill-conditioned: it is only reproducible to ~1% across
 # builds, versus <1e-3 for every other parameter class (see
-# docs/regression-tolerance.md). It therefore gets a looser rtol.
+# docs/development/contributing.md, "Regression references and tolerance"). It therefore gets a looser rtol.
 _ILL_CONDITIONED_CATEGORIES = ("other",)
 
 

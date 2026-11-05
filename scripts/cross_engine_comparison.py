@@ -8,7 +8,7 @@ reference in ppm and in σ, the uniform fit statistics (``rwp`` / ``r_exp`` /
 parameters varied and a note on the model, and writes
 
 * ``docs/_generated/cross_engine_comparison.md`` — the tables the user page
-  ``docs/cross-engine-comparison.md`` includes (MyST ``{include}``), with a
+  ``docs/concepts/comparing-engines.md`` includes (MyST ``{include}``), with a
   "versions and date" footer;
 * ``docs/_generated/cross_engine_comparison.json`` — the same numbers, plus the
   record of every GSAS-II run (date, versions) that ``--no-run`` reuses.

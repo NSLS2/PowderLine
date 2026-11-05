@@ -1,4 +1,4 @@
-"""Print the steps for checking a candidate engine version (docs/engine-versions.md).
+"""Print the steps for checking a candidate engine version (docs/development/policies.md, "Engine-version pins").
 
 Dry: runs no pixi command, edits nothing. It reads the gateway's current
 ENGINE_VERSION_SPEC (an engine-free import) and the pin in pixi.toml, says
@@ -99,7 +99,7 @@ def main(argv: list[str] | None = None) -> int:
         f"Candidate:    {candidate}" + (f" (rev {args.rev})" if args.rev else ""),
         f"Already admitted by the spec: {'yes -- nothing to widen; still run step 2 if the pin moves' if admitted else 'no'}",
         "",
-        "Procedure (docs/engine-versions.md; nothing below is executed by this script):",
+        "Procedure (docs/development/policies.md, 'Engine-version pins'; nothing below is executed by this script):",
         "",
         f"1. Throwaway worktree:  git worktree add ../pl-candidate -b {scratch}",
     ]

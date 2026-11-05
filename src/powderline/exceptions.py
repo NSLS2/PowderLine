@@ -169,7 +169,7 @@ class WarningCode(NamedTuple):
 # The vocabulary of structured warnings (P-37): every code PowderLine emits,
 # its owner and its level. Nothing checks a code at emission; a test asserts
 # that this registry, the ``code="..."`` literals under ``src/powderline`` and
-# the "Warnings you may see" table in ``docs/engine-behavior.md`` agree, so a
+# the warning-codes table in ``docs/reference/messages.md`` agree, so a
 # new code is registered and documented or the suite fails.
 WARNING_CODES: Mapping[str, WarningCode] = MappingProxyType({
     # core (schema_core)

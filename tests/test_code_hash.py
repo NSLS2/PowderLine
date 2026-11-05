@@ -17,7 +17,7 @@ WHEN THIS TEST FAILS:
     2. Run: pixi run update-code-hash
     3. Commit _code_hash.json alongside your changes.
 
-    See docs/DEVELOPMENT.md 'Schema Version Discipline' for full details.
+    See docs/development/policies.md 'Frozen GSAS-II code' for full details.
 """
 
 import hashlib
@@ -86,5 +86,5 @@ def test_gateway_hashes_match(module_name):
         f"  Current hash: {current_hash}\n\n"
         f"Record the edit in the frozen-edits ledger (or bump engine_schema_version).\n"
         f"Then run: pixi run update-code-hash\n"
-        f"See docs/DEVELOPMENT.md 'Schema Version Discipline' for details."
+        f"See docs/development/policies.md 'Frozen GSAS-II code' for details."
     )
