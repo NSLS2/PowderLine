@@ -457,7 +457,7 @@ def set_phase_unit_cell(proj: Any, phase_name: str, unit_cell_dict: dict, print_
 
     # Note: cell values are set verbatim; validating them against the phase's
     # crystal system is intentionally NOT done here (PowderLine is the engine,
-    # not the arbiter of recipe correctness — see docs/development/known-issues.md, KI-01).
+    # not the arbiter of recipe correctness — see docs/reference/known-issues.md, KI-01).
 
     # Note2: hist not required since unit cell is phase-specific, not histogram-specific.
     # The delineation of phase and histogram parameters is confusing in GSAS-II documentation.
