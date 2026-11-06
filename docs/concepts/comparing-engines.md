@@ -83,7 +83,7 @@ GSAS-II with a known cell and Uiso. Refined by easydiffraction:
 | CrysFML, Thompson–Cox–Hastings + FCJ | 14–31 ppm low (1.7–4 ESD) | recovered to 0.8 % | 10–22 % low (8–12 ESD) |
 | CrysPy, symmetric pseudo-Voigt | +68 ppm (the asymmetry shift above) | — | 17 % low |
 
-The cause is the peak shape, not the intensities ({ref}`EB-93 <eb-93>`). The
+Most of the shortfall comes from the peak shape ({ref}`EB-93 <eb-93>`). The
 simulated peaks carry a GSAS-II Lorentzian width that neither easydiffraction
 profile can represent, and the mismatch lands in the parameter that most
 affects intensity versus angle: Uiso. Simulated with a profile easydiffraction

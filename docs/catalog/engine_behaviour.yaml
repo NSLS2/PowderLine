@@ -1363,8 +1363,8 @@
   title: On the temperature series, easydiffraction refines La's Uiso low
   engine_does: >-
     On GSAS-II-calculated LaB6 patterns, easydiffraction refines La's Uiso
-    10–22 % low. B's Uiso, the thermal expansion and GoF ≈ 1 agree. The cause
-    is the series' profile: GSAS-II clamps its Lorentzian width to
+    10–22 % low. B's Uiso, the thermal expansion and GoF ≈ 1 agree. Most of
+    it comes from the series' profile: GSAS-II clamps its Lorentzian width to
     0.001 centideg above about 10.7°, so the high-angle peaks are pure
     Gaussian. Neither a symmetric pseudo-Voigt nor TCH can represent that,
     and `Uiso` absorbs the mismatch. Simulated with a profile easydiffraction
