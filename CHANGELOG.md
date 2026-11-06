@@ -9,7 +9,7 @@ own history, on the [versions page](docs/reference/versions.md).
 
 ## [Unreleased]
 
-## [0.2.0] - 2026-11-04
+## [0.2.0] - 2026-11-05
 
 PowderLine 0.2.0 is a clean break from the unified recipe schema 0.26.0: a
 recipe names one engine and is written in that engine's own conventions, and
