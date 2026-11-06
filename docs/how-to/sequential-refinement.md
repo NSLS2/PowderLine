@@ -35,6 +35,9 @@ recipe = powderline.load_recipe_asset(Path("series/input.json"))
 for i, xrd_data in enumerate(patterns):          # your xrd_data blocks, in order
     recipe = with_block(recipe, "payload.xrd_data", xrd_data)
     result = powderline.run(recipe, Path(f"series/step_{i:03d}"))
+    if result["status"] != "ok":                 # "generated": TOPAS input written, TOPAS not run
+        print(i, "not refined:", result["status"])
+        break
     print(i, result["rwp"], result["converged"])
     if not result["output_recipe_valid"]:
         for w in result["warnings"]:
@@ -49,6 +52,10 @@ for i, xrd_data in enumerate(patterns):          # your xrd_data blocks, in orde
 - Each step writes into its own output directory.
 - The loop never looks at the engine. The same code runs a `gsasii.*`,
   `topas.*` or `easydiffraction.*` series.
+- Check `status` first. A failed run raises, but a TOPAS run without a
+  `tc.exe` returns normally with `status: "generated"`: it wrote TOPAS's
+  input and refined nothing, so its statistics are `None` and its output
+  recipe is the input. Without the check, the series would go on unrefined.
 
 ## 2. Stop on an output recipe that is not valid
 
