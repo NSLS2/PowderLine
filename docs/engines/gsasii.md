@@ -91,7 +91,7 @@ and [Fields: `gsasii.spf`](../reference/fields.md#gsasiispf).
 | Quantity | GSAS-II unit |
 |---|---|
 | `U`, `V`, `W` (Gaussian variance) | centidegree² |
-| `X`, `Y`, `Z`, `zero_shift` | centidegree |
+| `X`, `Y`, `Z` | centidegree |
 | `axial_divergence` (SH/L) | dimensionless |
 | `pv_gaussian_sigma_sq` (peak σ²) | centidegree² |
 | `pv_lorentzian_gamma` (peak γ) | centidegree |

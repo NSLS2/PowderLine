@@ -186,7 +186,7 @@ AXIAL_DIVERGENCE_MIN = 0.002
 class Corrections(CoreModel):
     """Instrument corrections: zero shift, polarization, axial divergence (GSAS-II 'SH/L')."""
 
-    zero_shift: RefinableParameter = Field(json_schema_extra=unit_schema(UNIT_CENTIDEG), description="GSAS-II 'Zero'")
+    zero_shift: RefinableParameter = Field(json_schema_extra=unit_schema(UNIT_DEG_2THETA), description="GSAS-II 'Zero'")
     polarization: RefinableParameter = Field(json_schema_extra=unit_schema(UNIT_DIMENSIONLESS),
                                              description="GSAS-II 'Polariz.'")
     axial_divergence: RefinableParameter = Field(
