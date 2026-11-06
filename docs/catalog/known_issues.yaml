@@ -1,6 +1,6 @@
-# PowderLine known-issues catalogue (public).
+# PowderLine known-issues catalog (public).
 #
-# One entry per KI-NN id: a known behaviour of PowderLine itself, what it
+# One entry per KI-NN id: a known behavior of PowderLine itself, what it
 # does today and what to do about it. scripts/gen_catalog.py renders it into
 # docs/_generated/known_issues.md (included by reference/known-issues.md)
 # and docs/_generated/ids.md; `--check` fails when a KI id used in src/ or
@@ -174,7 +174,7 @@
   title: Withdrawn
   status: withdrawn
   what_happens: >-
-    The reported behaviour was intentional, not a defect.
+    The reported behavior was intentional, not a defect.
   what_to_do: >-
     Nothing. The id is kept so it is never reused.
 

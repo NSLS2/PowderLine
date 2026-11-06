@@ -154,7 +154,7 @@ flowchart LR
 ## 5. Metadata and provenance travel with the analysis
 
 A recipe can carry a free-form `metadata` block: a sample ID, a scan ID, the
-data's location in your catalogue, how the recipe was generated. PowderLine
+data's location in your catalog, how the recipe was generated. PowderLine
 never reads it, but carries it through.
 
 Every run gets its own ID. The output recipe records which run produced it,
@@ -194,5 +194,5 @@ fourth gateway; nothing else changes. See
 
 - The PowderLine [preprint](https://doi.org/10.48550/arXiv.2608.17009)
   describes the design and its motivation.
-- [Comparing engines](comparing-engines.md) refines the same data in every
-  engine and explains why the numbers differ.
+- [Comparing engines](comparing-engines.md) refines the same model against
+  the same data in every engine and explains why the numbers differ.

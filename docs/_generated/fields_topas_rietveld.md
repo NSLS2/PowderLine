@@ -21,10 +21,10 @@
 | `payload.instrument.corrections` | engine | block |  | no | Left out: no corrections |
 | `payload.instrument.corrections.Zero_Error` | engine | block |  | no | TOPAS `ZE` / `Zero_Error`: `th2_offset`. |
 | `payload.instrument.corrections.Zero_Error.th2_offset` | engine | `[value, flag, min, max]` | `degree 2theta` | yes | Zero error |
-| `payload.instrument.corrections.LP_Factor` | engine | block |  | no | TOPAS `LP_Factor`: Lorentz-polarisation with a monochromator angle. |
+| `payload.instrument.corrections.LP_Factor` | engine | block |  | no | TOPAS `LP_Factor`: Lorentz-polarization with a monochromator angle. |
 | `payload.instrument.corrections.LP_Factor.monochromator_angle` | engine | `[value, flag, min, max]` | `degree` | yes | Monochromator 2theta: 90 synchrotron/neutron, 0 no monochromator |
-| `payload.instrument.corrections.LP_Factor_Synchrotron` | engine | block |  | no | TOPAS `LP_Factor_Synchrotron` (Madsen): in-plane polarisation and monochromator angle. |
-| `payload.instrument.corrections.LP_Factor_Synchrotron.pp` | engine | `[value, flag, min, max]` | `dimensionless` | yes | Polarisation in the plane: 0 ideal synchrotron ... 1 laboratory tube |
+| `payload.instrument.corrections.LP_Factor_Synchrotron` | engine | block |  | no | TOPAS `LP_Factor_Synchrotron` (Madsen): in-plane polarization and monochromator angle. |
+| `payload.instrument.corrections.LP_Factor_Synchrotron.pp` | engine | `[value, flag, min, max]` | `dimensionless` | yes | Polarization in the plane: 0 ideal synchrotron ... 1 laboratory tube |
 | `payload.instrument.corrections.LP_Factor_Synchrotron.mono` | engine | `[value, flag, min, max]` | `degree` | yes | Monochromator 2theta |
 | `payload.instrument.corrections.Simple_Axial_Model` | engine | block |  | no | TOPAS `Simple_Axial_Model`: one axial length; reads `Rs`. |
 | `payload.instrument.corrections.Simple_Axial_Model.axial_length_mm` | engine | `[value, flag, min, max]` | `millimetre` | yes | Axial divergence length |

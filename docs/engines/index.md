@@ -159,8 +159,8 @@ rule:
   unchanged, PowderLine runs and adds a warning to the result.
 
 The pages for [GSAS-II](gsasii.md), [TOPAS](topas.md) and
-[easydiffraction](easydiffraction.md) list each behaviour PowderLine has
-found, with what it does about it. Each behaviour has a permanent ID,
+[easydiffraction](easydiffraction.md) list each behavior PowderLine has
+found, with what it does about it. Each behavior has a permanent ID,
 `EB-NN`, that messages and the changelog cite. Every ID is listed in the
 [ID index](../reference/ids.md), and every warning code in
 [Messages](../reference/messages.md).
@@ -171,16 +171,16 @@ Each entry carries a status:
 |---|---|
 | {bdg-success}`handled` | PowderLine prevents or corrects it: a validation error, a translation, or a check that stops the run. |
 | {bdg-warning}`warned` | The run goes ahead, and the result carries a warning that names it. |
-| {bdg-secondary}`documented` | Documented only. The engine's behaviour stands, and the entry tells you what to expect. |
+| {bdg-secondary}`documented` | Documented only. The engine's behavior stands, and the entry tells you what to expect. |
 | {bdg-info}`fixed upstream` | Fixed in the engine version PowderLine pins. |
 
-The behaviours were established on GSAS-II 5.7.9, TOPAS 6 (TOPAS 7 where
+The behaviors were established on GSAS-II 5.7.9, TOPAS 6 (TOPAS 7 where
 noted) and easydiffraction 0.21.1 with CrysPy 0.13.0 and CrysFML 0.8.0. An
 entry marked *unverified* is recorded from documentation or a model, not
 from a run. How PowderLine decides a policy is in
 [Policies](../development/policies.md).
 
-## Behaviours that concern every engine
+## Behaviors that concern every engine
 
 ```{include} ../_generated/eb_all.md
 ```

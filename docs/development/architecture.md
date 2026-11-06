@@ -192,7 +192,7 @@ flowchart TD
     SV --> R
 ```
 
-| Mode | CLI | Behaviour |
+| Mode | CLI | Behavior |
 |---|---|---|
 | `auto` | default | Uses the server, starting it if needed; runs in-process if it is unavailable |
 | `server` | `--use-server` | Server only; fails if the server cannot be used |
@@ -272,7 +272,7 @@ functions that set up and run a GSAS-II refinement: `helpers.py`,
 These conventions can't be fully pinned down by tests, so the modules are
 frozen.
 
-- A behaviour-changing edit needs the maintainers' explicit consent.
+- A behavior-changing edit needs the maintainers' explicit consent.
 - Comment and docstring edits need no consent.
 - `src/powderline/_code_hash.json` holds a hash of each module's raw bytes,
   and `tests/test_code_hash.py` fails when a module changes. After **any**
@@ -280,7 +280,7 @@ frozen.
   change.
 
 The full rule is on [Policies](policies.md#frozen-gsas-ii-code). New
-behaviour goes into the modules around the frozen code:
+behavior goes into the modules around the frozen code:
 
 | Module | What it adds |
 |---|---|
@@ -298,7 +298,7 @@ GSAS-II's own defaults are never used. GSAS-II sets refine flags in lumps (one
 for the cell, one for all three coordinates of an atom). `constraints.py`
 sets the lumped flag and adds GSAS-II "Hold" constraints for the parts the
 recipe does not refine. The schema has already refused any flag pattern
-GSAS-II could not honour.
+GSAS-II could not honor.
 
 ## Output generation
 

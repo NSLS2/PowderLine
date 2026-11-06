@@ -110,7 +110,7 @@
 
 **GSAS-II does:** GSAS-II carries negative `Uiso` and `Uij` values and refines from them.
 
-**PowderLine does:** Core has no sign rule for ADPs: a negative ADP can compensate for an unmodelled effect.
+**PowderLine does:** Core has no sign rule for ADPs: a negative ADP can compensate for an unmodeled effect.
 
 (eb-20)=
 #### EB-20 · Any occupancy is accepted

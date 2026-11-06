@@ -94,7 +94,7 @@ exits 0, and the `topas_generate_only` note says how to run it. Run the
 ## Set a time limit
 
 Each `tc.exe` run is stopped after 3600 seconds by default, so a TOPAS
-waiting for input (a licence dialog, for example) cannot hang a run. Change
+waiting for input (a license dialog, for example) cannot hang a run. Change
 the limit with `--topas-timeout SECONDS`, `topas.timeout` in
 `.powderline_config.yaml`, or `topas_timeout` in Python. `0` means no limit.
 

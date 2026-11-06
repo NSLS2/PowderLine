@@ -113,7 +113,7 @@ reports LVol-IB and e0, computed by TOPAS, as derived rows
 
 ### Nothing has a default
 
-A block you leave out is not modelled. Everything PowderLine would otherwise
+A block you leave out is not modeled. Everything PowderLine would otherwise
 choose is a required field. A recipe without `background` has no background.
 
 ### Bounds
@@ -258,7 +258,7 @@ TOPAS 6 write nothing. Latin-1 names and spaces work.
 ({ref}`KI-16 <ki-16>`). TOPAS 7 needs an explicit widening, with its own
 compatibility run.
 
-## Behaviours
+## Behaviors
 
 Each entry says what TOPAS does on its own and what PowderLine does about it.
 Messages and the changelog cite these IDs.

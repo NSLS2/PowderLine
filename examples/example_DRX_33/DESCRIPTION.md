@@ -20,7 +20,7 @@ and easydiffraction recipes have committed reference output (`output/`,
 
 I am fitting a diffraction pattern collected on a disordered rocksalt battery material.
 Both the main phase of interest and a secondary phase are being fit. The main phase is a disordered rock salt (face centered cubic, space group Fm-3m, space group number 225) and the secondary phase is Li4MgWO6 (monoclinic, space group C2/m, space group number 12).
-I am refining the phase scale factors, lattice parameters, phase size broadening including the LG_eta (Lorentzian-Gaussian weighting) parameters, phase strain broadening including the Lg_eta parameters, and a Chebyshev background with 6 terms.
+I am refining the phase scale factors, lattice parameters, phase size broadening including the LG_eta (Lorentzian-Gaussian weighting) parameters, phase strain broadening including the LG_eta parameters, and a Chebyshev background with 6 terms.
 The intention is to quantify the relative phase fractions from the refined scale factors.
 
 ## Schema Features Demonstrated
@@ -30,7 +30,7 @@ This example demonstrates multi-phase refinement capabilities:
 - **Multi-phase refinement**: Two phases with different crystal systems (cubic + monoclinic)
 - **Phase-specific parameters**: Independent scale, lattice, and broadening parameters for each phase
 - **Peak broadening modeling**: Both size and strain broadening with LG_eta (Lorentzian-Gaussian mixing)
-- **Constrained atomic structure**: Atomic positions, occupancies, and ADPs fixed (structure-only refinement)
+- **Held atomic structure**: Atomic positions, occupancies, and ADPs fixed (no structural parameters refined)
 - **File-less payload**: Complete multi-phase dataset embedded in JSON
 - **Phase fraction quantification**: Refined scale factors enable phase fraction determination
 
@@ -89,7 +89,7 @@ is ill-conditioned (see the SVD warnings above): the Li4MgWO6 size ends at
 about −1356 µm (ESD ≈ 180 µm), which the schema refuses, so the output recipe is
 written and returned with that value and the warning names it. The reference is
 kept deliberately as the ill-conditioned posing; `example_DRX_33_strainonly` is the
-physical re-parameterisation (size held at 10 µm; Rwp 8.46 % against 10.83 % here)
+physical re-parameterization (size held at 10 µm; Rwp 8.46 % against 10.83 % here)
 whose output recipe is valid and feeds back.
 
 ## Refine flags (gsasii 0.1.0)

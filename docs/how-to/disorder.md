@@ -19,7 +19,7 @@ would do silently becomes either a reported value or an error.
 
 PowderLine applies every symmetry operation to the atom and measures `d`,
 the distance between the atom and that image: the largest of the three
-fractional-coordinate differences. Each image is judged on its own. On a mirror or an inversion centre, `d` is twice the atom's offset
+fractional-coordinate differences. Each image is judged on its own. On a mirror or an inversion center, `d` is twice the atom's offset
 from the site. Fractional units make `d` independent of the cell, which is
 itself refined. The distance in ångströms is roughly d × a: 2e-3 is 0.008 Å in a
 4 Å cell, 0.02 Å in a 10 Å cell and 0.04 Å in a 20 Å cell.
@@ -28,7 +28,7 @@ itself refined. The distance in ångströms is roughly d × a: 2e-3 is 0.008 Å 
 |---|---|---|---|---|
 | **Exactly on** it (`0.5`, `0.25`, `0`) | read it as special | read it as special | read it as special (only an exact value or an equation) | special position. A fixed coordinate cannot be refined: a refine flag on one is an error. |
 | **Within 5e-6** (`0.333333` for 1/3, `0.5000001` for 1/2) | read it as special (its tolerance is 2e-5 + 1e-5·\|x\|) | read it as special and **move the coordinate** to its Wyckoff value | read it as a **general** position: `k` atoms almost on top of each other | depends on the value. A third, or a value derived from another stated value, is held exact and reported as `symmetry_value_derived` (level `info`); every engine gets the exact value, TOPAS the equation `= 1/3;`. A constant with an exact decimal form is an **error**: `0.5000001` gets "write x = 0.5". |
-| **5e-6 to 2e-3** (`0.3333`, `0.33`, or an atom 0.001 off) | special up to about 2e-5, then general, with the multiplicity changing in between | special or general, depending on how the decimals rationalise | general | **error** naming the atom, the special position it is near and the fix: state the position exactly, or move the atom until no symmetry image is 5e-6 to 2e-3 away |
+| **5e-6 to 2e-3** (`0.3333`, `0.33`, or an atom 0.001 off) | special up to about 2e-5, then general, with the multiplicity changing in between | special or general, depending on how the decimals rationalize | general | **error** naming the atom, the special position it is near and the fix: state the position exactly, or move the atom until no symmetry image is 5e-6 to 2e-3 away |
 | **2e-3 or more** | general | general | general | general position, used as stated. Nothing is moved. |
 
 So every recipe PowderLine accepts is read the same way by all three
@@ -101,7 +101,7 @@ No engine moves a refined coordinate back onto a special position:
   ({ref}`EB-47 <eb-47>`).
 - TOPAS compares exactly.
 
-A disordered atom that refines towards its special position therefore stays
+A disordered atom that refines toward its special position therefore stays
 a general position with near-coincident images. If it ends with an image
 5e-6 to 2e-3 away, the run still returns its result, but the **output recipe is marked
 not valid**: `output_recipe_valid: false`, with the `output_recipe_not_valid`

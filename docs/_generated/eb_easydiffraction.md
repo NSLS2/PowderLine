@@ -178,7 +178,7 @@
 
 {bdg-success}`handled` · easydiffraction 0.21.1
 
-**easydiffraction does:** When a fit starts, easydiffraction gives an unbounded side its physical limit: cell lengths 0–30 Å, angles 0–180°, occupancy 0–1, `adp_iso` and U11/U22/U33 0–10 Å², scale, wavelength and μR ≥ 0. It refuses a value outside a physical limit at input, even when fixed, so no cell over 30 Å can be modelled. lmfit moves a start outside its bounds onto the bound without a message.
+**easydiffraction does:** When a fit starts, easydiffraction gives an unbounded side its physical limit: cell lengths 0–30 Å, angles 0–180°, occupancy 0–1, `adp_iso` and U11/U22/U33 0–10 Å², scale, wavelength and μR ≥ 0. It refuses a value outside a physical limit at input, even when fixed, so no cell over 30 Å can be modeled. lmfit moves a start outside its bounds onto the bound without a message.
 
 **PowderLine does:** A stated bound replaces the physical limit on its side, and `null` keeps it. A value outside a physical limit is a validation error. A refined value that ends within 1e-6 (relative) of a bound or physical limit gets a warning. For a limit of 0, the test is within 1e-6 of the starting value.
 
@@ -191,9 +191,9 @@
 
 {bdg-success}`handled` · easydiffraction 0.21.1 (CrysPy 0.13.0, CrysFML 0.8.0)
 
-**easydiffraction does:** Both calculators model the Kα doublet, the Lorentz-polarization factor 1 − p + p cos²2θ_m cos²2θ, the 2θ offset, sample displacement and transparency, and Hewat cylinder absorption. A second wavelength alone does nothing. 2θ_m acts only with p > 0. GSAS-II's polarization P is easydiffraction's 1 − p: copying P to p is a 6.6 % intensity error at 15° 2θ.
+**easydiffraction does:** Both calculators model the Kα doublet, the Lorentz factor and the polarization factor 1 − p + p cos²2θ_m cos²2θ, the 2θ offset, sample displacement and transparency, and Hewat cylinder absorption. A second wavelength alone does nothing. 2θ_m acts only with p > 0. GSAS-II's polarization P is easydiffraction's 1 − p: copying P to p is a 6.6 % intensity error at 15° 2θ.
 
-**PowderLine does:** Every correction is a recipe slot; left out means not modelled. The schema requires both Kα2 fields or neither. The hand-derived per-engine recipes state p = 1 − P.
+**PowderLine does:** Every correction is a recipe slot; left out means not modeled. The schema requires both Kα2 fields or neither. The hand-derived per-engine recipes state p = 1 − P.
 
 **You see:** validation error
 
@@ -228,9 +228,9 @@
 
 {bdg-secondary}`documented` · easydiffraction 0.21.1 (CrysPy 0.13.0)
 
-**easydiffraction does:** CrysPy's texture correction is not volume-normalised, so every textured-to-untextured intensity ratio carries the constant r^1.5. With `march_random_fract` = 0 the scale absorbs it, and the refined `march_r` is the same r as GSAS-II's. With f > 0 the correction is (1 − f)·r^1.5·A + f, and the refined r and f are not GSAS-II's quantities.
+**easydiffraction does:** CrysPy's texture correction is not volume-normalized, so every textured-to-untextured intensity ratio carries the constant r^1.5. With `march_random_fract` = 0 the scale absorbs it, and the refined `march_r` is the same r as GSAS-II's. With f > 0 the correction is (1 − f)·r^1.5·A + f, and the refined r and f are not GSAS-II's quantities.
 
-**PowderLine does:** Documented. A test compares normalised ratios with GSAS-II's March–Dollase correction.
+**PowderLine does:** Documented. A test compares normalized ratios with GSAS-II's March–Dollase correction.
 
 ### Data and the fit window
 

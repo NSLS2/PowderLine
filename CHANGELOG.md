@@ -95,15 +95,15 @@ limitations are listed in the [known-issues register](docs/reference/known-issue
 - Examples: per-engine recipes under `examples/<case>/{topas,easydiffraction}/`,
   `example_LaB6_temperature_series` (sequential refinement), `example_LaB6_ionic`
   and `example_LaB6_textured`, with easydiffraction references.
-- Documentation, organised by reader: Get started, Concepts, How-to guides,
+- Documentation, organized by reader: Get started, Concepts, How-to guides,
   Examples, Engines, Reference and Development, on pydata-sphinx-theme with
   diagrams and per-engine tabs ([docs](https://nsls2.github.io/PowderLine/)).
   Among its pages: [outputs](docs/reference/outputs.md),
   [fields](docs/reference/fields.md), [validation](docs/concepts/validation.md),
-  [engine behaviour](docs/engines/index.md),
+  [engine behavior](docs/engines/index.md),
   [cross-engine comparison](docs/concepts/comparing-engines.md) and
   [policies](docs/development/policies.md).
-- Every engine behaviour (`EB-NN`) and known issue (`KI-NN`) has its own
+- Every engine behavior (`EB-NN`) and known issue (`KI-NN`) has its own
   entry and link, listed in the [ID index](docs/reference/ids.md). Known
   issues KI-19 to KI-21 cover the GSAS-II server's lifetime, its state
   directory and a race in `gsas-server stop`
@@ -283,7 +283,7 @@ The pre-refactor baseline; unified recipe schema 0.26.0.
 
 ### Fixed
 - GSAS-II's refinement failure message is surfaced instead of a silent
-  no-Rwp result; `run()` normalisation no longer crashes on null tables from
+  no-Rwp result; `run()` normalization no longer crashes on null tables from
   server failure responses (#3).
 
 ## [0.1.0] - 2026-08-17

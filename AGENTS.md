@@ -5,7 +5,7 @@ contributors). Tool-specific files (`CLAUDE.md`) only point here. This file
 links the page that owns each topic instead of restating it.
 
 PowderLine runs powder diffraction refinements from a **recipe** (structured
-data: a dict, serialised as JSON). A recipe names one engine and one workflow
+data: a dict, serialized as JSON). A recipe names one engine and one workflow
 in `schema_name` (`gsasii.rietveld`, `gsasii.spf`, `topas.rietveld`,
 `topas.spf`, `easydiffraction.rietveld`) and is written in that engine's own
 terms and units. `powderline.run()` and the `powderline` CLI hand it to the
@@ -20,7 +20,7 @@ statistics. Nothing is translated between engines.
 - `docs/engines/*.md` + `docs/catalog/engine_behaviour.yaml` — what each
   engine does and PowderLine's policy (`EB-NN`).
 - `docs/reference/known-issues.md` + `docs/catalog/known_issues.yaml` —
-  known, deliberately deferred behaviours (`KI-NN`). Check before "fixing" a
+  known, deliberately deferred behaviors (`KI-NN`). Check before "fixing" a
   quirk.
 - The code under `src/` and `pixi.toml`: where a page and the code disagree,
   the code wins; report the discrepancy.
@@ -94,12 +94,12 @@ Detail: `docs/development/contributing.md`.
 `src/powderline/gateways/gsasii/{helpers,project,setters,executors,extractors,constraints}.py`
 do GSAS-II's project-dictionary work. Rules (`docs/development/policies.md#frozen-gsas-ii-code`):
 
-- A behaviour-changing edit needs the maintainers' explicit consent. An agent
+- A behavior-changing edit needs the maintainers' explicit consent. An agent
   never makes one on its own: propose it, with its reason and proof.
 - Comment and docstring edits need no consent. Don't leave outdated comments.
 - After **any** edit, `pixi run update-code-hash` (the hash covers raw bytes;
   `tests/test_code_hash.py` guards it).
-- New behaviour goes into the non-frozen modules (`fit_report`, `sites`,
+- New behavior goes into the non-frozen modules (`fit_report`, `sites`,
   `routing`, `paths`, `gateway`).
 - Replace the GSAS-II server after any edit it runs (a stale server is
   detected: skipped in `auto` mode, refused in `server` mode):
@@ -139,7 +139,7 @@ do GSAS-II's project-dictionary work. Rules (`docs/development/policies.md#froze
   `docs/concepts/results.md`.
 - Every failure raises `EngineExecutionError` or `ExecutionBackendError`; a
   gateway never returns a failed result — `docs/development/adding-an-engine.md`.
-- Every intentional behaviour change is deliberate; references move only with
+- Every intentional behavior change is deliberate; references move only with
   an equivalence check — `docs/development/policies.md`.
 - Docs follow the writing rules in
   `docs/development/contributing.md#writing-documentation`.

@@ -4,8 +4,8 @@
 
 A heated powder standard measured at successive temperatures is the simplest
 sequential refinement: the structure does not change, the lattice expands and
-the atoms vibrate more, and each pattern is best refined starting from the
-previous one. This example runs that workflow end to end with PowderLine's
+the atoms vibrate more, and each step's refinement is best started from the
+previous step's result. This example runs that workflow end to end with PowderLine's
 **output recipe** (KI-04): each step's result is a complete recipe with the
 refined values written back, and the next step is that recipe with only the
 `xrd_data` block swapped (`powderline.recipes.with_block`). Nothing is copied

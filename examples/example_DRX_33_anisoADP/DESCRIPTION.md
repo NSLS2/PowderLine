@@ -17,7 +17,7 @@ This example demonstrates **anisotropic atomic displacement parameter refinement
 Anisotropic ADPs are critical for:
 - **High-resolution structural analysis** - capturing directional thermal motion
 - **Materials with anisotropic bonding** - different thermal motion along different crystal axes
-- **Low-temperature refinements** - where anisotropic effects become significant
+- **High-temperature refinements** - where thermal motion is large and often anisotropic
 - **Publication-quality structures** - anisotropic ADPs are standard for single-crystal refinements
 
 The refinement uses the same disordered rocksalt battery material (DRX_33 + Li4MgWO6_SG12); the **O1 atom of the Li4MgWO6_SG12 phase** (general position 8j of C 1 2/m 1) is refined with anisotropic ADPs while every other atom stays isotropic and fixed.
@@ -31,7 +31,7 @@ The refinement uses the same disordered rocksalt battery material (DRX_33 + Li4M
 
 **Li4MgWO6_SG12 Phase (monoclinic):**
 - **Anisotropic displacement (O1 atom only)**:
-  - U11, U22, U33 (diagonal elements) - thermal motion along a, b, c axes
+  - U11, U22, U33 (diagonal elements) - thermal motion along the reciprocal axes a*, b*, c*
   - U12, U13, U23 (off-diagonal elements) - thermal motion correlations between axes
   - All 6 components have `refine_flag=true` (O1 sits on the general position, so
     all six are independent; on a special position the schema would require the
@@ -44,7 +44,7 @@ The refinement uses the same disordered rocksalt battery material (DRX_33 + Li4M
 **DRX_33 Phase (cubic):**
 - All atomic parameters locked (isotropic Uiso, no atom refinement)
 
-### Parameters Constrained:
+### Parameters Held:
 - **All atomic coordinates**: Locked in both phases
 - **All occupancies**: Locked in both phases
 - **Displacement parameters**: All locked except the Li4MgWO6_SG12 O1 atom's Uaniso
@@ -150,7 +150,7 @@ anisotropic displacement with every component refined; Li1 stays isotropic and f
 
 ### Thermal Ellipsoid:
 The refined Uij values define a thermal ellipsoid representing the atom's vibrational motion:
-- **Diagonal terms (U11, U22, U33)**: Motion along crystallographic axes a, b, c
+- **Diagonal terms (U11, U22, U33)**: Motion along the reciprocal axes a*, b*, c*
 - **Off-diagonal terms (U12, U13, U23)**: Correlations between axes
 
 For a general-position oxygen in the monoclinic Li4MgWO6_SG12 phase (C 1 2/m 1) all six
@@ -222,7 +222,7 @@ If anisotropic refinement fails to converge or produces unphysical Uij values:
 - High-resolution data available (d-spacing resolution < 1 Å)
 - Publication-quality structure refinement needed
 - Anisotropic bonding expected (layered materials, molecular crystals)
-- Low-temperature data (thermal effects dominate)
+- High-temperature data (large, often anisotropic thermal motion)
 
 **Use isotropic ADPs when:**
 - Routine refinements (phase identification, quantification)

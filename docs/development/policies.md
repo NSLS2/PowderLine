@@ -1,7 +1,7 @@
 # Policies
 
 These rules bind every change to PowderLine: how versions are numbered, how
-behaviour changes on purpose, which code is frozen, how engine versions move,
+behavior changes on purpose, which code is frozen, how engine versions move,
 and how changes are reviewed. They also tell users what a version number
 promises.
 
@@ -34,9 +34,9 @@ promises.
 The current declarations and the schema history are on
 [Versions](../reference/versions.md).
 
-## Deliberate behaviour changes
+## Deliberate behavior changes
 
-Refinement results are regression references, so a change in behaviour is
+Refinement results are regression references, so a change in behavior is
 never incidental.
 
 - **Every intentional change is deliberate.** A default, a validation rule,
@@ -63,12 +63,12 @@ refinement by manipulating GSAS-II's project dictionary:
 GSAS-II's project-dictionary conventions can't be fully pinned down by tests.
 So these functions change only with the maintainers' explicit consent.
 
-- **Behaviour-changing edits** need the maintainers' explicit consent before
+- **Behavior-changing edits** need the maintainers' explicit consent before
   they are made. Propose the edit with its reason and its proof (for example,
   a diff of the project dictionary before and after).
-- **Comment and docstring edits** need no consent: they change no behaviour.
+- **Comment and docstring edits** need no consent: they change no behavior.
   Don't leave an outdated comment in place.
-- **New behaviour** goes into the non-frozen modules around them
+- **New behavior** goes into the non-frozen modules around them
   (`fit_report.py`, `sites.py`, `routing.py`, `paths.py`, `gateway.py`).
 - **After any edit**, run `pixi run update-code-hash` and commit
   `src/powderline/_code_hash.json` with the change. The hash covers the raw
@@ -135,9 +135,9 @@ pixi run python scripts/check_engine_version_candidate.py --engine topas --versi
 4. **On a pass**, open one pull request that moves the pin and the specifier
    together and updates every page that names the engine version. The
    references are not regenerated.
-5. **On a fail**, record the behaviour change in the same report. Decide
+5. **On a fail**, record the behavior change in the same report. Decide
    between a schema bump (with a re-baseline, see
-   [Deliberate behaviour changes](#deliberate-behaviour-changes)) and staying
+   [Deliberate behavior changes](#deliberate-behavior-changes)) and staying
    pinned. The pin stays where it is until that decision is made.
 
 Per engine:
@@ -153,13 +153,13 @@ Per engine:
   `space_group_support.py`. `tests/test_easydiffraction_space_groups.py`
   skips until `space_group_table.py` is regenerated for the installed version
   (`scripts/generate_easydiffraction_space_groups.py`). Re-check the
-  behaviours on the [easydiffraction page](../engines/easydiffraction.md): an
+  behaviors on the [easydiffraction page](../engines/easydiffraction.md): an
   upstream fix may retire a workaround.
 - **TOPAS.** The goldens live under
   `tests/data/topas/native/golden/<version>/`, chosen by each fixture's
   `engine_version`. Adding TOPAS 7 needs a TOPAS 7 installation for the
   `topas_exec` run, its own goldens, and a check of TOPAS 7's convergence. It
-  also needs every behaviour on the [TOPAS page](../engines/topas.md) marked
+  also needs every behavior on the [TOPAS page](../engines/topas.md) marked
   unverified for TOPAS 7 to be checked on TOPAS 7. The
   generation suite (`topas_gen`) runs anywhere and compares INPs byte for byte
   with the TOPAS 6 goldens, so a change in what is written shows without
@@ -181,7 +181,7 @@ Per engine:
 If a design decision is not written down (on this page, on
 [Versions](../reference/versions.md) or on an [engine page](../engines/index.md)),
 stop and ask the maintainers. Don't infer the answer from the code's current
-behaviour or from what another engine does. Write the answer down where the
+behavior or from what another engine does. Write the answer down where the
 next contributor will find it.
 
 The reason is the project's whole stance. An engine's silent default is not a

@@ -3,8 +3,8 @@
 **Goal:** measure your instrument's contribution to the pattern once, on a
 standard, and reuse it for every sample measured the same way. That
 contribution is its peak shape and whichever corrections apply to your
-geometry. Holding the instrument fixed means the sample refinement fits only
-the sample: its peak broadening, cell and structure.
+geometry. Holding the instrument fixed means the sample refinement refines only
+the sample's parameters: its peak broadening, cell and structure.
 
 **You need:**
 - A pattern of a standard (LaB6, Si, CeO2) measured at the **same wavelength
@@ -108,7 +108,7 @@ the standard's refinement before you copy anything.
 ## 3. Hold the instrument
 
 Set every refine flag in the copied block to `false`. The sample refinement
-should fit the sample, not re-fit the instrument.
+should refine only the sample's parameters, not the instrument's.
 
 Change only the flags. For each parameter, the value stays and the flag
 becomes `false`:
@@ -245,5 +245,5 @@ Run it in the engine's environment, for example
 `pixi run -e gsasii python calibrate.py`.
 
 **Next:** [Refine a structure](refine-structure.md), or
-[Run a series](sequential-refinement.md) to refine many patterns from one
-sample recipe.
+[Run a series](sequential-refinement.md) to refine one sample's model against
+many patterns.

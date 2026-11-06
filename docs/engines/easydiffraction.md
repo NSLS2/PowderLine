@@ -109,7 +109,7 @@ error at 15° 2θ ({ref}`EB-75 <eb-75>`).
 ### Nothing has a default
 
 Every control is stated, and an instrument slot you leave out is not
-modelled. A recipe without `background` has no background. A recipe with no
+modeled. A recipe without `background` has no background. A recipe with no
 refine flag set is a simulation: lmfit is not run.
 
 ### Bounds
@@ -120,7 +120,7 @@ physical limit on that side, and `null` keeps it ({ref}`EB-71 <eb-71>`).
 - The physical limits: cell lengths 0–30 Å, angles 0–180°, occupancy 0–1,
   `Uiso` and U11, U22, U33 0–10 Å², and scale, wavelength and μR ≥ 0.
 - A value outside a physical limit is a validation error, even when it is
-  fixed. So no cell over 30 Å can be modelled.
+  fixed. So no cell over 30 Å can be modeled.
 - A refined value that ends within 1e-6 (relative) of a bound or a physical
   limit gets `easydiffraction_parameter_at_limit`. For a limit of 0, the test
   is within 1e-6 of the starting value.
@@ -130,7 +130,7 @@ Bounds in every engine: [Recipe format](../reference/recipe-format.md#bounds).
 ## The instrument block
 
 Each correction easydiffraction models for constant-wavelength X-ray powder
-data is a slot. A slot you leave out is not modelled.
+data is a slot. A slot you leave out is not modeled.
 
 | Block | Fields |
 |---|---|
@@ -222,7 +222,7 @@ easydiffraction runs in the same process as PowderLine.
 - **Offline,** importing easydiffraction prints a warning about a PyPI
   version check and continues ({ref}`EB-82 <eb-82>`).
 
-## Behaviours
+## Behaviors
 
 Each entry says what easydiffraction does on its own and what PowderLine
 does about it. Messages and the changelog cite these IDs.

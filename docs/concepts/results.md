@@ -99,7 +99,7 @@ A column `at_limit` marks values that ended on a bound.
 ## Provenance
 
 A recipe's `metadata` block is yours: sample IDs, scan IDs, where the data
-live in your catalogue, how the recipe was made. PowderLine never reads it and
+live in your catalog, how the recipe was made. PowderLine never reads it and
 carries it through to the output recipe.
 
 PowderLine adds one entry of its own, `metadata.powderline_provenance`, to

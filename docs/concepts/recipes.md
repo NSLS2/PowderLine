@@ -12,7 +12,7 @@ it is a `dict`. When it is stored or sent it is JSON.
 That makes a recipe easy to produce and to move:
 
 - a script or notebook can build one from your reduced data and a CIF;
-- a database or catalogue can store one next to the measurement it analyses;
+- a database or catalog can store one next to the measurement it analyzes;
 - a pipeline can fill one from a live data stream and pass it on;
 - a GUI or an LLM assistant can write one, and validation tells it what to fix.
 
@@ -135,7 +135,7 @@ build recipes for you and has no CIF reader. That is deliberate:
   special position. Guessing silently is exactly what validation refuses.
 
 So the tool that knows where your data came from does the conversion, and
-PowderLine checks the result. [Refine your own data](../getting-started/your-own-data.md)
+PowderLine checks the result. [Analyze your own data](../getting-started/your-own-data.md)
 shows the steps. The `examples/` folder has complete recipes for every
 engine, and `examples/example_template/` has blank skeletons.
 

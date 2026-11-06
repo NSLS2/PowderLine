@@ -291,7 +291,7 @@ def render_ids(eb: list[dict], ki: list[dict]) -> str:
     def cell(text: str) -> str:
         return " ".join(text.split()).replace("|", "\\|")
 
-    lines = [HEADER, "", "## Engine behaviours", "", "| ID | Engine | Title | Status |", "|---|---|---|---|"]
+    lines = [HEADER, "", "## Engine behaviors", "", "| ID | Engine | Title | Status |", "|---|---|---|---|"]
     for e in sorted(eb, key=lambda e: _id_key(e["id"])):
         lines.append(f"| {ref(e['id'])} | {ENGINES[e['engine']]} | {cell(e['title'])} | "
                      f"{EB_STATUSES[e['status']][1]} |")

@@ -267,7 +267,7 @@ class Polarization(CoreModel):
 
 
 class Corrections(CoreModel):
-    """Peak-position corrections (degrees 2theta). Displacement and transparency left out: not modelled."""
+    """Peak-position corrections (degrees 2theta). Displacement and transparency left out: not modeled."""
 
     calib_twotheta_offset: P = Field(json_schema_extra=unit_schema(UNIT_DEG_2THETA), description="Zero offset")
     calib_sample_displacement: Optional[P] = Field(

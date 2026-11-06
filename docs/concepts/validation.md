@@ -98,7 +98,7 @@ but by symmetry b = a; write b = 4.15682
 An atom is either **on** a special position or clearly **off** it.
 PowderLine applies every symmetry operation to the atom and measures `d`,
 the distance between the atom and that image: the largest of the three
-fractional-coordinate differences. On a mirror or an inversion centre, `d` is
+fractional-coordinate differences. On a mirror or an inversion center, `d` is
 twice the atom's offset from the site. Each image is judged on its own:
 
 | `d` of an image (fractional) | PowderLine reads it as |
@@ -164,7 +164,7 @@ stated:
   recipes refuse it, because easydiffraction limits displacement parameters
   to physical values.
 
-## Validation is not judgement
+## Validation is not judgment
 
 Passing validation means the recipe is **well formed and consistent with its
 symmetry**. It doesn't mean it is the model you intended, or that your data

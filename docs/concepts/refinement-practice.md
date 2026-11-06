@@ -24,8 +24,8 @@ starting point, not a substitute for the references at the end.
   the noise level; Rwp well above it means a misfit the model does not
   explain. Rwp well below it (GoF < 1) usually means the weights overstate
   the noise. A pattern dominated by background can give a low Rwp with a wrong structural
-  model, and counting longer can *raise* χ² while improving the model
-  ([Toby 2006](#ref-toby2006)).
+  model, and counting longer can *raise* χ² for the same model, because the
+  smaller noise exposes its systematic errors ([Toby 2006](#ref-toby2006)).
 - **Compare models on the same points.** PowderLine's uniform Rwp, Rexp and
   GoF use the same points for every engine, so two models of the same data
   can be compared directly. Comparing Rwp across *different* datasets says
@@ -55,7 +55,7 @@ large, correlated uncertainties and values that can drift to unphysical ones.
 |---|---|---|
 | Crystallite size and microstrain | Both broaden peaks. They differ only in how the broadening changes with angle: size as 1/cos θ, strain as tan θ. | A wide angular range with well-resolved peaks. Otherwise refine one and hold the other. In the IUCr size–strain round robin, many Rietveld refinements wrongly attributed size broadening to strain ([Balzar et al. 2004](#ref-balzar2004)). |
 | Occupancy and displacement parameter of a site | Both scale how strongly the site scatters. | Refine one at a time, or fix one from chemistry. Releasing both for oxygen limited accuracy with X-ray data in the IUCr round robin ([Hill 1992](#ref-hill1992)). |
-| Scale, background and displacement parameters | All change overall intensity with angle. | A sensible number of background terms; check the correlation after the fit. |
+| Scale, background and displacement parameters | All change the overall intensity or its fall-off with angle. | A sensible number of background terms; check the correlation after the fit. |
 | Light atoms with X-rays (Li, B, H) | They scatter weakly next to heavy atoms. | Expect large uncertainties; consider holding their parameters. |
 
 ## Check the result is physical
@@ -65,7 +65,7 @@ large, correlated uncertainties and values that can drift to unphysical ones.
   chemically reasonable ([McCusker et al. 1999](#ref-mccusker1999)).
 - Least-squares uncertainties from a Rietveld refinement usually
   **underestimate** the true uncertainty ([McCusker et al. 1999](#ref-mccusker1999)).
-- The same data analysed by different people can give different answers, and
+- The same data analyzed by different people can give different answers, and
   the refinement strategy is a large part of why
   ([Hill 1992](#ref-hill1992); [Madsen et al. 2001](#ref-madsen2001)).
   Recording the strategy matters. A chain of recipes records it exactly.

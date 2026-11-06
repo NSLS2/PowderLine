@@ -288,17 +288,17 @@ class ZeroError(CoreModel):
 
 
 class LPFactor(CoreModel):
-    """TOPAS ``LP_Factor``: Lorentz-polarisation with a monochromator angle."""
+    """TOPAS ``LP_Factor``: Lorentz-polarization with a monochromator angle."""
 
     monochromator_angle: P = Field(json_schema_extra=unit_schema(UNIT_DEGREE),
                                    description="Monochromator 2theta: 90 synchrotron/neutron, 0 no monochromator")
 
 
 class LPFactorSynchrotron(CoreModel):
-    """TOPAS ``LP_Factor_Synchrotron`` (Madsen): in-plane polarisation and monochromator angle."""
+    """TOPAS ``LP_Factor_Synchrotron`` (Madsen): in-plane polarization and monochromator angle."""
 
     pp: P = Field(json_schema_extra=unit_schema(UNIT_DIMENSIONLESS),
-                  description="Polarisation in the plane: 0 ideal synchrotron ... 1 laboratory tube")
+                  description="Polarization in the plane: 0 ideal synchrotron ... 1 laboratory tube")
     mono: P = Field(json_schema_extra=unit_schema(UNIT_DEGREE), description="Monochromator 2theta")
 
     @model_validator(mode="after")

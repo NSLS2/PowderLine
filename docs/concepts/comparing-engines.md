@@ -1,7 +1,7 @@
 # Comparing engines
 
-What happens when the same data are refined by different engines? This page
-shows two reference cases, refined by every engine PowderLine drives and by
+What happens when models of the same data are refined in different engines?
+This page shows two reference cases, refined in every engine PowderLine drives and by
 each profile model the engines offer, and explains why the numbers differ.
 It does not rank the engines.
 
@@ -26,7 +26,7 @@ model, and sometimes an unphysical one.
 - **Source.** `run` means the engine was run for this page. `golden` means
   the row is rebuilt from a stored reference run: the engine's committed
   output files, named after the recipe that produced them. The TOPAS rows
-  are always stored runs, produced on a computer with a TOPAS licence.
+  are always stored runs, produced on a computer with a TOPAS license.
 - **The LaB6 cell is refined** in every row here, unlike `example_LaB6`,
   which holds it at the certified value. That is why the GSAS-II LaB6 row
   differs from that example.

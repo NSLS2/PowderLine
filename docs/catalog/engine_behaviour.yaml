@@ -1,4 +1,4 @@
-# PowderLine engine-behaviour catalogue (public).
+# PowderLine engine-behavior catalog (public).
 #
 # One entry per EB-NN id: what an engine does on its own, and what PowderLine
 # does about it. scripts/gen_catalog.py renders it into docs/_generated/
@@ -45,7 +45,7 @@
 #                   stops the run. A recipe cannot meet it silently.
 #   warned          The run goes ahead and the result carries a warning (or a
 #                   field) that names it.
-#   documented      Documented only: the engine's behaviour stands, and the
+#   documented      Documented only: the engine's behavior stands, and the
 #                   entry tells you what to expect.
 #   fixed-upstream  Fixed in the engine version PowderLine pins; the entry
 #                   stays for its id.
@@ -471,7 +471,7 @@
     GSAS-II carries negative `Uiso` and `Uij` values and refines from them.
   powderline_does: >-
     Core has no sign rule for ADPs: a negative ADP can compensate for an
-    unmodelled effect.
+    unmodeled effect.
   you_see: []
   status: documented
 
@@ -725,7 +725,7 @@
   topic: bounds
   title: The limit markers TOPAS writes are unreliable
   engine_does: >-
-    The `_LIMIT_MIN` and `_LIMIT_MAX` markers TOPAS 6 writes are mislabelled
+    The `_LIMIT_MIN` and `_LIMIT_MAX` markers TOPAS 6 writes are mislabeled
     or spurious.
   powderline_does: >-
     The at-limit warning is judged from the final values and the limits the
@@ -743,7 +743,7 @@
     limit: cell lengths 0–30 Å, angles 0–180°, occupancy 0–1, `adp_iso` and
     U11/U22/U33 0–10 Å², scale, wavelength and μR ≥ 0. It refuses a value
     outside a physical limit at input, even when fixed, so no cell over 30 Å
-    can be modelled. lmfit moves a start outside its bounds onto the bound
+    can be modeled. lmfit moves a start outside its bounds onto the bound
     without a message.
   powderline_does: >-
     A stated bound replaces the physical limit on its side, and `null` keeps
@@ -857,7 +857,7 @@
     from X = 0. X = −0.1 makes the width negative at the top of the window,
     and TOPAS writes no results: a negative convolution FWHM stops TOPAS.
   powderline_does: >-
-    PowderLine honours what TOPAS computes: a negative Lorentzian part passes
+    PowderLine honors what TOPAS computes: a negative Lorentzian part passes
     while the total width is positive. With `TCHZ_Peak_Type`, the total width
     at the recipe's starting values must be positive at every data point of
     the fit window. Otherwise validation fails and names X, Y and the 2θ where
@@ -915,14 +915,14 @@
   topic: profile
   title: The X-ray corrections easydiffraction models, and its polarization
   engine_does: >-
-    Both calculators model the Kα doublet, the Lorentz-polarization factor
-    1 − p + p cos²2θ_m cos²2θ, the 2θ offset, sample displacement and
+    Both calculators model the Kα doublet, the Lorentz factor and the
+    polarization factor 1 − p + p cos²2θ_m cos²2θ, the 2θ offset, sample displacement and
     transparency, and Hewat cylinder absorption. A second wavelength alone
     does nothing. 2θ_m acts only with p > 0. GSAS-II's polarization P is
     easydiffraction's 1 − p: copying P to p is a 6.6 % intensity error at
     15° 2θ.
   powderline_does: >-
-    Every correction is a recipe slot; left out means not modelled. The
+    Every correction is a recipe slot; left out means not modeled. The
     schema requires both Kα2 fields or neither. The hand-derived per-engine
     recipes state p = 1 − P.
   you_see: [validation error]
@@ -972,14 +972,14 @@
   topic: preferred-orientation
   title: CrysPy's March correction is Dollase's times r^1.5
   engine_does: >-
-    CrysPy's texture correction is not volume-normalised, so every
+    CrysPy's texture correction is not volume-normalized, so every
     textured-to-untextured intensity ratio carries the constant r^1.5. With
     `march_random_fract` = 0 the scale absorbs it, and the refined `march_r`
     is the same r as GSAS-II's. With f > 0 the correction is
     (1 − f)·r^1.5·A + f, and the refined r and f are not GSAS-II's
     quantities.
   powderline_does: >-
-    Documented. A test compares normalised ratios with GSAS-II's
+    Documented. A test compares normalized ratios with GSAS-II's
     March–Dollase correction.
   you_see: []
   status: documented
@@ -1286,7 +1286,7 @@
   title: A symmetric profile shifts the refined cell
   engine_does: >-
     Lattice parameters agree between GSAS-II and easydiffraction when axial
-    asymmetry is modelled physically (FCJ). With a symmetric profile they
+    asymmetry is modeled physically (FCJ). With a symmetric profile they
     shift by +67 to +91 ppm, whichever calculator runs it.
   powderline_does: >-
     Documented on the cross-engine comparison. Rwp compares models fitted to
