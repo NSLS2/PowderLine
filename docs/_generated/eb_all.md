@@ -7,13 +7,11 @@
 
 {bdg-warning}`warned` · GSAS-II 5.7.9; easydiffraction 0.21.1; TOPAS 6 unverified
 
-**What happens:** GSAS-II has no positive-definiteness check. easydiffraction computes a finite pattern for such a tensor, and for a negative ADP. TOPAS is unverified.
+**What happens:** GSAS-II has no positive-definiteness check. easydiffraction computes a finite pattern for such a tensor, with no message. TOPAS is unverified.
 
 **PowderLine does:** Core uses the tensor as stated and warns when it has a principal value ≤ 0.
 
 **You see:** `uaniso_not_positive_definite`
-
-**Note:** The public account cites {ref}`EB-46 <eb-46>` and EB-50 together for easydiffraction's finite pattern.
 
 ### Scattering types
 
@@ -38,8 +36,6 @@
 **PowderLine does:** You write every ion in the CIF spelling, in `scattering_types`. Each gateway writes its engine's spelling. `Fe+3` in a recipe is an error that names `Fe3+`.
 
 **You see:** validation error
-
-**Note:** The public account cites {ref}`EB-13 <eb-13>` and EB-25 together for ion notation; this entry holds the spelling difference between engines.
 
 ### Statistics
 

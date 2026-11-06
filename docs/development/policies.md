@@ -167,8 +167,10 @@ Per engine:
 
 ## Review
 
-- A human is responsible for every change and reviews every line. The full
-  test matrix (Linux and Windows, every pixi environment) runs before merge.
+- A human is responsible for every change and reviews every line. CI runs
+  the engine-free, GSAS-II and easydiffraction suites on Linux and Windows
+  before merge. `test-all`, and `test-topas` for a TOPAS change, are run by
+  hand.
 - A change that moves a reference, a default, a pin or a frozen module is
   reviewed against its written reason, not against its diff alone.
 - AI-assisted commits end with one `Assisted-by: <agent>:<model>` trailer per

@@ -19,15 +19,16 @@ would do silently becomes either a reported value or an error.
 
 The distance from the special position is measured as `d`: the largest
 fractional-coordinate distance between the atom and one of its own symmetry
-images. Fractional units make `d` independent of the cell, which is itself
-refined. The distance in ångströms is roughly d × a: 2e-3 is 0.008 Å in a
+images. On a mirror or an inversion centre, `d` is twice the atom's offset
+from the site. Fractional units make `d` independent of the cell, which is
+itself refined. The distance in ångströms is roughly d × a: 2e-3 is 0.008 Å in a
 4 Å cell, 0.02 Å in a 10 Å cell and 0.04 Å in a 20 Å cell.
 
 | Stated position | GSAS-II 5.7.9 would… | easydiffraction / CrysPy would… | TOPAS 6 would… | PowderLine does |
 |---|---|---|---|---|
 | **Exactly on** it (`0.5`, `0.25`, `0`) | read it as special | read it as special | read it as special (only an exact value or an equation) | special position. A fixed coordinate cannot be refined: a refine flag on one is an error. |
 | **Within 5e-6** (`0.333333` for 1/3, `0.5000001` for 1/2) | read it as special (its tolerance is 2e-5 + 1e-5·\|x\|) | read it as special and **move the coordinate** to its Wyckoff value | read it as a **general** position: `k` atoms almost on top of each other | depends on the value. A third, or a value derived from another stated value, is held exact and reported as `symmetry_value_derived` (level `info`); every engine gets the exact value, TOPAS the equation `= 1/3;`. A constant with an exact decimal form is an **error**: `0.5000001` gets "write x = 0.5". |
-| **5e-6 to 2e-3** (`0.3333`, `0.33`, or an atom 0.001 off) | special up to about 2e-5, then general, with the multiplicity changing in between | special or general, depending on how the decimals rationalise | general | **error** naming the atom, the special position it is near and the fix: state the position exactly, or move the atom at least 2e-3 off it |
+| **5e-6 to 2e-3** (`0.3333`, `0.33`, or an atom 0.001 off) | special up to about 2e-5, then general, with the multiplicity changing in between | special or general, depending on how the decimals rationalise | general | **error** naming the atom, the special position it is near and the fix: state the position exactly, or move the atom until `d` is at least 2e-3 |
 | **2e-3 or more** | general | general | general | general position, used as stated. Nothing is moved. |
 
 So every recipe PowderLine accepts is read the same way by all three
@@ -88,7 +89,7 @@ If the atom is too close, validation refuses it and says how far it is.
 With Li at `x = 0.0005`:
 
 ```
-• payload -> phases -> DRX_33 -> atoms -> Li: Value error, position (0.0005, 0, 0) is 0.001 from the special position (0, 0, 0) (multiplicity 4) in 'F m -3 m' without being on it: state the special-position coordinates to at least 6 decimals, or move the atom at least 0.002 (fractional) off it
+• payload -> phases -> DRX_33 -> atoms -> Li: Value error, position (0.0005, 0, 0) is near the special position (0, 0, 0) (multiplicity 4) in 'F m -3 m' without being on it: a symmetry image of the atom is 0.001 (fractional) away from it. State the special-position coordinates to at least 6 decimals, or move the atom until its symmetry images are at least 0.002 away
 ```
 
 ## During a refinement

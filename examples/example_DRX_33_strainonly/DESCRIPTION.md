@@ -106,9 +106,13 @@ Same standardized outputs as `example_DRX_33`:
 
 ## Reproduce
 
+```bash
+pixi run -e gsasii powderline examples/example_DRX_33_strainonly/input.json --no-server --output my_strainonly
 ```
-pixi run -e gsasii powderline examples/example_DRX_33_strainonly/input.json --no-server --output examples/example_DRX_33_strainonly/output
-```
+
+Your results are then in `my_strainonly/`. Writing into
+`examples/example_DRX_33_strainonly/output` regenerates the committed
+reference; do that only as a deliberate, reviewed change.
 
 ## Known Issues
 

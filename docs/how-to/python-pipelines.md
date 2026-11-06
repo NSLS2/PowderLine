@@ -163,8 +163,9 @@ except powderline.ExecutionBackendError as e:
   [Messages](../reference/messages.md#failure-reasons) lists every reason
   and what it means.
 - `.result` is the full failure record. `.result["failure"]` holds the
-  `kind`, `reason`, `message` and `traceback`. For GSAS-II it also holds
-  `console_tail`, the last of what GSAS-II printed.
+  `kind`, `reason`, `message`, `traceback` and `engine_details`. For GSAS-II
+  and TOPAS it also holds `console_tail`, the last of what the engine
+  printed.
 - The same record is written to `failure.json` in the output directory,
   next to whatever the engine wrote. No result table is written for a
   failed run.

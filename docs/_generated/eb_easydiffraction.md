@@ -18,24 +18,22 @@
 
 {bdg-success}`handled` · easydiffraction 0.21.1 (CrysPy 0.13.0, CrysFML 0.8.0)
 
-**easydiffraction does:** CrysFML is handed the short symbol alone. It misreads almost every non-default setting: unique axis, cell choice, `:R` and some origin-1 groups. CrysPy computes `P 31` with the operators of `P 32`.
+**easydiffraction does:** CrysFML is handed the short symbol alone. It misreads almost every non-default setting: unique axis, cell choice, `:R` and some origin-1 groups. CrysPy computes 41 settings as another setting: most c- and a-unique monoclinic settings, the `:R` settings, some origin-1 settings, and `P 31`, which it computes with the operators of `P 32`.
 
 **PowderLine does:** Validation accepts, per calculator, only the settings whose computation passed for a general position and for every special site: 428 of the 531 for CrysPy, 230 for CrysFML. The error names a setting of the same group that the calculator computes, or the other calculator.
 
 **You see:** validation error
 
 (eb-84)=
-#### EB-84 · CrysPy misreads 41 settings and crashes on 53
+#### EB-84 · CrysPy crashes on 53 settings
 
 {bdg-success}`handled` · easydiffraction 0.21.1 (CrysPy 0.13.0)
 
-**easydiffraction does:** CrysPy computes 41 settings as another setting, and crashes on 53.
+**easydiffraction does:** CrysPy crashes on 53 settings: 51 cell-choice settings such as `A 1 2 1` and `I 1 2 1`, plus `P 6/m` and `F d -3 c:2`. CrysFML runs them.
 
-**PowderLine does:** Validation accepts only the settings CrysPy computes correctly (428 of 531). The error names a setting of the same group that CrysPy computes, or the crysfml calculator.
+**PowderLine does:** Validation refuses these settings for the cryspy calculator ({ref}`EB-80 <eb-80>`). The error names a setting of the same group that CrysPy computes, or the crysfml calculator.
 
 **You see:** validation error
-
-**Note:** The public account cites EB-84 after both facts in one sentence; whether the 41 misread settings belong to EB-84 or {ref}`EB-80 <eb-80>` is not stated separately.
 
 (eb-83)=
 #### EB-83 · CrysPy resets the unique angle of some monoclinic cells to 90°
@@ -60,26 +58,26 @@
 **PowderLine does:** Core hands over exact values, so CrysPy's own tolerance never matters.
 
 (eb-47)=
-#### EB-47 · Wyckoff positions are detected only when the structure is built
+#### EB-47 · easydiffraction applies site symmetry itself
 
 {bdg-success}`handled` · easydiffraction 0.21.1
 
-**easydiffraction does:** easydiffraction applies site symmetry itself. It detects each atom's Wyckoff position when the structure is built, and never re-detects during a fit.
+**easydiffraction does:** easydiffraction detects each atom's Wyckoff position and marks the coordinates and Uij fixed by symmetry. It ignores a `free` flag on them, and coupled coordinates follow the free one. A user edit of a value re-detects the Wyckoff position with tolerance 1e-3, so an off-special coordinate can change the multiplicity.
 
-**PowderLine does:** The gateway hands over core's exact values. After the build, it checks easydiffraction's multiplicity against core's for every atom. A refined coordinate that ends near a special position is reported through the output recipe ({ref}`KI-18 <ki-18>`).
+**PowderLine does:** The gateway hands over core's exact values. After the build, it checks easydiffraction's multiplicity and coordinates against core's for every atom. A mismatch stops the run before refining, with reason `unusable_site`, and names the atom.
 
-**You see:** `output_recipe_not_valid`
+**You see:** `unusable_site`
 
 (eb-74)=
-#### EB-74 · easydiffraction fixes special coordinates and re-detects them on an edit
+#### EB-74 · Wyckoff positions are detected when the structure is built, never during a fit
 
 {bdg-success}`handled` · easydiffraction 0.21.1
 
-**easydiffraction does:** easydiffraction marks fixed coordinates and ignores a `free` flag on them. It re-detects the Wyckoff position on a user edit with tolerance 1e-3, so an off-special coordinate can change the multiplicity.
+**easydiffraction does:** easydiffraction detects Wyckoff positions when a structure is built and when a user edit moves a coordinate. An edit within the 1e-3 tolerance rewrites the stored value (x = 0.4995 becomes 0.5). During a fit nothing is re-detected, so a refined coordinate drifting toward a special position is never snapped. A position written as another lattice translation of the template's pattern is stored in easydiffraction's own writing.
 
-**PowderLine does:** The gateway hands over core's exact values. After the build, it checks easydiffraction's multiplicity against core's for every atom.
+**PowderLine does:** The gateway hands over core's exact values, and core's 5e-6 to 2e-3 band refuses every position the detection could move. A position stored translated by a lattice vector is the same atom: it is accepted with a warning, and reports keep the recipe's writing. A refined coordinate that ends near a special position is reported through the output recipe ({ref}`KI-18 <ki-18>`).
 
-**Note:** The public account cites {ref}`EB-47 <eb-47>` and EB-74 together for easydiffraction's site-symmetry handling; the part that is EB-74's own is not stated separately.
+**You see:** `easydiffraction_position_translated`, `output_recipe_not_valid`
 
 (eb-77)=
 #### EB-77 · CrysPy computes some special positions wrongly
@@ -88,9 +86,9 @@
 
 **easydiffraction does:** CrysPy computes wrong structure factors for some equivalent writings of a special position with a free coordinate. LaB6's B written as (½, ½, x) instead of the template's (x, ½, ½) gives intensities off by up to ×2. It also computes special positions wrongly in nine origin-choice-1 settings. General positions and fixed special positions are right.
 
-**PowderLine does:** With `calculator: "cryspy"`, an atom on such a site must be written in the pattern of easydiffraction's Wyckoff template. The builder refuses anything else before the run and names the position to write. A position that easydiffraction only stores translated by a lattice vector is the same atom: it is accepted with a warning, and reports keep the recipe's writing. The nine settings are not accepted for the cryspy calculator. CrysFML has no such rule.
+**PowderLine does:** With `calculator: "cryspy"`, an atom on such a site must be written in the pattern of easydiffraction's Wyckoff template. Otherwise the run stops before refining, with reason `unusable_site`, and names the position to write. `--validate-only` does not catch this. The nine settings are refused at validation for the cryspy calculator. CrysFML has no such rule.
 
-**You see:** validation error, `easydiffraction_position_translated`
+**You see:** `unusable_site`, validation error
 
 ### Cell, ADPs and occupancy
 
@@ -119,7 +117,7 @@
 
 {bdg-success}`handled` · easydiffraction 0.21.1
 
-**easydiffraction does:** easydiffraction refuses a negative `Uiso` or U11, U22, U33 at input. Its physical limit for them is 0–10 Å².
+**easydiffraction does:** easydiffraction refuses a negative `Uiso` or U11, U22, U33 at input. Its physical limit for them is 0–10 Å². The minimizer skips that check, so a refinement can still carry a negative value, and the pattern stays finite.
 
 **PowderLine does:** An `easydiffraction.*` recipe may not state a negative `Uiso` or U11, U22, U33: validation error.
 
@@ -206,7 +204,7 @@
 
 **easydiffraction does:** Where U tan²θ + V tanθ + W < 0, CrysFML drops the peaks and CrysPy distorts them. Where X tanθ + Y/cosθ < 0, both give a finite pattern 12–24 % off.
 
-**PowderLine does:** A stated profile that makes a width negative is a validation error. The check covers the handed points and a 0.01° grid over the window widened by 1° plus the position corrections. A refined profile that does so gets a warning. The LaB6 CrysPy pseudo-Voigt fit refines X to −0.098, negative from 11.2° on.
+**PowderLine does:** A stated profile that makes a width negative is a validation error. The check covers the handed points and a 0.01° grid over the window widened by 1° plus the position corrections. A refined profile that does so gets a warning. In `example_LaB6_ionic`, the CrysPy pseudo-Voigt fit refines X to −0.097, so the Lorentzian width is negative from about 11.3° on.
 
 **You see:** validation error, `easydiffraction_negative_width`
 

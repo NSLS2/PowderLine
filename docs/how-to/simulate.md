@@ -64,8 +64,7 @@ are GSAS-II simulations of the LaB6 and DRX_33 refinement examples.
 pixi run powderline my_sim/input.json --validate-only
 ```
 
-**Check:** for a `gsasii.*` recipe the report says
-`Mode: Simulation (all parameters locked)`. For every engine it says
+**Check:** the report says `Mode: Simulation (all parameters locked)` and
 `Parameters requested: 0`.
 
 ## 3. Run

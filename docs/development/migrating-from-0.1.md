@@ -17,7 +17,9 @@ This page is for developers who hold recipes or code written for PowderLine
 | `rwp` | The engine's own value | PowderLine's uniform Rwp over the fit window; the engine's value is under `engine_details` |
 | `validate()` | Returned the model | Returns `ValidationResult` (`.recipe`, `.warnings`) |
 | Command | A separate `topas-kicker` for TOPAS | `powderline` for every engine |
-| Environments | GSAS-II in the default environment; `easydiff` | Default is core-only; `gsasii`, `easydiffraction`, `all`, `dev` |
+| Environments | GSAS-II in the default environment; `easydiff` | Default is core-only; `gsasii`, `easydiffraction`, `all`, `dev`. Remove a stale `.pixi/envs/easydiff`; `gsas-server` needs `-e gsasii` |
+| Imports | `powderline.topas`, `powderline.easydiff`, `powderline.RecipeModel`, `powderline.schema`, `powderline.GSASClient` | `powderline.gateways.topas`, `powderline.gateways.easydiffraction`; the recipe models are the gateways' (`powderline.gateways.gsasii.schema.GsasiiRietveldRecipe`, …), and you normally get one from `validate(...).recipe`; `powderline.gateways.gsasii.client.GSASClient`. There are no compatibility aliases: the old imports raise `ModuleNotFoundError` or `ImportError` |
+| Simulation check | `validate_simulation_mode_parameters()` | Gone: a `gsasii.*` recipe with `refinement_cycles: 1` and a refine flag set fails validation |
 
 The full list is in the [CHANGELOG](../about/changelog.md) entry for 0.2.0.
 The current schemas are on [Versions](../reference/versions.md).
@@ -44,6 +46,12 @@ known, the converter stops with exit status 1 and lists every problem. It
 never guesses. Each message names the field and, where there is one, the
 value to write.
 ```
+
+Typical stops: origin choice `:1`, an atom 5e-6 to 2e-3 off a special
+position, a `Uaniso` with only some of its six components, a Kα doublet, TOF
+or neutron instrument, non-isotropic broadening, and a value below a GSAS-II
+floor. The 0.26.0 LaB6 recipes stop on their background peak's width, which
+is below GSAS-II's floor ({ref}`EB-35 <eb-35>`).
 
 ## TOPAS and easydiffraction recipes
 
@@ -115,5 +123,6 @@ processes in Task Manager.
    (`pixi install --frozen -e gsasii`), then run
    `pixi reinstall powderline --all` and `pixi run powderline --doctor`.
 6. In code: drop `engine=`, read `validate(...).recipe`, catch the two
-   exceptions instead of checking `success`, and import `GSASClient` from
-   `powderline.gateways.gsasii.client`.
+   exceptions instead of checking `success`, and update the imports in the
+   table above (`powderline.gateways.<engine>`, `GSASClient` from
+   `powderline.gateways.gsasii.client`).

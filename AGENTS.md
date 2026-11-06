@@ -102,7 +102,8 @@ do GSAS-II's project-dictionary work. Rules (`docs/development/policies.md#froze
 - New behaviour goes into the non-frozen modules (`fit_report`, `sites`,
   `routing`, `paths`, `gateway`).
 - Replace the GSAS-II server after any edit it runs (a stale server is
-  detected and refused): `gsas-server stop`; the next run starts a fresh one.
+  detected: skipped in `auto` mode, refused in `server` mode):
+  `gsas-server stop`; the next run starts a fresh one.
   `gsas-server restart` blocks in the foreground, so never chain a command
   after it.
 

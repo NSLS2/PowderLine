@@ -152,7 +152,7 @@ they were derived. An easydiffraction recipe's results are committed in
 no TOPAS output is committed under `examples/` (the TOPAS goldens live in
 `tests/data/topas/native/golden/<version>/`, produced on a TOPAS machine).
 
-**`output/`**: After running the refinement, the GSAS-II output files go here. **These output files should be committed to the repository** (except `dummy.gpx`, which is gitignored) - they are the regression references, compared within the tolerances of [docs/development/regression-tolerance.md](../docs/development/contributing.md#regression-references-and-tolerance); they move only as a recorded deliberate change.
+**`output/`**: After running the refinement, the GSAS-II output files go here. **These output files should be committed to the repository** (except `dummy.gpx`, which is gitignored) - they are the regression references, compared within the tolerances of [Regression references and tolerance](../docs/development/contributing.md#regression-references-and-tolerance); they move only as a recorded deliberate change.
 
 PowderLine generates fixed output filenames:
 
@@ -231,22 +231,19 @@ Each phase scale refines independently to match its contribution to the observed
 
 ### Parameter Correlation in GSAS-II
 
-When you see warnings like:
+GSAS-II names highly correlated parameters in its console output, for example:
 ```
-** Warning: parameters 0 and 1 are 99.8% correlated **
+Note highly correlated parameters:
+ ** 0:0:Mustrain;mx and 0:0:Mustrain;i (@100.00%)
 ```
 
-This is **usually normal** and doesn't indicate a problem. Common high-correlation pairs:
-- Background Chebyshev coefficients (they share similar ranges)
-- Instrument broadening parameters (U, V, W in Thompson-Cox-Hastings)
-- Size and strain broadening (both affect peak width)
+A strong correlation means the data cannot separate the parameters. They
+change the pattern in nearly the same way, so the fit pins down only a
+combination of them. Their uncertainties grow, and their values can drift to
+unphysical ones (negative sizes, occupancies outside 0 to 1). The teaching
+examples show this. See [Know which parameters fight each other](../docs/concepts/refinement-practice.md#know-which-parameters-fight-each-other) for the common pairs and what helps.
 
-**When correlation IS a problem**:
-- Correlation >99.95% AND parameter uncertainties are large
-- Refinement oscillates without converging
-- Parameter values become unphysical (negative sizes, unreasonable unit cells)
-
-**How to reduce problematic correlations**:
+**How to reduce correlations**:
 1. Decrease number of background terms (reduce num_coefficients)
 2. Expand fit range to include more data
 3. Fix some parameters (set refine_flag to false)
@@ -333,15 +330,17 @@ If even one parameter has `refine_flag: true`, the output will vary between runs
 
 ### Testing Simulation Examples
 
-When you add a simulation example, it will be automatically included in determinism tests:
+A new simulation example is not picked up automatically. Add it to the
+fixed case lists in `tests/test_example_LaB6_regression.py`:
 
-```python
-def test_simulation_determinism_YourExample(example_input, tmp_path):
-    """Verify simulation example produces identical y_calc on multiple runs"""
-    # Runs example twice in separate directories
-    # Compares fit_profile.txt y_calc column with exact equality
-    # Fails if any parameters are being refined
-```
+- `_DETERMINISM_CASES`: `test_simulation_determinism` runs the example twice
+  and requires the two `fit_profile.txt` files to be exactly equal;
+- `_SIMULATION_REGRESSION_CASES` and `UNIFORM_RWP_REFERENCE`:
+  `test_example_simulation_regression` compares one run with the committed
+  `output/`.
+
+Each case names fixtures for the example's input and reference files; add
+them to `tests/conftest.py`, next to the `example_LaB6_simulation_*` ones.
 
 If this test fails:
 1. Check DESCRIPTION.md for the constraint documentation
@@ -351,22 +350,10 @@ If this test fails:
 
 ### Expected Parameter Correlation Warnings
 
-Different refinement setups produce expected warning patterns:
-
-**LaB6 single-phase synchrotron**:
-- Background coefficients: 95-99% correlated (expected)
-- Instrument broadening (U, V, W): 90-98% correlated (expected)
-- Unit cell ↔ scale: <20% correlated (good - independent effects)
-
-**Multi-phase DRX_33**:
-- Phase scales: ~10-15% correlated (independent phases)
-- Background coefficients: 95%+ correlated (expected with broad background)
-- Phase 1 parameters ↔ Phase 2 parameters: <5% correlated (good separation)
-
-**Hexagonal systems** (e.g. corundum-type oxides):
-- Unit cell (a and c link through symmetry): 40-60% correlated (expected)
-- Atom parameters: 70%+ correlated (expected for similar elements)
-- These are NORMAL for hexagonal systems
+There is no table of expected correlation figures. In your DESCRIPTION.md,
+list the correlations GSAS-II reports for the committed run, and read them as
+[Know which parameters fight each other](../docs/concepts/refinement-practice.md#know-which-parameters-fight-each-other) describes: a strong correlation means the data cannot separate the
+parameters.
 
 ### Documenting Expected Results
 
@@ -375,15 +362,11 @@ When adding your example, help future users by noting in your DESCRIPTION.md:
 ```markdown
 ## Expected Behavior
 
-- **Target Rwp**: ~10.5%
-  - ≤8%: Excellent fit, check for over-refinement
-  - 8-12%: Good fit, typical for polycrystalline data
-  - 12-20%: Acceptable, may indicate data quality issues
-  - >20%: Investigate model or data issues
+- **Fit statistics of the committed run**: Rwp __ %, Rexp __ %, GoF __
+  (PowderLine's uniform `rwp`, `r_exp` and `gof`)
 
 - **Parameter Correlations**:
-  - Background terms: ~95% (expected, not a problem)
-  - Scale ↔ Unit cell: <20% (expected, good independence)
+  - The pairs GSAS-II reports as highly correlated, and what you did about them
 
 - **Refinement Convergence**:
   - Converges in 5-7 cycles with step reduction
@@ -396,7 +379,10 @@ When adding your example, help future users by noting in your DESCRIPTION.md:
   - Data quality limitations
 ```
 
-This helps contributors and users understand whether their results are reasonable.
+Report Rwp together with Rexp and GoF, and don't grade the fit by Rwp alone:
+Rexp is the best Rwp the data can support, so the same Rwp can be a good fit
+for one data set and a poor one for another. See
+[Judge a fit by looking at it](../docs/concepts/refinement-practice.md#judge-a-fit-by-looking-at-it).
 
 ## Questions?
 

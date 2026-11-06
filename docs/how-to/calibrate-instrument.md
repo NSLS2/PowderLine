@@ -150,10 +150,23 @@ recipe with the same `refinement_controls.calculator` as the standard's.
 The `hold()` function under [In Python](#in-python) does this for you.
 
 :::{caution}
-Check that the refined values are physical before you hold them. For
-example, a negative Lorentzian term can make the peak width negative at
-high angle. A held value carries its problem into every sample refinement.
-See [Good refinement practice](../concepts/refinement-practice.md).
+Check that the refined values make sense before you hold them. A held value
+carries its problem into every sample refinement. See
+[Good refinement practice](../concepts/refinement-practice.md).
+:::
+
+:::{note}
+A negative profile term is common and is not an error in itself; what
+matters is the total peak width over your fit window. Each engine handles a
+width that would go below zero in its own way. The GSAS-II LaB6 example shows
+it: its refined `Y` is about −10, so its Lorentzian width would fall below
+zero above about 10.7° 2θ. GSAS-II floors the width at 0.001 centidegree
+there, without a message, so those peaks are computed as Gaussian.
+{ref}`EB-93 <eb-93>` shows what that means when the same data go to
+easydiffraction. TOPAS
+({ref}`EB-69 <eb-69>`) and easydiffraction ({ref}`EB-87 <eb-87>`) behave
+differently, which is one more reason to refine the standard again in the
+engine you use.
 :::
 
 ## 4. Validate and run the sample

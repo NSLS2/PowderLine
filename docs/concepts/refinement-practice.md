@@ -112,8 +112,8 @@ of these on real data.
   round-robin sample. *J. Appl. Cryst.* **37**, 911–924 (2004).
   [doi:10.1107/S0021889804022551](https://doi.org/10.1107/S0021889804022551)
 
-- J. A. Kaduk et al. Powder diffraction. *Nat. Rev. Methods Primers* **1**
-  (2021). [doi:10.1038/s43586-021-00074-7](https://doi.org/10.1038/s43586-021-00074-7).
+- J. A. Kaduk et al. Powder diffraction. *Nat. Rev. Methods Primers* **1**,
+  77 (2021). [doi:10.1038/s43586-021-00074-7](https://doi.org/10.1038/s43586-021-00074-7).
   *A modern overview of the whole method.*
 - R. E. Dinnebier, A. Leineweber and J. S. O. Evans. *Rietveld Refinement:
   Practical Powder Diffraction Pattern Analysis using TOPAS.* De Gruyter

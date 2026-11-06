@@ -8,7 +8,7 @@ well-conditioned phase in the examples. The pattern is simulated with a known
 texture, so the question the example asks has a known answer: *is the
 programmed coefficient recovered by refinement?*
 
-The truth is the `example_LaB6` structure (SRM 660a, a = 4.15682 Å, La at the
+The truth is the `example_LaB6` structure (SRM 660c, a = 4.15682 Å, La at the
 origin, B on 6f) with March–Dollase **r = 0.6 along [001]** — platy, in the
 IUCr / GSAS-II convention (1 random, < 1 platy, > 1 needle; the correction
 `A = 1/sqrt((r cos P)² + sin²P / r)` averaged over the symmetry equivalents of

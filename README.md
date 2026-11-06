@@ -32,9 +32,11 @@ flowchart LR
 2. **Validate.** PowderLine checks the recipe against a versioned schema and
    against the crystallography: the cell against the space group, atoms on
    special positions, symmetry-tied parameters. No engine needs to be
-   installed. Each problem is reported at its field, with the fix.
+   installed. Each problem is reported at its field.
 3. **Run.** PowderLine hands the recipe to the engine it names and returns
-   the same structured results whichever engine ran.
+   the same structured results whichever engine ran. A recipe is written for
+   one engine, in that engine's own terms and units. PowderLine never
+   translates a recipe between engines.
 4. **Chain.** Every result includes an *output recipe* with the refined
    values written back and provenance attached: the next step's input.
 
@@ -46,8 +48,9 @@ What that gives you:
 - **A component, not a silo.** PowderLine takes data from your reduction step
   and hands structured results to whatever comes next: plots, databases, the
   decision about the next measurement.
-- **Machine-checkable.** Every validation error names its fix, so a program or
-  an LLM can write a recipe, check it and correct it.
+- **Machine-checkable.** Each problem is reported at its field, and
+  PowderLine's own checks say what to write instead, so a program or an LLM
+  can write a recipe, check it and correct it.
 - **Traceable.** Your metadata travels with the recipe into the results, and
   every run records what produced it, so data and analyses stay linked.
 - **Comparable.** Every engine reports Rwp, Rexp and GoF computed the same way
@@ -84,8 +87,7 @@ walks through them.
 
 ## Cite
 
-PowderLine is described in a paper accepted for publication in the *Journal
-of Applied Crystallography*. Until it appears, please cite the preprint:
+If you use PowderLine in your research, please cite the preprint:
 
 > A. A. Corrao, J. A. Perez, J. D. Langhout, M. M. Butala, T. A. Caswell, and
 > D. Olds. *PowderLine: a programmatic powder diffraction analysis

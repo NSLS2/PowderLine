@@ -74,8 +74,12 @@ branch, and compare. Don't assume a failure is yours, and don't assume it
 isn't.
 ```
 
-CI runs `test`, `fields-check`, `test-gsasii`, `test-easydiffraction` and the
-docs build on Linux and Windows for every pull request to `NSLS2/PowderLine`.
+CI runs on every pull request to `NSLS2/PowderLine` and on every push to
+`main`. On Linux and Windows it runs `test`, `fields-check`, `catalog-check`,
+`figures-check`, `test-gsasii` and `test-easydiffraction`. The docs build
+(`pixi run docs`) runs on Linux, for pushes to `main` and for pull requests
+from forks. `test-all`, and `test-topas` on the TOPAS machine, are run by
+hand.
 
 ### Regression references and tolerance
 
@@ -132,14 +136,14 @@ Run the field-table generator after editing a schema module or a gateway's
 declarations:
 
 ```bash
-PYTHONPATH=src python scripts/gen_schema_field_tables.py
+pixi run python scripts/gen_schema_field_tables.py
 ```
 
 The engine-behaviour entries, the [ID index](../reference/ids.md) and
 [Known issues](../reference/known-issues.md) are generated from
 `docs/catalog/engine_behaviour.yaml` and `docs/catalog/known_issues.yaml`.
 Edit the YAML, never the generated pages, then run
-`python scripts/gen_catalog.py`.
+`pixi run python scripts/gen_catalog.py`.
 
 ### Regenerate the cross-engine comparison
 
@@ -149,7 +153,7 @@ The tables on [Comparing engines](../concepts/comparing-engines.md) come from
 ```bash
 pixi run -e gsasii python scripts/cross_engine_comparison.py
 pixi run -e easydiffraction python scripts/cross_engine_comparison.py --no-run --rerun-easydiffraction
-python scripts/cross_engine_comparison.py --no-run
+pixi run python scripts/cross_engine_comparison.py --no-run
 ```
 
 1. The first command runs GSAS-II on the committed examples. It rebuilds the

@@ -94,8 +94,9 @@ uncertainties and unphysical values. Read
 
 ## 3. Use anisotropic displacement parameters
 
-Write `"ADP": "Uaniso"` and all six components. This O1 atom of
-`examples/example_DRX_33_anisoADP/input.json` sits on a general position, so
+Write `"ADP": "Uaniso"` and all six components. The O1 atom of phase
+`Li4MgWO6_SG12` in `examples/example_DRX_33_anisoADP/input.json` sits on a
+general position, so
 all six are free:
 
 ```json

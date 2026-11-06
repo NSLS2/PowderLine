@@ -55,7 +55,7 @@ Two counts in `engine_details` show it:
 Engines quietly drop or merge parameters, so when fewer are varied than
 requested you get a warning. `converged` says whether the engine reached its
 convergence criterion: `true`, `false`, or `null` when the engine can't tell
-(TOPAS) or nothing was refined.
+(TOPAS, a GSAS-II peak fit) or nothing was refined.
 
 ## The output recipe
 
@@ -137,8 +137,10 @@ A failed run never returns a result. It raises one of two errors:
 
 Both carry `.reason`, a short code, and `.result`, the full failure record.
 The output folder then holds the engine's own files and `failure.json`, the
-same record with its provenance, and no result tables. A table that exists
-always comes from a run that succeeded.
+same record with its provenance, and no result tables. PowderLine removes
+its report tables before each run, so a table in the folder comes from a run
+that succeeded. One GSAS-II diagnostics file is the exception: see
+[Report files](../reference/outputs.md#report-files).
 
 ## Simulations
 

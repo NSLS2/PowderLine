@@ -197,7 +197,7 @@
 
 **GSAS-II does:** GSAS-II floors SH/L at 0.002 in the Rietveld and Peak List profile calculations. It floors it at 0.0005 in `GetFobsSq`, and background peaks use it as stored. Peak List peaks floor σ² and γ at 0.001.
 
-**PowderLine does:** `axial_divergence` below 0.002 is a validation error. So is a Peak List width below its floor. The converted LaB6 examples state 0.002 where they said 0.0005.
+**PowderLine does:** `axial_divergence` below 0.002 is a validation error. So is a Peak List width below its floor.
 
 **You see:** validation error
 
@@ -264,6 +264,8 @@
 **GSAS-II does:** GSAS-II's `Nvars` includes parameters it dropped as singular.
 
 **PowderLine does:** PowderLine reports the drop as a warning and does not subtract it. In a single-peak fit, the count is taken after the drops.
+
+**You see:** `gsasii_refinement_message`
 
 (eb-53)=
 #### EB-53 · Single-peak fitting ignores some refine flags silently

@@ -87,8 +87,7 @@ verified on Linux (`linux-64`) and Windows (`win-64`).
 
 ## Schema history
 
-Every schema below starts at 0.1.0 and was introduced in PowderLine 0.2.0.
-Each field is on [Fields](fields.md).
+Every schema below is at 0.1.0. Each field is on [Fields](fields.md).
 
 | Schema | Summary | Details |
 |---|---|---|

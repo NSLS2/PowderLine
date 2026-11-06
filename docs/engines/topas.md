@@ -93,8 +93,8 @@ and [Fields: `topas.spf`](../reference/fields.md#topasspf).
 
 | Quantity | TOPAS unit |
 |---|---|
-| `U`, `V`, `W` (TCHZ, Gaussian FWHM²) | degree² |
-| `X`, `Y`, `Z` (TCHZ) | degree |
+| `U`, `V`, `W`, `Z` (TCHZ, Gaussian FWHM²) | degree² |
+| `X`, `Y` (TCHZ, Lorentzian FWHM) | degree |
 | `lo` (wavelength) | Å |
 | `lh`, `lg` (emission-line half-widths) | mÅ |
 | `Rp`, `Rs`, slit and sample lengths | mm |

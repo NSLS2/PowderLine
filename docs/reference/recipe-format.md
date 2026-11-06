@@ -356,3 +356,8 @@ centidegree², easydiffraction's `broad_gauss_u` in degree².
 | `millimetre` | mm (goniometer radii, axial lengths, capillary diameter) | `topas.*` |
 | `1/cm` | linear absorption coefficient | `topas.*` |
 | `degree^2` | degrees² (profile terms) | `easydiffraction.*` |
+
+TOPAS's peak-type parameters (`instrument.broadening.parameters`) are named
+by the peak-type macro, so their field rows carry no unit. Their units depend
+on the peak type: [TOPAS: units that differ from other
+engines](../engines/topas.md#units-that-differ-from-other-engines) lists them.

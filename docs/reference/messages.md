@@ -64,7 +64,7 @@ validate-only summary.
 | Code | Engine | Level | Meaning |
 |---|---|---|---|
 | `gsasii_broadening_default_applied` | gsasii | warning | Sample size or strain left out: 10 µm and 0 microstrain applied, fixed. |
-| `gsasii_background_default_applied` | gsasii | warning | `background` (or its `chebyshev`) left out: one fixed Chebyshev term 0.0 applied, instead of GSAS-II's refined constant 1.0. |
+| `gsasii_background_default_applied` | gsasii | warning | `background` (or its `chebyshev`) left out: one fixed Chebyshev term 0.0 applied, instead of GSAS-II's own default, a fixed constant 1.0. |
 | `gsasii_refinement_cycles_default_applied` | gsasii | warning | `refinement_cycles` left out: the default 5 cycles run. |
 | `gsasii_refinement_message` | gsasii | warning | A message GSAS-II stored with the refinement: correlations, singular parameters, SVD. |
 | `gsasii_fit_not_converged` | gsasii | warning | The last cycle's χ² change was above GSAS-II's tolerance. The values are kept. |

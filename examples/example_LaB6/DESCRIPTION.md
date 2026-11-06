@@ -44,8 +44,10 @@ This example demonstrates fundamental refinement capabilities:
 
 - **Fit quality**: Rwp = 6.53 % (GSAS-II's wR in `dummy.lst`), GOF 0.52.
 - **Typical runtime**: less than 10 seconds.
-- **Normal messages**: GSAS-II reports correlated variables dropped,
-  particularly instrument parameters and background terms.
+- **Messages you will see**: GSAS-II reports highly correlated parameters,
+  mostly instrument profile terms (for example `X` and `Z`) and background
+  terms. A strong correlation means the data cannot separate the parameters;
+  see [Know which parameters fight each other](../../docs/concepts/refinement-practice.md#know-which-parameters-fight-each-other).
 
 ## Output Files
 

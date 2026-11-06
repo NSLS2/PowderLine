@@ -1,7 +1,8 @@
 # Examples
 
-Every example is a real recipe with its committed results. Run any of them
-from a PowderLine checkout, into a folder of your own:
+Every example is a real recipe. The "Results" column below lists the engines
+whose results are committed with it; TOPAS results are not committed. Run any
+of them from a PowderLine checkout, into a folder of your own:
 
 ```bash
 pixi run -e gsasii powderline examples/<name>/input.json --output my_run
@@ -124,9 +125,9 @@ result says `output_recipe_valid: false`, and the warning names the value.
 | Example | What goes wrong | What PowderLine reports | Well-posed alternative |
 |---|---|---|---|
 | `example_DRX_33` | Size and strain refined together: the Li4MgWO6 crystallite size runs to −1355.6 µm | `output_recipe_valid: false`, `output_recipe_not_valid` | `example_DRX_33_strainonly`: Rwp 8.46 % against 10.83 % |
-| `example_DRX_33_anisoADP` | Anisotropic ADPs on top of the same size and strain refinement: the DRX_33 size runs to −9.7 µm | as above | Both sizes held at 10 µm (its `DESCRIPTION.md`): Rwp 8.58 % against 15.53 % |
+| `example_DRX_33_anisoADP` | Anisotropic ADPs on top of the same size and strain refinement: the DRX_33 size runs to −9.7 µm and the O1 U11 to −0.170 Å² | as above | Both sizes held at 10 µm (its `DESCRIPTION.md`): Rwp 8.58 % against 15.53 % |
 | `example_DRX_33_atomrefine` | Atom parameters released: the DRX_33 Li occupancy runs to −0.35 (Mg −0.14), the Li4MgWO6 size to −8.0 µm | as above | None: with the sizes held, GSAS-II fails on an invalid metric tensor |
-| `example_LaB6_singlepeakfit` | The background peak's σ² runs to −2676 centideg², below the 0.01 floor GSAS-II silently computes with ({ref}`EB-35 <eb-35>`) | as above | Background peak widths and the last peak's γ held (its `DESCRIPTION.md`): valid, Rwp unchanged |
+| `example_LaB6_singlepeakfit` | The background peak's σ² runs to −2676 centideg², below the 0.01 centideg² floor GSAS-II silently computes with ({ref}`EB-35 <eb-35>`) | as above | Background peak widths and the last peak's γ held (its `DESCRIPTION.md`): valid, Rwp unchanged |
 | `example_LaB6_ionic`, easydiffraction recipe | CrysPy's Lorentzian `broad_lorentz_x` refines negative, so the Lorentzian FWHM is negative above 11.3° 2θ ({ref}`EB-87 <eb-87>`) | `easydiffraction_negative_width`, `output_recipe_valid: false` | None committed |
 
 See [Good refinement practice](../concepts/refinement-practice.md) for why

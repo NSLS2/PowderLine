@@ -40,7 +40,7 @@
 | {ref}`EB-44 <eb-44>` | GSAS-II | GSAS-II rewrites phase names | handled |
 | {ref}`EB-45 <eb-45>` | easydiffraction | Atom labels are restricted and datablock names lowercased | handled |
 | {ref}`EB-46 <eb-46>` | easydiffraction | Negative ADPs are refused at input | handled |
-| {ref}`EB-47 <eb-47>` | easydiffraction | Wyckoff positions are detected only when the structure is built | handled |
+| {ref}`EB-47 <eb-47>` | easydiffraction | easydiffraction applies site symmetry itself | handled |
 | {ref}`EB-48 <eb-48>` | easydiffraction | An environment variable can turn errors into log messages | handled |
 | {ref}`EB-49 <eb-49>` | TOPAS | Two parameters with the same name are one parameter | handled |
 | {ref}`EB-50 <eb-50>` | all engines | A Uaniso that is not positive definite is used as given | warned |
@@ -67,7 +67,7 @@
 | {ref}`EB-71 <eb-71>` | easydiffraction | Unbounded sides get physical limits, and starts are moved silently | handled |
 | {ref}`EB-72 <eb-72>` | easydiffraction | The ASCII data reader rounds 2θ to 4 decimals | handled |
 | {ref}`EB-73 <eb-73>` | easydiffraction | A σ below 1e-4 becomes 1.0 silently | handled |
-| {ref}`EB-74 <eb-74>` | easydiffraction | easydiffraction fixes special coordinates and re-detects them on an edit | handled |
+| {ref}`EB-74 <eb-74>` | easydiffraction | Wyckoff positions are detected when the structure is built, never during a fit | handled |
 | {ref}`EB-75 <eb-75>` | easydiffraction | The X-ray corrections easydiffraction models, and its polarization | handled |
 | {ref}`EB-76 <eb-76>` | easydiffraction | The two calculators compute different peak types | handled |
 | {ref}`EB-77 <eb-77>` | easydiffraction | CrysPy computes some special positions wrongly | handled |
@@ -77,7 +77,7 @@
 | {ref}`EB-81 <eb-81>` | easydiffraction | A parameter without effect gets no ESD | warned |
 | {ref}`EB-82 <eb-82>` | easydiffraction | Importing easydiffraction queries PyPI | documented |
 | {ref}`EB-83 <eb-83>` | easydiffraction | CrysPy resets the unique angle of some monoclinic cells to 90° | handled |
-| {ref}`EB-84 <eb-84>` | easydiffraction | CrysPy misreads 41 settings and crashes on 53 | handled |
+| {ref}`EB-84 <eb-84>` | easydiffraction | CrysPy crashes on 53 settings | handled |
 | {ref}`EB-85 <eb-85>` | TOPAS | TOPAS 6 exposes no convergence signal | documented |
 | {ref}`EB-86 <eb-86>` | easydiffraction | A refined Uij can land in the wrong atom's column | handled |
 | {ref}`EB-87 <eb-87>` | easydiffraction | Negative peak widths give a wrong pattern without a message | handled |
@@ -116,3 +116,6 @@
 | {ref}`KI-16 <ki-16>` | topas | TOPAS execution is verified on TOPAS 6 | resolved |
 | {ref}`KI-17 <ki-17>` | core | A split atom's occupancy is not checked against its coinciding images | accepted |
 | {ref}`KI-18 <ki-18>` | core | A coordinate that refines close to a special position is reported only through the output recipe | accepted |
+| {ref}`KI-19 <ki-19>` | GSAS-II server | The GSAS-II server keeps running until it is stopped | open |
+| {ref}`KI-20 <ki-20>` | GSAS-II server | The GSAS-II server's state directory must be on this computer's own disk | open |
+| {ref}`KI-21 <ki-21>` | GSAS-II server | `gsas-server stop` can read a leftover process ID in a narrow race | open |

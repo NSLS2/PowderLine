@@ -41,7 +41,9 @@ topas:
   timeout: 3600
 ```
 
-The command-line flags win over the file. The template
+The command-line flags win over the file. PowderLine reads only the first
+file it finds: a file in the folder you run from replaces the one in your
+home folder. The template
 `.powderline_config.yaml.example` in the repository shows the block.
 
 The declared version must equal the recipe's `engine_version`, written as
@@ -59,9 +61,11 @@ result = powderline.run(recipe, Path("out"), topas_version="6", topas_dir=Path(r
 pixi run powderline my_sample/input.json --topas-version 6 --topas-dir C:/TOPAS6
 ```
 
-`tc.exe` runs twice: once for the fit, then once for the background alone,
-at the refined values. TOPAS 6 cannot output the fit's background, so the
-second run provides the `y_bkg` column of `fit_profile.txt`.
+When the recipe models a background, `tc.exe` runs twice: once for the fit,
+then once for the background alone, at the refined values. TOPAS 6 cannot
+output the fit's background, so the second run provides the `y_bkg` column of
+`fit_profile.txt`. The second run is skipped when the fit's values are not
+finite.
 
 **Check:** the command line ends with `Refinement complete. Final Rwp: …`,
 and `output/` holds `fit_profile.txt` and the other report files.
@@ -138,7 +142,7 @@ A base name that is not ASCII is replaced by `topas`, with the warning
   judges a run by its output files. If TOPAS wrote none, the run fails with
   reason `output_missing`. Whatever `tc.exe` printed is in `failure.json`,
   under `failure.console_tail`. Otherwise its messages are in its console
-  window and `tc.log`.
+  window and in `tc.log`, in the TOPAS folder.
 - A file TOPAS wrote that PowderLine cannot read strictly fails with reason
   `output_malformed`.
 

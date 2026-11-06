@@ -30,9 +30,11 @@ compares them.
 Copy the example closest to your case into a folder of your own:
 
 ```bash
-mkdir -p my_sample
+mkdir my_sample
 cp examples/example_LaB6/input.json my_sample/input.json
 ```
+
+The same two commands work in PowerShell.
 
 `examples/example_template/` also holds a blank skeleton for each engine.
 

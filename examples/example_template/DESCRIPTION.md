@@ -21,7 +21,7 @@ List the schema features this example demonstrates:
 - **[Parameter patterns]**: Key refinement parameter patterns demonstrated (gsasii `[value, refine_flag]`; topas and easydiffraction `[value, refine_flag, min, max]`)
 - **[Special capabilities]**: File-less payload? Background modeling? Single peak fitting?
 - **[Data format]**: XRD data embedded or referenced? CIF structures?
-- **[Validation]**: Expected Rwp range, convergence behavior
+- **[Validation]**: Rwp, Rexp and GoF of the committed run, convergence behavior
 
 Examples of features you might highlight:
 - Basic Rietveld refinement with instrument parameter fitting
@@ -46,22 +46,21 @@ Describe what goes in `input.json`:
 
 Describe what should happen when this refinement runs:
 - **Parameters that converge**: Which refinement parameters should stabilize?
-- **Expected fit quality**:
-  - Rwp target: __%
-  - Typical range: 8-12% for good quality powder data
-  - >15%: May indicate data quality or model issues
+- **Fit statistics of the committed run**: Rwp __ %, Rexp __ %, GoF __
+  (PowderLine's uniform `rwp`, `r_exp` and `gof`). Report all three: Rwp
+  alone does not grade a fit, because Rexp is the best Rwp the data can
+  support
 - **Typical runtime**: How long does this refinement take?
 - **Normal warnings/messages**: Are there expected warnings that can be ignored?
 
 ### Expected Parameter Correlations
 
-Which parameters typically show high correlation (>90%)?
-- Background coefficients: [Expected? Yes/No]
-- Instrument broadening (U, V, W): [Expected? Yes/No]
-- Phase scales (multi-phase only): [Expected? Yes/No]
-- Any others specific to your refinement:
+Which parameters does GSAS-II report as highly correlated in the committed
+run, and what did you do about them?
+- [Parameter pair]: [correlation, and whether you held one of them]
 
-See [CONTRIBUTING_EXAMPLES.md](../CONTRIBUTING_EXAMPLES.md#expected-parameter-correlation-warnings) for details on interpreting correlation warnings.
+A strong correlation means the data cannot separate the parameters. See
+[Know which parameters fight each other](../../docs/concepts/refinement-practice.md#know-which-parameters-fight-each-other).
 
 ## Known Issues
 

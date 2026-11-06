@@ -46,8 +46,13 @@ pixi run -e gsasii powderline examples/example_LaB6/input.json --output my_lab6
 next to the recipe, into `examples/example_LaB6/output/`, which holds the
 example's committed reference results.
 
+The first run also starts the GSAS-II server in the background, so later
+runs start faster. It keeps running until you stop it.
+[Run at a beamline](../how-to/beamline-operation.md#manage-the-server)
+explains it and how to stop it.
+
 GSAS-II prints its progress for each refinement cycle. The run takes a few
-seconds and ends like this (long lines shortened):
+seconds. Near the end it prints (long lines shortened):
 
 ```text
 ⚠️ 3 warning(s):
@@ -78,8 +83,9 @@ The results are in `my_lab6/`:
 | `parameter_dispositions.csv` | For every refinable value: refined, held, or fixed by symmetry |
 | `dummy.gpx`, `dummy.lst` | GSAS-II's own project file and log; open the `.gpx` in the GSAS-II GUI |
 
-Every engine writes the same tables with the same names. The engine's own
-files are kept alongside. [Outputs](../reference/outputs.md) describes each
+Every engine writes the same tables with the same names. (easydiffraction's
+CrysFML calculator writes no reflection list.) The engine's own files are kept
+alongside. [Outputs](../reference/outputs.md) describes each
 one.
 
 ### Plot the fit
@@ -104,7 +110,8 @@ Save it as `plot_fit.py` and run it with `pixi run -e gsasii python plot_fit.py`
 ### Run it from Python instead
 
 The command line and Python do the same thing. In Python you get the tables
-back as pandas DataFrames:
+back as pandas DataFrames. Save this as a script and run it with
+`pixi run -e gsasii python`:
 
 ```python
 from pathlib import Path

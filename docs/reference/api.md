@@ -68,6 +68,7 @@ builds its result with these functions. The module also defines
 ```{eval-rst}
 .. automodule:: powderline.results
    :members: failure_envelope, generated_envelope, with_status_fields, raise_if_failed
+   :exclude-members: converged_of, legacy_failure
 ```
 
 ## Structured warnings

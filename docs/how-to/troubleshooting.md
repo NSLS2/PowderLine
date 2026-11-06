@@ -135,12 +135,13 @@ Fixed angles are exactly 90, or 120.
 
 ```
   • payload -> phases -> LaB6 -> atoms -> B: Value error, atom 'B' (multiplicity 6 in 'P m -3 m'): (0.4999999, 0.5, 0.2021) is 1e-07 from a special position, not on it (x = 1/2, y = 1/2); write x = 0.5
-  • payload -> phases -> DRX_33 -> atoms -> Li: Value error, position (0.0005, 0, 0) is 0.001 from the special position (0, 0, 0) (multiplicity 4) in 'F m -3 m' without being on it: state the special-position coordinates to at least 6 decimals, or move the atom at least 0.002 (fractional) off it
+  • payload -> phases -> DRX_33 -> atoms -> Li: Value error, position (0.0005, 0, 0) is near the special position (0, 0, 0) (multiplicity 4) in 'F m -3 m' without being on it: a symmetry image of the atom is 0.001 (fractional) away from it. State the special-position coordinates to at least 6 decimals, or move the atom until its symmetry images are at least 0.002 away
 ```
 
 **Fix:** write a constant with a decimal form exactly (`0.5`), and a third to
 at least six decimals (`0.333333`). An atom meant to sit off a special
-position must be at least 2e-3 away: see
+position must be far enough off that its symmetry images are at least 2e-3
+away: see
 [Model disorder near special positions](disorder.md).
 
 ### A refine flag breaks a symmetry tie
@@ -254,8 +255,9 @@ A failed run prints one of two lines. The word in parentheses is the
 ```
 
 The output directory keeps the engine's own files and `failure.json`, the
-full failure record. For a `gsasii.*` run, the command line also prints
-GSAS-II's last console lines. That is where GSAS-II says what went wrong:
+full failure record. For a `gsasii.*` or `topas.*` run, the command line
+also prints the engine's last console lines. That is where GSAS-II says what
+went wrong:
 "Refinement failed - singular matrix", "Removing parameter: …". In Python
 the same text is `e.result["failure"]["console_tail"]`.
 
@@ -270,7 +272,7 @@ means. What to do:
 | `diverged` | Refine fewer parameters, start closer to the data, check correlations in `dummy.lst` (GSAS-II). |
 | `peak_fit_failed` | Check the peaks' starting values ([Fit single peaks](single-peak-fitting.md)). |
 | `engine_crashed` | Read the message and the traceback in `failure.json`. |
-| `output_missing` | Read `failure.console_tail` in `failure.json`, TOPAS's console window and `tc.log`. |
+| `output_missing` | Read `failure.console_tail` in `failure.json`, TOPAS's console window and `tc.log` in the TOPAS folder. |
 | `output_malformed` | Read the message: it names the file and the problem. |
 
 ### The engine never ran
@@ -333,7 +335,8 @@ examples ({ref}`KI-15 <ki-15>`).
 ### Highly correlated parameters
 
 ```
-** Warning: parameters 0 and 1 are 99.8% correlated **
+gsasii_refinement_message: GSAS-II reported: Note highly correlated parameters:
+** :0:X and :0:Z (@99.99%)
 ```
 
 High correlation is common and often acceptable, for example between
@@ -422,7 +425,9 @@ privately at the next start. If it is not yours, ask an administrator.
 
 "Refusing to keep the GSAS-II server state under …" means the parent
 folder, your `TMPDIR`, would let other users replace the directory. Point
-`TMPDIR`, or `XDG_RUNTIME_DIR`, at a private folder.
+`TMPDIR`, or `XDG_RUNTIME_DIR`, at a private folder on this computer's local
+disk, not in a network home directory. The server and its state belong to
+one computer ({ref}`KI-20 <ki-20>`).
 
 ### A server keeps running that `gsas-server` cannot see
 
@@ -430,14 +435,22 @@ folder, your `TMPDIR`, would let other users replace the directory. Point
 by a temporary-file cleaner. Clients cannot reach the server any more, and
 `status` and `stop` cannot find it ({ref}`KI-11 <ki-11>`).
 
-**Fix:** end the process by hand. On Linux and macOS:
+**Fix:** end the process by hand. On Linux and macOS, list your server
+processes, check that each path is this checkout's, and end each one by its
+process ID:
 
 ```bash
-pkill -u "$USER" -f "gsasii[/.]server"
+ps -u "$(id -un)" -o pid=,args= | grep -E "python[^ ]* .*gsasii[/.]server"
+kill <PID>        # for each process listed
 ```
 
-On Windows, end the Python process running `server.py start` in Task
-Manager.
+Don't use `pkill -f` here. Its pattern also matches an editor open on
+`server.py` and the servers of other checkouts.
+
+On Windows, end the Python process whose command line ends in
+`gsasii\server.py start` or `-m powderline.gateways.gsasii.server start`,
+in Task Manager's Details tab. Right-click a column header and add the
+Command line column to see it.
 
 ## Files and environment
 
@@ -472,7 +485,8 @@ Add `-e gsasii`.
 1. Validate: `pixi run powderline my_sample/input.json --validate-only`.
 2. Run with `--verbose`.
 3. Read the engine's log: `output/dummy.lst` for GSAS-II, the TOPAS console
-   and `tc.log`, the lmfit report printed for easydiffraction.
+   and `tc.log` in the TOPAS folder, the lmfit report printed for
+   easydiffraction.
 4. Compare with a working example, such as `examples/example_LaB6/input.json`.
 5. Open an issue on GitHub with the full output, the recipe, the output of
    `pixi run -e gsasii powderline --doctor` and, for TOPAS, the version you

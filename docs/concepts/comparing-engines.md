@@ -14,8 +14,9 @@ model, and sometimes an unphysical one.
 ## How the comparison is made
 
 - **Two cases.** `LaB6` (the NIST SRM 660c calibrant, one phase) and `DRX_33`
-  (a cubic disordered rock-salt cathode phase plus monoclinic Li4MgWO6). Both
-  use the same synchrotron pattern (λ = 0.1665 Å) and the window 1–15° 2θ.
+  (a cubic disordered rock-salt cathode phase plus monoclinic Li4MgWO6). They
+  are two patterns measured on the same synchrotron setup (λ = 0.1665 Å, the
+  same 2θ grid), each fitted over 1–15° 2θ.
 - **The same points.** Every engine fits the same 3767 weighted points, and
   Rwp, Rexp and GoF are PowderLine's uniform statistics, computed the same way
   for every row.
@@ -23,9 +24,9 @@ model, and sometimes an unphysical one.
   million and in units of the combined uncertainty σ = √(ESD² + ESD_ref²).
   For LaB6, two more columns compare with the NIST certificate value.
 - **Source.** `run` means the engine was run for this page. `golden` means
-  the row is rebuilt from an engine's committed output files (a *golden*,
-  identified by its recipe, the *fixture*). The TOPAS rows are always goldens,
-  produced on a computer with a TOPAS licence.
+  the row is rebuilt from a stored reference run: the engine's committed
+  output files, named after the recipe that produced them. The TOPAS rows
+  are always stored runs, produced on a computer with a TOPAS licence.
 - **The LaB6 cell is refined** in every row here, unlike `example_LaB6`,
   which holds it at the certified value. That is why the GSAS-II LaB6 row
   differs from that example.
@@ -50,9 +51,10 @@ where it puts each peak, and so the refined cell:
 
 Two lessons:
 
-- **A lower Rwp can come from an unphysical model.** The CrysPy pseudo-Voigt
-  fit reaches a slightly lower Rwp than the FCJ fit by driving its Lorentzian
-  `X` term negative, which makes the peak width negative at high angle
+- **A good Rwp can come from an unphysical model.** The CrysPy pseudo-Voigt
+  fit, with no asymmetry model, reaches an Rwp close to the FCJ fits only by
+  driving its Lorentzian `X` term negative, which makes the peak width
+  negative at high angle
   ({ref}`EB-87 <eb-87>`, warning `easydiffraction_negative_width`).
 - **Compare cells, and know what each model was free to do.**
 

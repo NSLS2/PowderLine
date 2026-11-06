@@ -45,7 +45,7 @@ With `use_instrument_profile: false`, the peak widths are refined directly rathe
   - FWHM values (Gaussian, Lorentzian, pseudo-Voigt)
   - Integral breadths (Gaussian, Lorentzian, pseudo-Voigt)
 - Typical runtime: Less than 10 seconds
-- Normal warnings: Potential warnings about correlated variables
+- Messages you may see: GSAS-II's report of highly correlated parameters
 
 ## Expected Output Files
 

@@ -164,7 +164,9 @@
   engine_does: >-
     CrysFML is handed the short symbol alone. It misreads almost every
     non-default setting: unique axis, cell choice, `:R` and some origin-1
-    groups. CrysPy computes `P 31` with the operators of `P 32`.
+    groups. CrysPy computes 41 settings as another setting: most c- and
+    a-unique monoclinic settings, the `:R` settings, some origin-1 settings,
+    and `P 31`, which it computes with the operators of `P 32`.
   powderline_does: >-
     Validation accepts, per calculator, only the settings whose computation
     passed for a general position and for every special site: 428 of the 531
@@ -177,19 +179,17 @@
   engine: easydiffraction
   versions: easydiffraction 0.21.1 (CrysPy 0.13.0)
   topic: space-groups
-  title: CrysPy misreads 41 settings and crashes on 53
+  title: CrysPy crashes on 53 settings
   engine_does: >-
-    CrysPy computes 41 settings as another setting, and crashes on 53.
+    CrysPy crashes on 53 settings: 51 cell-choice settings such as
+    `A 1 2 1` and `I 1 2 1`, plus `P 6/m` and `F d -3 c:2`. CrysFML runs
+    them.
   powderline_does: >-
-    Validation accepts only the settings CrysPy computes correctly (428 of
-    531). The error names a setting of the same group that CrysPy computes,
-    or the crysfml calculator.
+    Validation refuses these settings for the cryspy calculator (EB-80). The
+    error names a setting of the same group that CrysPy computes, or the
+    crysfml calculator.
   you_see: [validation error]
   status: handled
-  note: >-
-    The public account cites EB-84 after both facts in one sentence; whether
-    the 41 misread settings belong to EB-84 or EB-80 is not stated
-    separately.
 
 - id: EB-83
   engine: easydiffraction
@@ -304,37 +304,43 @@
   engine: easydiffraction
   versions: easydiffraction 0.21.1
   topic: sites
-  title: Wyckoff positions are detected only when the structure is built
+  title: easydiffraction applies site symmetry itself
   engine_does: >-
-    easydiffraction applies site symmetry itself. It detects each atom's
-    Wyckoff position when the structure is built, and never re-detects during
-    a fit.
+    easydiffraction detects each atom's Wyckoff position and marks the
+    coordinates and Uij fixed by symmetry. It ignores a `free` flag on them,
+    and coupled coordinates follow the free one. A user edit of a value
+    re-detects the Wyckoff position with tolerance 1e-3, so an off-special
+    coordinate can change the multiplicity.
   powderline_does: >-
     The gateway hands over core's exact values. After the build, it checks
-    easydiffraction's multiplicity against core's for every atom. A refined
-    coordinate that ends near a special position is reported through the
-    output recipe (KI-18).
-  you_see: [output_recipe_not_valid]
+    easydiffraction's multiplicity and coordinates against core's for every
+    atom. A mismatch stops the run before refining, with reason
+    `unusable_site`, and names the atom.
+  you_see: [unusable_site]
   status: handled
 
 - id: EB-74
   engine: easydiffraction
   versions: easydiffraction 0.21.1
   topic: sites
-  title: easydiffraction fixes special coordinates and re-detects them on an edit
+  title: Wyckoff positions are detected when the structure is built, never during a fit
   engine_does: >-
-    easydiffraction marks fixed coordinates and ignores a `free` flag on
-    them. It re-detects the Wyckoff position on a user edit with tolerance
-    1e-3, so an off-special coordinate can change the multiplicity.
+    easydiffraction detects Wyckoff positions when a structure is built and
+    when a user edit moves a coordinate. An edit within the 1e-3 tolerance
+    rewrites the stored value (x = 0.4995 becomes 0.5). During a fit nothing
+    is re-detected, so a refined coordinate drifting toward a special
+    position is never snapped. A position written as another lattice
+    translation of the template's pattern is stored in easydiffraction's own
+    writing.
   powderline_does: >-
-    The gateway hands over core's exact values. After the build, it checks
-    easydiffraction's multiplicity against core's for every atom.
-  you_see: []
+    The gateway hands over core's exact values, and core's 5e-6 to 2e-3 band
+    refuses every position the detection could move. A position stored
+    translated by a lattice vector is the same atom: it is accepted with a
+    warning, and reports keep the recipe's writing. A refined coordinate that
+    ends near a special position is reported through the output recipe
+    (KI-18).
+  you_see: [easydiffraction_position_translated, output_recipe_not_valid]
   status: handled
-  note: >-
-    The public account cites EB-47 and EB-74 together for easydiffraction's
-    site-symmetry handling; the part that is EB-74's own is not stated
-    separately.
 
 - id: EB-77
   engine: easydiffraction
@@ -349,13 +355,12 @@
     settings. General positions and fixed special positions are right.
   powderline_does: >-
     With `calculator: "cryspy"`, an atom on such a site must be written in the
-    pattern of easydiffraction's Wyckoff template. The builder refuses
-    anything else before the run and names the position to write. A position
-    that easydiffraction only stores translated by a lattice vector is the
-    same atom: it is accepted with a warning, and reports keep the recipe's
-    writing. The nine settings are not accepted for the cryspy calculator.
-    CrysFML has no such rule.
-  you_see: [validation error, easydiffraction_position_translated]
+    pattern of easydiffraction's Wyckoff template. Otherwise the run stops
+    before refining, with reason `unusable_site`, and names the position to
+    write. `--validate-only` does not catch this. The nine settings are
+    refused at validation for the cryspy calculator. CrysFML has no such
+    rule.
+  you_see: [unusable_site, validation error]
   status: handled
 
 # --- Cell, ADPs and occupancy -----------------------------------------------
@@ -477,16 +482,12 @@
   title: A Uaniso that is not positive definite is used as given
   engine_does: >-
     GSAS-II has no positive-definiteness check. easydiffraction computes a
-    finite pattern for such a tensor, and for a negative ADP. TOPAS is
-    unverified.
+    finite pattern for such a tensor, with no message. TOPAS is unverified.
   powderline_does: >-
     Core uses the tensor as stated and warns when it has a principal value
     ≤ 0.
   you_see: [uaniso_not_positive_definite]
   status: warned
-  note: >-
-    The public account cites EB-46 and EB-50 together for easydiffraction's
-    finite pattern.
 
 - id: EB-46
   engine: easydiffraction
@@ -495,7 +496,9 @@
   title: Negative ADPs are refused at input
   engine_does: >-
     easydiffraction refuses a negative `Uiso` or U11, U22, U33 at input. Its
-    physical limit for them is 0–10 Å².
+    physical limit for them is 0–10 Å². The minimizer skips that check, so a
+    refinement can still carry a negative value, and the pattern stays
+    finite.
   powderline_does: >-
     An `easydiffraction.*` recipe may not state a negative `Uiso` or U11,
     U22, U33: validation error.
@@ -570,9 +573,6 @@
     names `Fe3+`.
   you_see: [validation error]
   status: handled
-  note: >-
-    The public account cites EB-13 and EB-25 together for ion notation; this
-    entry holds the spelling difference between engines.
 
 - id: EB-94
   engine: gsasii
@@ -785,8 +785,7 @@
     use it as stored. Peak List peaks floor σ² and γ at 0.001.
   powderline_does: >-
     `axial_divergence` below 0.002 is a validation error. So is a Peak List
-    width below its floor. The converted LaB6 examples state 0.002 where they
-    said 0.0005.
+    width below its floor.
   you_see: [validation error]
   status: handled
 
@@ -942,8 +941,8 @@
     A stated profile that makes a width negative is a validation error. The
     check covers the handed points and a 0.01° grid over the window widened
     by 1° plus the position corrections. A refined profile that does so gets
-    a warning. The LaB6 CrysPy pseudo-Voigt fit refines X to −0.098,
-    negative from 11.2° on.
+    a warning. In `example_LaB6_ionic`, the CrysPy pseudo-Voigt fit refines X
+    to −0.097, so the Lorentzian width is negative from about 11.3° on.
   you_see: [validation error, easydiffraction_negative_width]
   status: handled
   seen_in: [example_LaB6_ionic]
@@ -1124,7 +1123,7 @@
   powderline_does: >-
     PowderLine reports the drop as a warning and does not subtract it. In a
     single-peak fit, the count is taken after the drops.
-  you_see: []
+  you_see: [gsasii_refinement_message]
   status: warned
 
 - id: EB-53

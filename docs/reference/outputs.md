@@ -7,7 +7,8 @@ A run gives you two things:
 - **files** in the output directory: the same tables as reports with fixed
   names, the output recipe, and the engine's own files.
 
-Every engine returns the same keys and writes the same report files. What the
+Every engine returns the same core keys and writes the same report files.
+The few exceptions are marked below. What the
 statistics, the output recipe and the dispositions mean is explained on
 [Results](../concepts/results.md).
 
@@ -22,7 +23,7 @@ result["status"], result["rwp"], result["unit_cell_data"]["LaB6"]
 |---|---|---|
 | `status` | str | `"ok"`, or `"generated"` when the TOPAS input was written but TOPAS was not run. |
 | `converged` | bool or None | `True` or `False`. `None` for any simulation, when the engine cannot tell (TOPAS 6, a GSAS-II peak fit), and when TOPAS was not run. |
-| `envelope_version` | str | `"1"`: the version of this result's shape. |
+| `envelope_version` | str | `"1"`: the version of this result's shape. It changes when a key, or its meaning, changes. |
 | `run_id` | str | A UUID4 that identifies this run. |
 | `rwp`, `r_exp` | float or None | PowderLine's uniform Rwp and Rexp over the fit window, in percent. |
 | `gof`, `chi2_red` | float or None | PowderLine's uniform GoF and reduced χ², dimensionless. |
@@ -39,8 +40,8 @@ result["status"], result["rwp"], result["unit_cell_data"]["LaB6"]
 | `unit_cell_data` | dict of DataFrame | Per phase, keyed by phase name: the seven unit-cell rows. |
 | `peak_list_data` | dict of DataFrame | Per phase, keyed by phase name: the reflection list. |
 | `refined_parameters` | DataFrame | Every refined parameter with its ESD, by the engine's names. |
-| `spf_peaks` | DataFrame | Single-peak fitting: the fitted peaks. Empty otherwise. |
-| `spf_convergence_diagnostics` | DataFrame | Single-peak fitting: convergence diagnostics per peak. Empty otherwise. |
+| `spf_peaks` | DataFrame | GSAS-II and TOPAS results only. Single-peak fitting: the fitted peaks. Empty otherwise. |
+| `spf_convergence_diagnostics` | DataFrame | GSAS-II and TOPAS results only. Single-peak fitting: convergence diagnostics per peak. Empty otherwise. |
 | `peak_fit` | dict or None | GSAS-II results only. For `gsasii.spf`, every parameter the peak fit varied; `None` for `gsasii.rietveld`. |
 
 Statistics are `None` where they are undefined, for example when there are
@@ -64,6 +65,7 @@ above are PowderLine's; these are the engine's own.
 | `r_exp`, `gof`, `tc_path` | TOPAS | TOPAS's own Rexp and GoF, and the `tc.exe` that ran. |
 | `calculator`, `peak_type`, `minimizer` | easydiffraction | The calculator, the peak type and the minimizer. |
 | `r_exp`, `reduced_chi_square` | easydiffraction | easydiffraction's own Rexp and reduced χ². |
+| `fit_success`, `fit_message`, `fit_iterations` | easydiffraction | lmfit's success flag, message and iteration count. |
 
 ### Warnings
 
@@ -89,6 +91,8 @@ Each warning is a dict:
 | `topas`, `topas_simulation` | TOPAS ran a refinement, or a simulation. |
 | `topas_generate_only` | The TOPAS input was written; TOPAS did not run (`status` is `"generated"`). |
 | `easydiffraction`, `easydiffraction_simulation` | easydiffraction ran a refinement, or a simulation. |
+| `topas_native` | A TOPAS run that failed (only in a failure record). |
+| `none` | Nothing ran: the GSAS-II server was disabled, stale or unavailable, and no fallback was allowed (only in a failure record). |
 | `validate_only` | Nothing ran ([Validate-only summary](#validate-only-summary)). |
 
 ### The output recipe
@@ -168,16 +172,22 @@ Exceptions:
 
 - easydiffraction's CrysFML calculator reports no reflection list, so no
   `<phase>_peak_list_report.csv` is written with it.
-- A GSAS-II simulation writes no `refined_parameters.csv`. TOPAS and
-  easydiffraction write one with no rows.
+- A GSAS-II simulation or peak fit (`gsasii.spf`) writes no
+  `refined_parameters.csv`. TOPAS and easydiffraction write one with no rows.
 - In a simulation, every unit-cell `esd` is `0.0`.
 
 :::{note}
-**One run per directory.** Before every run, `powderline.run()` removes these
-fixed-name files and `failure.json` from the output directory. It never
-removes the engine's own files. It does this only once the recipe has
-validated and the engine is available, so an invalid recipe leaves the
-previous results in place.
+**One run per directory.** Before every run, `powderline.run()` removes the
+files in the first table above, the `single_peaks_report` files and
+`failure.json` from the output directory. It never removes the engine's own
+files. It does this once the recipe has validated and the engine can be
+imported, so an invalid recipe or a missing engine leaves the previous
+results in place. An engine-version or option error found later, such as an
+undeclared TOPAS version, comes after the clearing.
+
+`peak_convergence_diagnostics.txt` is not removed. It is written only when a
+peak has problems, so a copy from an earlier run can remain. Read
+`result["spf_convergence_diagnostics"]` instead.
 :::
 
 ### Unit-cell rows: two vocabularies

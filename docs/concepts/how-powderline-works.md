@@ -75,7 +75,7 @@ differs between TOPAS and easydiffraction (see
 
 ## 2. One recipe, one engine
 
-The first entry of a recipe names the engine and the workflow, for example
+The recipe's `schema_name` names the engine and the workflow, for example
 `gsasii.rietveld` or `topas.spf`.
 
 The instrument, background and controls are written in **that engine's own
@@ -191,8 +191,7 @@ fourth gateway; nothing else changes. See
 
 ## Further reading
 
-- The PowderLine paper (accepted in the *Journal of Applied Crystallography*;
-  [preprint](https://doi.org/10.48550/arXiv.2608.17009)) describes the design
-  and its motivation.
+- The PowderLine [preprint](https://doi.org/10.48550/arXiv.2608.17009)
+  describes the design and its motivation.
 - [Comparing engines](comparing-engines.md) refines the same data in every
   engine and explains why the numbers differ.

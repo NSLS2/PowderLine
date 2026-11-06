@@ -6,8 +6,9 @@ and chain.**
 
 Rietveld refinement is powerful, but reliable results take expertise in a
 particular program. Running it at scale has usually meant custom code for
-each project. PowderLine gives every refinement the same validated,
-machine-writable description. The same analysis can then be run from a GUI, a
+each project. PowderLine gives every refinement the same kind of validated,
+machine-writable description: a recipe, written for one engine in that
+engine's own terms. The same analysis can then be run from a GUI, a
 notebook, a beamline pipeline, an autonomous experiment or an LLM agent, and
 it gives the same result.
 
@@ -39,8 +40,8 @@ flowchart LR
   *output recipe*, ready to be the next step's input.
 
 → [How PowderLine works](concepts/how-powderline-works.md) explains each step.
-The [paper](https://doi.org/10.48550/arXiv.2608.17009) (accepted in the
-*Journal of Applied Crystallography*) gives the full motivation.
+The [preprint](https://doi.org/10.48550/arXiv.2608.17009) gives the full
+motivation.
 
 ## Where to start
 

@@ -2,7 +2,7 @@
 #
 # One entry per KI-NN id: a known behaviour of PowderLine itself, what it
 # does today and what to do about it. scripts/gen_catalog.py renders it into
-# docs/_generated/known_issues.md (included by development/known-issues.md)
+# docs/_generated/known_issues.md (included by reference/known-issues.md)
 # and docs/_generated/ids.md; `--check` fails when a KI id used in src/ or
 # docs/ has no entry here.
 #
@@ -114,8 +114,8 @@
     non-finite pattern or an aborted refinement raises
     `EngineExecutionError`, reason `diverged`. The other reasons are
     `unusable_site`, `peak_fit_failed` and `engine_crashed`. The gateway also
-    keeps a bounded tail (64 KiB) of GSAS-II's Python console output for each
-    run.
+    keeps the last 65,536 characters of GSAS-II's Python console output for
+    each run.
   what_to_do: >-
     After a failure, read `failure.console_tail`, in the exception's
     `.result` or in `failure.json`. The CLI prints its last lines after
@@ -208,7 +208,13 @@
     and `gsas-server status` and `stop` cannot see it. A running job's
     scratch files, under the same directory, are lost too.
   what_to_do: >-
-    Kill the server by hand: `pkill -u "$USER" -f "gsasii[/.]server"`.
+    End the server by hand. On Linux and macOS, list your server processes
+    with `ps -u "$(id -un)" -o pid=,args= | grep -E "python[^ ]* .*gsasii[/.]server"`,
+    check that each path is this checkout's, and end each one with
+    `kill <PID>`. On Windows, end the Python process whose command line ends
+    in `gsasii\server.py start` or `-m powderline.gateways.gsasii.server
+    start`. Don't use `pkill -f`: its pattern also matches an editor open on
+    `server.py` and servers of other checkouts.
 
 - id: KI-12
   title: The GSAS-II server returns output files inside its response
@@ -240,11 +246,9 @@
   what_to_do: >-
     Run `pixi run powderline --doctor`. It lists the gateways the registry
     finds and each engine's version against its requirement. It exits
-    non-zero, naming the repair, when something is missing. After editing
-    `[project.entry-points]` or `[project.scripts]`, run
-    `pixi reinstall powderline --all`. If pixi cannot rebuild the editable
-    install, use that environment's own Python:
-    `python -m pip install --no-deps --no-build-isolation --no-index -e .`.
+    non-zero when something is missing, and names the repair to run.
+    Contributors who edit the package's entry points: see [Troubleshooting
+    for contributors](../development/contributing.md#troubleshooting-for-contributors).
 
 - id: KI-14
   title: The GSAS-II server is private to the user who started it
@@ -329,10 +333,10 @@
   severity: minor
   applies_to: core
   what_happens: >-
-    Validation refuses an atom stated 5e-6 to 2e-3 (fractional) from a
-    special position. During a refinement, no engine moves a coordinate back
+    Validation refuses an atom stated near a special position without being
+    on it: one whose symmetry images are 5e-6 to 2e-3 (fractional) away. During a refinement, no engine moves a coordinate back
     onto one. GSAS-II never snaps, easydiffraction detects Wyckoff positions
-    only when the structure is built (EB-47), and TOPAS compares exactly. So
+    only when the structure is built (EB-74), and TOPAS compares exactly. So
     a split atom can refine into that band. The result is still returned,
     because its numbers are what the engine computed. Its output recipe fails
     validation, and the warning `output_recipe_not_valid` names the
@@ -340,3 +344,56 @@
   what_to_do: >-
     State the atom on the special position, or restart it further off. See
     [Model disorder near special positions](../how-to/disorder.md).
+
+- id: KI-19
+  title: The GSAS-II server keeps running until it is stopped
+  status: open
+  severity: minor
+  applies_to: GSAS-II server
+  what_happens: >-
+    A `gsasii.*` run in the default `auto` mode starts the GSAS-II server in
+    the background if none is running. The server has no idle timeout. It
+    keeps GSAS-II loaded in memory until you stop it or the computer
+    restarts. If its state directory is removed at logout, the server keeps
+    running unseen (KI-11), and the next login starts another one.
+  what_to_do: >-
+    Stop the server when you finish a session, before you log out:
+    `pixi run -e gsasii gsas-server stop`. On a shared workstation where no
+    one will stop it, set `POWDERLINE_NO_SERVER=1` so runs go in-process. See
+    [Run at a beamline](../how-to/beamline-operation.md).
+
+- id: KI-20
+  title: The GSAS-II server's state directory must be on this computer's own disk
+  status: open
+  severity: minor
+  applies_to: GSAS-II server
+  what_happens: >-
+    The server's state directory holds `server.lock`, `server.pid` and
+    `server.json`. It is `$XDG_RUNTIME_DIR/powderline`, or
+    `<temp folder>/powderline-<uid>`, because the server belongs to one
+    computer. If `TMPDIR` points into a network folder shared by several
+    computers, such as a network home directory, those computers share the
+    files. `gsas-server stop` on one computer could then read the process ID
+    of a server on another and signal an unrelated process of yours. This is
+    inferred from the code; it has not been reproduced.
+  what_to_do: >-
+    Keep `TMPDIR` on this computer's local disk. If PowderLine refuses the
+    state directory because the temp folder is not private, point `TMPDIR`
+    or `XDG_RUNTIME_DIR` at a private folder on the local disk, not in a
+    network home directory.
+
+- id: KI-21
+  title: "`gsas-server stop` can read a leftover process ID in a narrow race"
+  status: open
+  severity: minor
+  applies_to: GSAS-II server
+  what_happens: >-
+    `gsas-server stop` treats the server as running while anything holds the
+    lock on `server.lock`. Another client checks for a server by taking that
+    lock for a moment. If a server died without removing `server.pid`, and a
+    client's check coincides with `stop`, `stop` signals the process ID in
+    that leftover file. The ID may by then belong to another of your
+    processes. The window is a fraction of a second.
+  what_to_do: >-
+    Run `pixi run -e gsasii gsas-server status` before `stop` when a server
+    may have crashed. If status reports no server, there is nothing to stop.

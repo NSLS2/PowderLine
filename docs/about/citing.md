@@ -1,8 +1,6 @@
 # Citing PowderLine
 
-PowderLine is described in a paper accepted for publication in the
-*Journal of Applied Crystallography*. Until it appears, please cite the
-preprint:
+If you use PowderLine in your research, please cite the preprint:
 
 > A. A. Corrao, J. A. Perez, J. D. Langhout, M. M. Butala, T. A. Caswell, and
 > D. Olds. *PowderLine: a programmatic powder diffraction analysis application.*

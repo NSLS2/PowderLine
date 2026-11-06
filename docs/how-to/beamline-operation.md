@@ -17,7 +17,8 @@ pixi run -e gsasii powderline --doctor
 
 The report lists the PowderLine version, the gateways it finds, each
 engine's installed version against the version PowderLine supports, and the
-GSAS-II server's state. In the core-only environment it looks like this:
+GSAS-II server's state. In the core-only environment
+(`pixi run powderline --doctor`) it looks like this:
 
 ```
 PowderLine 0.2.0  (Python 3.13.15, Linux-…)
@@ -114,6 +115,12 @@ pixi run -e gsasii gsas-server restart    # stop, then start in this terminal; t
 You rarely need `start`. A run in auto or server mode starts the server in
 the background by itself.
 
+The server keeps running after your run ends, until you stop it or the
+computer restarts ({ref}`KI-19 <ki-19>`). Stop it when you finish a session,
+before you log out: `pixi run -e gsasii gsas-server stop`. On a shared
+workstation where no one will stop it, switch the server off with
+`POWDERLINE_NO_SERVER` ([below](#on-a-shared-workstation)).
+
 :::{important}
 `gsas-server start` and `gsas-server restart` run the server in the
 terminal you type them in. The command does not return while the server
@@ -149,7 +156,7 @@ terminal of its own.
 
 ### On a shared workstation
 
-The server is per user:
+The server is per user account:
 
 - It listens on the loopback interface (`127.0.0.1`) only, on a free port.
   Other machines cannot reach it.
@@ -167,9 +174,14 @@ The server is per user:
 Other users therefore cannot use your server, and cannot pose as it. Each
 user who runs `gsasii.*` recipes gets a server of their own.
 
+People who share one login, such as a beamline account, share one server.
+Stopping it stops it for all of them, including a refinement in progress.
+
 On Linux and macOS, PowderLine checks that the private directory is yours
 and closed to other users. It refuses to use a directory that is not, for
-example one another user created in a shared `/tmp`.
+example one another user created in a shared `/tmp`. Keep `TMPDIR` on this
+computer's local disk, not in a network home directory: the server and its
+state belong to one computer ({ref}`KI-20 <ki-20>`).
 
 :::{caution}
 On Windows, PowderLine does not check who can read
@@ -185,15 +197,20 @@ deployment, set:
 export POWDERLINE_NO_SERVER=1        # also: true, yes, on
 ```
 
-Then auto-mode runs go in-process and never start a server, `--use-server`
-fails with reason `server_disabled`, and `gsas-server start` and `restart`
-refuse to start.
+In PowerShell, write `$env:POWDERLINE_NO_SERVER = "1"`.
+
+Then auto-mode runs go in-process and never start a server, and
+`gsas-server start` and `restart` refuse to start. The command line refuses
+`--use-server` before anything runs. In Python, `execution_mode="server"`
+fails with reason `server_disabled`.
 
 :::{note}
-The server picks a free port by itself, so users never collide. Pin a port
-only if a firewall rule needs one: set `POWDERLINE_SERVER_PORT` before
-`gsas-server start`. If that port is busy, the server does not start.
-Clients find the port in your private directory.
+The server picks a free port by itself, so users never collide. To pin a
+port, set `POWDERLINE_SERVER_PORT` in the environment of every run, not only
+for `gsas-server start`: a run that starts the server itself uses it too. If
+that port is busy, the server does not start. Two users who pin the same
+port on one computer block each other. Clients find the port in your private
+directory.
 :::
 
 ### Set a time limit
@@ -262,8 +279,9 @@ how to catch and record failures.
 **Check:**
 - `pixi run -e gsasii gsas-server status` says `Server is running` and
   `Code: current (matches this checkout)`.
-- In a batch, `result["method"]` is `"server"` for every `gsasii.*` run.
-  On the command line, a run prints `Executed using server mode`.
+- In a batch, `result["method"]` is `"server"` for every `gsasii.*` run
+  after the server has started. On the command line, such a run prints
+  `Executed using server mode`.
 
 **Next:** [Run a series](sequential-refinement.md),
 [Troubleshoot](troubleshooting.md#the-gsas-ii-server).

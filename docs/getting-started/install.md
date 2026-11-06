@@ -58,10 +58,11 @@ It exits with an error if something is wrong.
 
 ## Platforms
 
-PowderLine runs on Linux, Windows and macOS (Apple Silicon). The commands on
-these pages are the same on every platform. Run them from the repository
-folder in your terminal: bash or zsh on Linux and macOS, PowerShell or
-Command Prompt on Windows.
+PowderLine runs on Linux, Windows and macOS (Apple Silicon). The `pixi`
+commands on these pages are the same on every platform. Run them from the
+repository folder in your terminal: bash or zsh on Linux and macOS,
+PowerShell on Windows. A few pages also use shell commands such as `cp` or
+`export`; where they differ, the page gives the PowerShell form.
 
 :::{note}
 PowderLine is tested on Linux and Windows. macOS is expected to work, but it
@@ -78,7 +79,7 @@ installed. See [Run TOPAS recipes](../how-to/run-topas.md).
 
 ## Using PowderLine from your own project
 
-PowderLine is not yet on PyPI or conda-forge. To call it from another project,
+PowderLine is not on PyPI or conda-forge. To call it from another project,
 see [Use PowderLine from Python and in pipelines](../how-to/python-pipelines.md).
 
 **Next:** [Your first refinement](first-refinement.md).

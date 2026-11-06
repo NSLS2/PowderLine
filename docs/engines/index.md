@@ -120,18 +120,28 @@ Edge cases:
   and you can change it. PowderLine checks against the file as shipped with
   TOPAS 6.
 
+## Special positions by engine
+
+Each engine has its own tolerance for deciding whether an atom sits on a
+special position, and the engines disagree. PowderLine applies one rule for
+every engine. The table in
+[Model disorder near special positions](../how-to/disorder.md#how-powderline-reads-an-atom-near-a-special-position)
+compares what each engine would do with what PowderLine does.
+
 ## Choosing an engine
 
 PowderLine does not rank the engines. What each one needs and offers:
 
-- **GSAS-II** runs on Linux, Windows and macOS, installed by pixi. It does
+- **GSAS-II** runs on Linux and Windows, installed by pixi, and is expected
+  to work on macOS (not routinely tested). It does
   Rietveld refinement and single-peak fitting. Its recipes have no bounds,
   and a few documented defaults.
 - **TOPAS** recipes validate, and generate TOPAS's input files, on any
   platform. Running them needs TOPAS 6 and its `tc.exe`, on Windows. TOPAS
   does Rietveld refinement and single-peak fitting, with bounds.
-- **easydiffraction** runs on Linux, Windows and macOS, installed by pixi,
-  with Python 3.12 or later. It does Rietveld refinement only, with bounds,
+- **easydiffraction** runs on Linux and Windows, installed by pixi, with
+  Python 3.12 or later, and is expected to work on macOS (not routinely
+  tested). It does Rietveld refinement only, with bounds,
   and you choose one of two calculators.
 
 The same data refined in every engine, and why the numbers differ, is in

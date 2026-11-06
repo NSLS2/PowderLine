@@ -21,7 +21,14 @@ own history, on the [versions page](docs/reference/versions.md).
 - CLI and GSAS-II server messages name the current commands: `pixi run
   powderline …`, `pixi install --frozen -e <env>`, `pixi run -e gsasii
   gsas-server stop` for a stale server (the next run starts a fresh one),
-  and `pixi reinstall powderline --all`.
+  `pixi run -e gsasii gsas-server start`, and `pixi reinstall powderline
+  --all`.
+- Messages say what they mean: an atom near a special position reports the
+  distance to its symmetry image, and the GSAS-II background-default warning
+  says GSAS-II's own default background is fixed.
+- The GSAS-II server's lifetime, its state directory and a race in
+  `gsas-server stop` are documented as known issues KI-19 to KI-21
+  ([known issues](docs/reference/known-issues.md)).
 
 ## [0.2.0] - 2026-11-04
 
@@ -36,7 +43,7 @@ limitations are listed in the [known-issues register](docs/reference/known-issue
 - **One recipe, one engine:** `gsasii.*`, `topas.*` and `easydiffraction.*`
   recipes, each in its engine's own names and units, through one API and one CLI.
 - **New schemas, starting at 0.1.0:** a core schema plus one schema per engine
-  replace the single 0.1–0.26.0 schema ([schemas](docs/engines/index.md)).
+  replace the single 0.1–0.26.0 schema ([engines](docs/engines/index.md)).
 - **Validation states what the engine computes:** symmetry, engine floors and
   silent defaults become errors or structured warnings, never silent changes.
 - **Uniform fit statistics:** `rwp`, `r_exp`, `gof`, `chi2_red` are computed by
@@ -88,7 +95,7 @@ limitations are listed in the [known-issues register](docs/reference/known-issue
   with value and ESD, by GSAS-II's own name.
 - Ionic `scattering_types` (CIF spelling, e.g. `La3+`) per atom label in the
   gsasii and easydiffraction (`cryspy`) phase blocks, checked against each
-  engine's ion table ([input guidance](docs/engines/index.md); EB-94–EB-96).
+  engine's ion table ([scattering types by engine](docs/engines/index.md); EB-94–EB-96).
 - March–Dollase `preferred_orientation` (`hkl`, `ratio`) in the gsasii and
   easydiffraction (`cryspy`) phase blocks (EB-97, EB-98).
 - TOPAS accepts ionic `scattering_types` (TOPAS 6's table, 113 ions, written as
@@ -109,8 +116,8 @@ limitations are listed in the [known-issues register](docs/reference/known-issue
 - Examples: per-engine recipes under `examples/<case>/{topas,easydiffraction}/`,
   `example_LaB6_temperature_series` (sequential refinement), `example_LaB6_ionic`
   and `example_LaB6_textured`, with easydiffraction references.
-- Documentation: [schemas](docs/reference/outputs.md), [fields](docs/reference/fields.md), [input
-  guidance](docs/concepts/validation.md), [engine behaviour](docs/engines/index.md),
+- Documentation: [outputs](docs/reference/outputs.md), [fields](docs/reference/fields.md),
+  [validation](docs/concepts/validation.md), [engine behaviour](docs/engines/index.md),
   [cross-engine comparison](docs/concepts/comparing-engines.md), [policies](docs/development/policies.md).
 - Engine citations in `CITATION.cff` and on the [citing page](docs/about/citing.md) (#12).
 

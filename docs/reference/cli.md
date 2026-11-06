@@ -29,7 +29,7 @@ The pixi task `kicker` runs the same command.
 
 | Option | Effect |
 |---|---|
-| `<recipe.json>` | The recipe to run, saved as JSON. Required unless `--doctor` is given. |
+| `<recipe.json>` | The recipe to run, saved as JSON. Required unless `--doctor` is given. The command also reads a recipe saved as YAML (`.yaml`, `.yml`); JSON is the tested form. |
 | `--output DIR` | The output directory. Default: `output/` next to the recipe. |
 | `--validate-only` | Validate the recipe, print its summary and warnings, and run nothing. No engine needed; nothing is written. |
 | `-v`, `--verbose` | Print the engine's progress, the recipe, the run ID, the informative notes (`level: "info"`) and the disposition counts. |
@@ -74,8 +74,8 @@ TOPAS version, and it must equal the recipe's `engine_version`. When no
 | 2 | A usage error, reported before anything runs: no recipe and no `--doctor`, both `--use-server` and `--no-server`, an unknown option, or a timeout that is not a number. |
 
 A failed run prints its [failure reason](messages.md#failure-reasons) and the
-files kept for diagnosis. For GSAS-II it also prints the engine's last console
-lines.
+files kept for diagnosis. For GSAS-II and TOPAS it also prints the engine's
+last console lines.
 
 ## Templates are refused
 
@@ -109,6 +109,7 @@ It exits with status 1 when it finds a problem:
 - no gateway at all;
 - an installed engine outside its required version;
 - an engine whose version cannot be read;
+- a gateway that fails to load;
 - a `.powderline_config.yaml` that cannot be read.
 
 An engine that is not installed is reported but is not a problem. The default
