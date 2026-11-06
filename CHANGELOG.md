@@ -9,27 +9,6 @@ own history, on the [versions page](docs/reference/versions.md).
 
 ## [Unreleased]
 
-### Changed
-
-- The documentation is rebuilt around its readers: Get started, Concepts,
-  How-to guides, Examples, Engines, Reference and Development, on
-  pydata-sphinx-theme with diagrams and per-engine tabs
-  ([docs](https://nsls2.github.io/PowderLine/)).
-- Every engine behaviour (`EB-NN`) and known issue (`KI-NN`) has its own
-  entry and link, listed in the
-  [ID index](docs/reference/ids.md).
-- CLI and GSAS-II server messages name the current commands: `pixi run
-  powderline …`, `pixi install --frozen -e <env>`, `pixi run -e gsasii
-  gsas-server stop` for a stale server (the next run starts a fresh one),
-  `pixi run -e gsasii gsas-server start`, and `pixi reinstall powderline
-  --all`.
-- Messages say what they mean: an atom near a special position reports the
-  distance to its symmetry image, and the GSAS-II background-default warning
-  says GSAS-II's own default background is fixed.
-- The GSAS-II server's lifetime, its state directory and a race in
-  `gsas-server stop` are documented as known issues KI-19 to KI-21
-  ([known issues](docs/reference/known-issues.md)).
-
 ## [0.2.0] - 2026-11-04
 
 PowderLine 0.2.0 is a clean break from the unified recipe schema 0.26.0: a
@@ -116,9 +95,19 @@ limitations are listed in the [known-issues register](docs/reference/known-issue
 - Examples: per-engine recipes under `examples/<case>/{topas,easydiffraction}/`,
   `example_LaB6_temperature_series` (sequential refinement), `example_LaB6_ionic`
   and `example_LaB6_textured`, with easydiffraction references.
-- Documentation: [outputs](docs/reference/outputs.md), [fields](docs/reference/fields.md),
-  [validation](docs/concepts/validation.md), [engine behaviour](docs/engines/index.md),
-  [cross-engine comparison](docs/concepts/comparing-engines.md), [policies](docs/development/policies.md).
+- Documentation, organised by reader: Get started, Concepts, How-to guides,
+  Examples, Engines, Reference and Development, on pydata-sphinx-theme with
+  diagrams and per-engine tabs ([docs](https://nsls2.github.io/PowderLine/)).
+  Among its pages: [outputs](docs/reference/outputs.md),
+  [fields](docs/reference/fields.md), [validation](docs/concepts/validation.md),
+  [engine behaviour](docs/engines/index.md),
+  [cross-engine comparison](docs/concepts/comparing-engines.md) and
+  [policies](docs/development/policies.md).
+- Every engine behaviour (`EB-NN`) and known issue (`KI-NN`) has its own
+  entry and link, listed in the [ID index](docs/reference/ids.md). Known
+  issues KI-19 to KI-21 cover the GSAS-II server's lifetime, its state
+  directory and a race in `gsas-server stop`
+  ([known issues](docs/reference/known-issues.md)).
 - Engine citations in `CITATION.cff` and on the [citing page](docs/about/citing.md) (#12).
 
 ### Changed
@@ -199,6 +188,14 @@ limitations are listed in the [known-issues register](docs/reference/known-issue
   the LaB6 examples drop their undeterminable background peak.
 - The simulation recipe builder writes SH/L 0.002 (GSAS-II's floor) and emits a
   `gsasii.rietveld` 0.1.0 recipe.
+- CLI and GSAS-II server messages name the current commands: `pixi run
+  powderline …`, `pixi install --frozen -e <env>`, `pixi run -e gsasii
+  gsas-server stop` for a stale server (the next run starts a fresh one),
+  `pixi run -e gsasii gsas-server start`, and `pixi reinstall powderline
+  --all`.
+- Messages say what they mean: an atom near a special position reports the
+  distance to its symmetry image, and the GSAS-II background-default warning
+  says GSAS-II's own default background is fixed.
 
 ### Removed
 
