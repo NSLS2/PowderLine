@@ -107,9 +107,11 @@ Refine flag
   hold it.
 
 Rexp
-: Expected R factor, the best Rwp the weights allow:
+: Expected R factor: the Rwp a correct model would give if the only misfit
+  were the noise the weights describe,
   $R_\mathrm{exp} = 100 \sqrt{(N - P) / \sum w_i y_{\mathrm{obs},i}^2}$, in
-  percent.
+  percent. It is not a lower bound: Rwp can fall below it when the weights
+  overstate the noise.
 
 Run ID
 : A UUID that identifies one run (`result["run_id"]`). It becomes the

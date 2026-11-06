@@ -63,7 +63,7 @@
 
 {bdg-warning}`accepted` · minor · core
 
-**What happens:** An atom placed off a special position to model disorder has `k` symmetry images where the ordered atom had one. `k` is the general multiplicity divided by the special one. Unless its occupancy is divided by `k`, the site holds `k` atoms. PowderLine checks the position, which must be at least 2e-3 off the special position. It does not check the occupancy, because a full occupancy is also a legitimate model: a genuinely general site.
+**What happens:** An atom placed off a special position to model disorder has `k` symmetry images where the ordered atom had one. `k` is the general multiplicity divided by the special one. Unless its occupancy is divided by `k`, the site holds `k` atoms. PowderLine checks the position: no symmetry image of the atom may lie 5e-6 to 2e-3 from it. It does not check the occupancy, because a full occupancy is also a legitimate model: a genuinely general site.
 
 **What to do:** Divide the occupancy by `k` yourself. See [Model disorder near special positions](../how-to/disorder.md).
 
@@ -72,7 +72,7 @@
 
 {bdg-warning}`accepted` · minor · core
 
-**What happens:** Validation refuses an atom stated near a special position without being on it: one whose symmetry images are 5e-6 to 2e-3 (fractional) away. During a refinement, no engine moves a coordinate back onto one. GSAS-II never snaps, easydiffraction detects Wyckoff positions only when the structure is built ({ref}`EB-74 <eb-74>`), and TOPAS compares exactly. So a split atom can refine into that band. The result is still returned, because its numbers are what the engine computed. Its output recipe fails validation, and the warning `output_recipe_not_valid` names the coordinate, so a chained next step stops there.
+**What happens:** Validation refuses an atom stated near a special position without being on it: one with a symmetry image 5e-6 to 2e-3 (fractional) away. During a refinement, no engine moves a coordinate back onto a special position. GSAS-II never snaps, easydiffraction detects Wyckoff positions only when the structure is built ({ref}`EB-74 <eb-74>`), and TOPAS compares exactly. So a split atom can refine into that band. The result is still returned, because its numbers are what the engine computed. Its output recipe fails validation, and the warning `output_recipe_not_valid` names the coordinate, so a chained next step stops there.
 
 **What to do:** State the atom on the special position, or restart it further off. See [Model disorder near special positions](../how-to/disorder.md).
 

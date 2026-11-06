@@ -96,15 +96,19 @@ but by symmetry b = a; write b = 4.15682
 ## Special positions
 
 An atom is either **on** a special position or clearly **off** it.
-PowderLine measures this with `d`, the largest fractional distance between
-the atom and one of its own symmetry images. On a mirror or an inversion
-centre, `d` is twice the atom's offset from the site.
+PowderLine applies every symmetry operation to the atom and measures `d`,
+the distance between the atom and that image: the largest of the three
+fractional-coordinate differences. On a mirror or an inversion centre, `d` is
+twice the atom's offset from the site. Each image is judged on its own:
 
-| `d` (fractional) | PowderLine reads it as |
+| `d` of an image (fractional) | PowderLine reads it as |
 |---|---|
-| 0, or within 5e-6 | on the special position. A value derived by symmetry, such as 1/3, is held exact with an `info` note. A constant with an exact decimal form, such as 0.5, must be written exactly. |
-| between 5e-6 and 2e-3 | **error**: state the position exactly, or move the atom until `d` is at least 2e-3 |
-| 2e-3 or more | a general position, used as stated |
+| below 5e-6 | the atom itself: it sits on that symmetry element. A value derived by symmetry, such as 1/3, is held exact with an `info` note. A constant with an exact decimal form, such as 0.5, must be written exactly. |
+| 5e-6 up to 2e-3 | **error**: state the position exactly, or move the atom until no image lies in this range |
+| 2e-3 or more | a separate atom of the site |
+
+An atom with no image below 5e-6, other than itself, is on a general
+position.
 
 [Model disorder near special positions](../how-to/disorder.md) compares this
 rule with each engine's own tolerance.

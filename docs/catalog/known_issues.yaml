@@ -319,8 +319,8 @@
     An atom placed off a special position to model disorder has `k` symmetry
     images where the ordered atom had one. `k` is the general multiplicity
     divided by the special one. Unless its occupancy is divided by `k`, the
-    site holds `k` atoms. PowderLine checks the position, which must be at
-    least 2e-3 off the special position. It does not check the occupancy,
+    site holds `k` atoms. PowderLine checks the position: no symmetry image
+    of the atom may lie 5e-6 to 2e-3 from it. It does not check the occupancy,
     because a full occupancy is also a legitimate model: a genuinely general
     site.
   what_to_do: >-
@@ -334,8 +334,8 @@
   applies_to: core
   what_happens: >-
     Validation refuses an atom stated near a special position without being
-    on it: one whose symmetry images are 5e-6 to 2e-3 (fractional) away. During a refinement, no engine moves a coordinate back
-    onto one. GSAS-II never snaps, easydiffraction detects Wyckoff positions
+    on it: one with a symmetry image 5e-6 to 2e-3 (fractional) away. During a
+    refinement, no engine moves a coordinate back onto a special position. GSAS-II never snaps, easydiffraction detects Wyckoff positions
     only when the structure is built (EB-74), and TOPAS compares exactly. So
     a split atom can refine into that band. The result is still returned,
     because its numbers are what the engine computed. Its output recipe fails

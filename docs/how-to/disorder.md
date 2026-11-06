@@ -17,9 +17,9 @@ special position or **off** it, and the engines do not agree. PowderLine
 decides once, in core, the same way for every engine. Anything an engine
 would do silently becomes either a reported value or an error.
 
-The distance from the special position is measured as `d`: the largest
-fractional-coordinate distance between the atom and one of its own symmetry
-images. On a mirror or an inversion centre, `d` is twice the atom's offset
+PowderLine applies every symmetry operation to the atom and measures `d`,
+the distance between the atom and that image: the largest of the three
+fractional-coordinate differences. Each image is judged on its own. On a mirror or an inversion centre, `d` is twice the atom's offset
 from the site. Fractional units make `d` independent of the cell, which is
 itself refined. The distance in ångströms is roughly d × a: 2e-3 is 0.008 Å in a
 4 Å cell, 0.02 Å in a 10 Å cell and 0.04 Å in a 20 Å cell.
@@ -28,7 +28,7 @@ itself refined. The distance in ångströms is roughly d × a: 2e-3 is 0.008 Å 
 |---|---|---|---|---|
 | **Exactly on** it (`0.5`, `0.25`, `0`) | read it as special | read it as special | read it as special (only an exact value or an equation) | special position. A fixed coordinate cannot be refined: a refine flag on one is an error. |
 | **Within 5e-6** (`0.333333` for 1/3, `0.5000001` for 1/2) | read it as special (its tolerance is 2e-5 + 1e-5·\|x\|) | read it as special and **move the coordinate** to its Wyckoff value | read it as a **general** position: `k` atoms almost on top of each other | depends on the value. A third, or a value derived from another stated value, is held exact and reported as `symmetry_value_derived` (level `info`); every engine gets the exact value, TOPAS the equation `= 1/3;`. A constant with an exact decimal form is an **error**: `0.5000001` gets "write x = 0.5". |
-| **5e-6 to 2e-3** (`0.3333`, `0.33`, or an atom 0.001 off) | special up to about 2e-5, then general, with the multiplicity changing in between | special or general, depending on how the decimals rationalise | general | **error** naming the atom, the special position it is near and the fix: state the position exactly, or move the atom until `d` is at least 2e-3 |
+| **5e-6 to 2e-3** (`0.3333`, `0.33`, or an atom 0.001 off) | special up to about 2e-5, then general, with the multiplicity changing in between | special or general, depending on how the decimals rationalise | general | **error** naming the atom, the special position it is near and the fix: state the position exactly, or move the atom until no symmetry image is 5e-6 to 2e-3 away |
 | **2e-3 or more** | general | general | general | general position, used as stated. Nothing is moved. |
 
 So every recipe PowderLine accepts is read the same way by all three
@@ -50,8 +50,8 @@ This example moves Li off the 4a site `(0, 0, 0)` of the `F m -3 m` phase in
        "occupancy": [0.6, false], "Multiplicity": 4, "ADP": "Uiso", "Uiso": [0.0051, false]}
 ```
 
-1. **Place the atom at least 2e-3 off** the special position, in fractional
-   units. Work it out from the displacement you expect: 0.1 Å in a 10 Å cell
+1. **Place the atom well off** the special position, so that no symmetry
+   image lands 5e-6 to 2e-3 from it. Work it out from the displacement you expect: 0.1 Å in a 10 Å cell
    is 0.01. Here Li moves to `x = 0.01`, a 24e site.
 
 2. **Update `Multiplicity`, or leave it out.** It is optional. When stated,
@@ -89,7 +89,7 @@ If the atom is too close, validation refuses it and says how far it is.
 With Li at `x = 0.0005`:
 
 ```
-• payload -> phases -> DRX_33 -> atoms -> Li: Value error, position (0.0005, 0, 0) is near the special position (0, 0, 0) (multiplicity 4) in 'F m -3 m' without being on it: a symmetry image of the atom is 0.001 (fractional) away from it. State the special-position coordinates to at least 6 decimals, or move the atom until its symmetry images are at least 0.002 away
+• payload -> phases -> DRX_33 -> atoms -> Li: Value error, position (0.0005, 0, 0) is near the special position (0, 0, 0) (multiplicity 4) in 'F m -3 m' without being on it: a symmetry image of the atom is 0.001 (fractional) away from it. State the special-position coordinates to at least 6 decimals, or move the atom until none of its symmetry images is between 5e-06 and 0.002 away
 ```
 
 ## During a refinement
@@ -102,8 +102,8 @@ No engine moves a refined coordinate back onto a special position:
 - TOPAS compares exactly.
 
 A disordered atom that refines towards its special position therefore stays
-a general position with near-coincident images. If it ends inside the 2e-3
-band, the run still returns its result, but the **output recipe is marked
+a general position with near-coincident images. If it ends with an image
+5e-6 to 2e-3 away, the run still returns its result, but the **output recipe is marked
 not valid**: `output_recipe_valid: false`, with the `output_recipe_not_valid`
 warning naming the coordinate. A chained next step stops there instead of
 running on an ambiguous position ({ref}`KI-18 <ki-18>`).

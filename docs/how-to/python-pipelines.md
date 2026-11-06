@@ -205,9 +205,10 @@ result["output_recipe"]["metadata"]
 
 [Results](../concepts/results.md#provenance) explains every provenance key
 and the output recipe. Every result has its own `run_id`, and its output
-recipe names that run as `parent_run_id`. Store the `run_id` with your
-results, and a chain of analyses leads back to the data and the recipe that
-started it. A `failure.json` carries the same provenance
+recipe names that run as `parent_run_id`. The next run replaces that block,
+so an output recipe names only the run just before it. Store each step's
+input recipe and `run_id` with its results: the input's `parent_run_id` then
+links each step to the one before, back to the data and the first recipe. A `failure.json` carries the same provenance
 ([Outputs](../reference/outputs.md#when-a-run-fails)).
 
 ## Use the GSAS-II server client directly

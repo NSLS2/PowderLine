@@ -158,8 +158,9 @@ data's location in your catalogue, how the recipe was generated. PowderLine
 never reads it, but carries it through.
 
 Every run gets its own ID. The output recipe records which run produced it,
-which engine and version ran, and which PowderLine version. Follow those links
-and a chain of analyses leads back to the data and the recipe that started it.
+which engine and version ran, and which PowderLine version. It records only
+that one run, so to trace a whole chain of analyses, keep each step's input
+recipe and result together.
 
 ```mermaid
 flowchart LR

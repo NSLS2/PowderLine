@@ -48,8 +48,8 @@ Describe what should happen when this refinement runs:
 - **Parameters that converge**: Which refinement parameters should stabilize?
 - **Fit statistics of the committed run**: Rwp __ %, Rexp __ %, GoF __
   (PowderLine's uniform `rwp`, `r_exp` and `gof`). Report all three: Rwp
-  alone does not grade a fit, because Rexp is the best Rwp the data can
-  support
+  alone does not grade a fit, because Rexp, the Rwp expected from the noise
+  alone, differs from one data set to another
 - **Typical runtime**: How long does this refinement take?
 - **Normal warnings/messages**: Are there expected warnings that can be ignored?
 

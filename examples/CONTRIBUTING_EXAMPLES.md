@@ -379,9 +379,9 @@ When adding your example, help future users by noting in your DESCRIPTION.md:
   - Data quality limitations
 ```
 
-Report Rwp together with Rexp and GoF, and don't grade the fit by Rwp alone:
-Rexp is the best Rwp the data can support, so the same Rwp can be a good fit
-for one data set and a poor one for another. See
+Report Rwp together with Rexp and GoF, and don't grade the fit by Rwp alone.
+Rexp is the Rwp expected from the noise alone, as the weights describe it, so
+the same Rwp can be a good fit for one data set and a poor one for another. See
 [Judge a fit by looking at it](../docs/concepts/refinement-practice.md#judge-a-fit-by-looking-at-it).
 
 ## Questions?

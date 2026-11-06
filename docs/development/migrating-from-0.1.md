@@ -47,8 +47,8 @@ never guesses. Each message names the field and, where there is one, the
 value to write.
 ```
 
-Typical stops: origin choice `:1`, an atom 5e-6 to 2e-3 off a special
-position, a `Uaniso` with only some of its six components, a Kα doublet, TOF
+Typical stops: origin choice `:1`, an atom near a special position without
+being on it (a symmetry image 5e-6 to 2e-3 away), a `Uaniso` with only some of its six components, a Kα doublet, TOF
 or neutron instrument, non-isotropic broadening, and a value below a GSAS-II
 floor. The 0.26.0 LaB6 recipes stop on their background peak's width, which
 is below GSAS-II's floor ({ref}`EB-35 <eb-35>`).

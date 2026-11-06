@@ -19,8 +19,11 @@ starting point, not a substitute for the references at the end.
   important test of a Rietveld fit is to look at it and check that the model
   is chemically plausible. R-factors alone can mislead
   ([Toby 2006](#ref-toby2006)).
-- **Read Rwp next to Rexp.** Rexp is the best Rwp the data could support. A
-  pattern dominated by background can give a low Rwp with a wrong structural
+- **Read Rwp next to Rexp.** Rexp is the Rwp expected from the noise alone,
+  as the weights describe it. Rwp near Rexp (GoF ≈ 1) means the misfit is at
+  the noise level; Rwp well above it means a misfit the model does not
+  explain. Rwp well below it (GoF < 1) usually means the weights overstate
+  the noise. A pattern dominated by background can give a low Rwp with a wrong structural
   model, and counting longer can *raise* χ² while improving the model
   ([Toby 2006](#ref-toby2006)).
 - **Compare models on the same points.** PowderLine's uniform Rwp, Rexp and

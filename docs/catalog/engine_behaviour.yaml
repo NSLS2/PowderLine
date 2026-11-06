@@ -217,9 +217,9 @@
     GSAS-II compares symmetry images within 2e-5 + 1e-5·|x|, and not
     modulo 1.
   powderline_does: >-
-    Core decides special positions, not the engine. An atom within 5e-6
-    (fractional) of a special position is on it. An atom 5e-6 to 2e-3 off is
-    a validation error. Derived values are held exactly in the validated
+    Core decides special positions, not the engine. A symmetry image within
+    5e-6 (fractional) of the atom means it sits on that symmetry element. An
+    image 5e-6 to 2e-3 away is a validation error. Derived values are held exactly in the validated
     model, so GSAS-II's tolerance never matters.
   you_see: [symmetry_value_derived, validation error]
   status: handled

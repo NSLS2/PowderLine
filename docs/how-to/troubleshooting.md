@@ -135,13 +135,13 @@ Fixed angles are exactly 90, or 120.
 
 ```
   • payload -> phases -> LaB6 -> atoms -> B: Value error, atom 'B' (multiplicity 6 in 'P m -3 m'): (0.4999999, 0.5, 0.2021) is 1e-07 from a special position, not on it (x = 1/2, y = 1/2); write x = 0.5
-  • payload -> phases -> DRX_33 -> atoms -> Li: Value error, position (0.0005, 0, 0) is near the special position (0, 0, 0) (multiplicity 4) in 'F m -3 m' without being on it: a symmetry image of the atom is 0.001 (fractional) away from it. State the special-position coordinates to at least 6 decimals, or move the atom until its symmetry images are at least 0.002 away
+  • payload -> phases -> DRX_33 -> atoms -> Li: Value error, position (0.0005, 0, 0) is near the special position (0, 0, 0) (multiplicity 4) in 'F m -3 m' without being on it: a symmetry image of the atom is 0.001 (fractional) away from it. State the special-position coordinates to at least 6 decimals, or move the atom until none of its symmetry images is between 5e-06 and 0.002 away
 ```
 
 **Fix:** write a constant with a decimal form exactly (`0.5`), and a third to
 at least six decimals (`0.333333`). An atom meant to sit off a special
-position must be far enough off that its symmetry images are at least 2e-3
-away: see
+position must be far enough off that no symmetry image of it lies 5e-6 to
+2e-3 away: see
 [Model disorder near special positions](disorder.md).
 
 ### A refine flag breaks a symmetry tie
@@ -321,8 +321,8 @@ The result says `output_recipe_valid: false`, with the warning
 **Cause:** the engine returned a value the recipe format refuses: an
 occupancy outside 0 to 1, a crystallite size of zero or below, a negative
 `Uiso` in an easydiffraction recipe, a profile that makes a width negative
-({ref}`EB-87 <eb-87>`), or a split atom inside the 2e-3 band of a special
-position ({ref}`KI-18 <ki-18>`). The result itself is
+({ref}`EB-87 <eb-87>`), or a split atom that ends with a symmetry image
+5e-6 to 2e-3 away ({ref}`KI-18 <ki-18>`). The result itself is
 unaffected. `output_recipe.json` is still written, so you can see what the
 engine produced, and `parameter_dispositions.csv` shows each value with its
 ESD.

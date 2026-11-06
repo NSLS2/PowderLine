@@ -60,7 +60,8 @@ refuses, for example:
 - a negative `Uiso` in an easydiffraction recipe;
 - a profile that makes a peak width negative
   ({ref}`EB-87 <eb-87>`, easydiffraction);
-- a split atom that refined to within 2e-3 of its special position
+- a split atom that refined until a symmetry image of it is 5e-6 to 2e-3
+  away
   ({ref}`KI-18 <ki-18>`).
 
 The `output_recipe_not_valid` warning names each offending value. The
