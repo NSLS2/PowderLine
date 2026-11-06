@@ -1,0 +1,1438 @@
+# PowderLine engine-behaviour catalogue (public).
+#
+# One entry per EB-NN id: what an engine does on its own, and what PowderLine
+# does about it. scripts/gen_catalog.py renders it into docs/_generated/
+# (eb_<engine>.md, ids.md), which the Engines pages include; `--check` fails
+# when an EB id used in src/ or docs/ has no entry here.
+#
+# Public fields only. Never write evidence paths, probe names, source line
+# numbers or private record ids here.
+#
+# Fields
+#   id               EB-NN, permanent, never reused.
+#   engine           gsasii | topas | easydiffraction | all
+#                    (all: concerns every engine, or compares engines).
+#   versions         the engine version(s) the entry was established on.
+#   topic            one of the topics below.
+#   title            one short sentence: what the engine does.
+#   engine_does      plain, short sentences.
+#   powderline_does  plain, short sentences.
+#   you_see          warning codes, failure reasons or "validation error";
+#                    may be empty. A bare code is rendered in backticks.
+#   status           one of the statuses below.
+#   seen_in          optional: example names where it shows.
+#   note             optional: a caveat (unverified, shared id, ...).
+#
+# Topics (rendered in this order, headings in sentence case)
+#   space-groups           Space groups
+#   sites                  Special positions and sites
+#   cell-and-adps          Cell, ADPs and occupancy
+#   scattering             Scattering types
+#   names                  Names
+#   bounds                 Bounds and limits
+#   defaults               Defaults
+#   profile                Peak profile and instrument
+#   preferred-orientation  Preferred orientation
+#   data                   Data and the fit window
+#   refinement             Refinement, convergence and failures
+#   statistics             Statistics
+#   calculators            Calculators
+#   platform               Platform and installation
+#
+# Statuses
+#   handled         PowderLine prevents or corrects it before or during the
+#                   run: a validation error, a translation, or a check that
+#                   stops the run. A recipe cannot meet it silently.
+#   warned          The run goes ahead and the result carries a warning (or a
+#                   field) that names it.
+#   documented      Documented only: the engine's behaviour stands, and the
+#                   entry tells you what to expect.
+#   fixed-upstream  Fixed in the engine version PowderLine pins; the entry
+#                   stays for its id.
+
+# --- Space groups -----------------------------------------------------------
+
+- id: EB-03
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: space-groups
+  title: Origin choice 1 is silently ignored
+  engine_does: >-
+    GSAS-II's own space-group lookup tolerates `:H` and `:2` and silently
+    ignores `:1`. A recipe meant in origin choice 1 runs in origin choice 2,
+    on a different structure.
+  powderline_does: >-
+    The gsasii gateway refuses every origin-choice-1 setting (33 settings).
+    To use one, transform the structure to a standard setting.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-04
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: space-groups
+  title: A rhombohedral symbol means hexagonal axes unless it ends in R
+  engine_does: >-
+    GSAS-II reads `R -3 m` and `R -3 m:H` on hexagonal axes. `R -3 m R` or
+    `:R` gives rhombohedral axes.
+  powderline_does: >-
+    Core requires the canonical name, which states `:H` or `:R` explicitly.
+    A bare rhombohedral symbol is an error that lists both choices. The gsasii
+    gateway writes a trailing ` R` for `:R` and drops `:H`.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-41
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: space-groups
+  title: Some spellings are not found, and two settings are read as another
+  engine_does: >-
+    GSAS-II reads spaced symbols. Its lookup returns nothing for spellings
+    such as `R-3m:H` or `Fd-3m:2`. It reads `P 21 n m` and `A b a m` as
+    another setting, whose general position has a different orbit.
+  powderline_does: >-
+    The gsasii gateway translates the canonical name: a spaced symbol, ` R`
+    for `:R`, `:H` and `:2` dropped. It refuses 9 settings beyond origin
+    choice 1: 7 that GSAS-II does not parse and 2 that it misreads. A
+    general-position orbit test over every accepted setting proves the
+    translation.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-11
+  engine: topas
+  versions: TOPAS 6
+  topic: space-groups
+  title: A bare two-origin symbol is origin choice 1
+  engine_does: >-
+    TOPAS accepts the symbols of its own table: case-insensitive, spaces
+    allowed, or the number. `:2` selects origin choice 2. A bare two-origin
+    symbol is origin choice 1, the opposite of GSAS-II's default.
+  powderline_does: >-
+    The topas gateway writes TOPAS's explicit form: `:2` kept, `:1` dropped.
+  you_see: []
+  status: handled
+
+- id: EB-43
+  engine: topas
+  versions: TOPAS 6
+  topic: space-groups
+  title: A bare rhombohedral symbol means hexagonal axes
+  engine_does: >-
+    TOPAS reads a bare rhombohedral symbol on hexagonal axes. A trailing `r`
+    gives rhombohedral axes.
+  powderline_does: >-
+    The topas gateway drops `:H` and writes `:R` as a trailing `r`.
+  you_see: []
+  status: handled
+
+- id: EB-68
+  engine: topas
+  versions: TOPAS 6
+  topic: space-groups
+  title: Some settings have no TOPAS symbol, and three are misread
+  engine_does: >-
+    Twenty of gemmi's settings have no TOPAS symbol. TOPAS 6 reads
+    `C 1 21 1`, `I 1 21 1` and `C 4 2 21` as another setting, dropping an
+    origin shift.
+  powderline_does: >-
+    The topas gateway refuses these 23 settings. The other 541 were checked
+    operator by operator against TOPAS 6's own generated operator files.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-42
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: space-groups
+  title: A space group is a short name plus a setting code
+  engine_does: >-
+    easydiffraction takes one of 230 short names and a separate setting code:
+    531 settings in all.
+  powderline_does: >-
+    The easydiffraction gateway translates the canonical name into a short
+    name and a setting code. It refuses what easydiffraction cannot express.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-80
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysPy 0.13.0, CrysFML 0.8.0)
+  topic: space-groups
+  title: Each calculator misreads some settings
+  engine_does: >-
+    CrysFML is handed the short symbol alone. It misreads almost every
+    non-default setting: unique axis, cell choice, `:R` and some origin-1
+    groups. CrysPy computes 41 settings as another setting: most c- and
+    a-unique monoclinic settings, the `:R` settings, some origin-1 settings,
+    and `P 31`, which it computes with the operators of `P 32`.
+  powderline_does: >-
+    Validation accepts, per calculator, only the settings whose computation
+    passed for a general position and for every special site: 428 of the 531
+    for CrysPy, 230 for CrysFML. The error names a setting of the same group
+    that the calculator computes, or the other calculator.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-84
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysPy 0.13.0)
+  topic: space-groups
+  title: CrysPy crashes on 53 settings
+  engine_does: >-
+    CrysPy crashes on 53 settings: 51 cell-choice settings such as
+    `A 1 2 1` and `I 1 2 1`, plus `P 6/m` and `F d -3 c:2`. CrysFML runs
+    them.
+  powderline_does: >-
+    Validation refuses these settings for the cryspy calculator (EB-80). The
+    error names a setting of the same group that CrysPy computes, or the
+    crysfml calculator.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-83
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysPy 0.13.0)
+  topic: space-groups
+  title: CrysPy resets the unique angle of some monoclinic cells to 90°
+  engine_does: >-
+    For c-unique and a-unique monoclinic cells, CrysPy resets the unique
+    angle to 90°.
+  powderline_does: >-
+    These settings are not among those validation accepts for the cryspy
+    calculator. The error names a setting of the same group that CrysPy
+    computes, or the crysfml calculator.
+  you_see: [validation error]
+  status: handled
+
+# --- Special positions and sites --------------------------------------------
+
+- id: EB-01
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: sites
+  title: GSAS-II uses its own special-position tolerance
+  engine_does: >-
+    GSAS-II compares symmetry images within 2e-5 + 1e-5·|x|, and not
+    modulo 1.
+  powderline_does: >-
+    Core decides special positions, not the engine. A symmetry image within
+    5e-6 (fractional) of the atom means it sits on that symmetry element. An
+    image 5e-6 to 2e-3 away is a validation error. Derived values are held exactly in the validated
+    model, so GSAS-II's tolerance never matters.
+  you_see: [symmetry_value_derived, validation error]
+  status: handled
+
+- id: EB-02
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: sites
+  title: A coordinate next to a cell edge gets a wrong multiplicity
+  engine_does: >-
+    A coordinate just below an integer gets multiplicity 0. A coordinate just
+    above 0 gets an invalid multiplicity.
+  powderline_does: >-
+    This cannot be reached: such coordinates are exact constants in the
+    validated model.
+  you_see: []
+  status: handled
+
+- id: EB-40
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: sites
+  title: Some 2-fold sites in R32, R-3m and R-3c are misread
+  engine_does: >-
+    On hexagonal axes, GSAS-II reads some orientations of these 2-fold sites,
+    such as (0, 1/3, 1/6), as a general position with doubled multiplicity.
+    With nothing refined, it computes four times the Bragg intensity of the
+    equivalent (1/3, 0, 1/6).
+  powderline_does: >-
+    After phase setup, the gsasii gateway compares GSAS-II's site symmetry and
+    multiplicity with core's for every atom. A wrong multiplicity always stops
+    the run, even in a simulation. The error names an equivalent position
+    GSAS-II reads correctly. PowderLine never substitutes the position
+    silently, because refined coordinates would then differ from the recipe.
+  you_see: [unusable_site]
+  status: handled
+
+- id: EB-05
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: sites
+  title: Some site symmetries cannot be named, and refining them crashes
+  engine_does: >-
+    GSAS-II cannot name the symmetry of some site orientations (`'sp'`), for
+    example F432 at (0, y, 0). It crashes when a coordinate or `Uaniso` of
+    such an atom is refined.
+  powderline_does: >-
+    After phase setup, the gsasii gateway stops with an error naming an
+    equivalent position GSAS-II can name. It does so only when a coordinate
+    or `Uaniso` of that atom is refined.
+  you_see: [unusable_site]
+  status: handled
+
+- id: EB-08
+  engine: topas
+  versions: TOPAS 6
+  topic: sites
+  title: TOPAS compares positions within 1e-15
+  engine_does: >-
+    TOPAS compares equivalent positions within 1e-15. It treats any decimal
+    third as a general position.
+  powderline_does: >-
+    Core holds derived values exactly. The topas writer emits fixed special
+    coordinates as exact equations, such as `= 1/3;`.
+  you_see: []
+  status: handled
+
+- id: EB-12
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysPy 0.13.0)
+  topic: sites
+  title: CrysPy rationalizes and snaps coordinates
+  engine_does: >-
+    CrysPy rationalizes each coordinate to a denominator of at most 10⁵. It
+    snaps 5-decimal thirds.
+  powderline_does: >-
+    Core hands over exact values, so CrysPy's own tolerance never matters.
+  you_see: []
+  status: handled
+
+- id: EB-47
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: sites
+  title: easydiffraction applies site symmetry itself
+  engine_does: >-
+    easydiffraction detects each atom's Wyckoff position and marks the
+    coordinates and Uij fixed by symmetry. It ignores a `free` flag on them,
+    and coupled coordinates follow the free one. A user edit of a value
+    re-detects the Wyckoff position with tolerance 1e-3, so an off-special
+    coordinate can change the multiplicity.
+  powderline_does: >-
+    The gateway hands over core's exact values. After the build, it checks
+    easydiffraction's multiplicity and coordinates against core's for every
+    atom. A mismatch stops the run before refining, with reason
+    `unusable_site`, and names the atom.
+  you_see: [unusable_site]
+  status: handled
+
+- id: EB-74
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: sites
+  title: Wyckoff positions are detected when the structure is built, never during a fit
+  engine_does: >-
+    easydiffraction detects Wyckoff positions when a structure is built and
+    when a user edit moves a coordinate. An edit within the 1e-3 tolerance
+    rewrites the stored value (x = 0.4995 becomes 0.5). During a fit nothing
+    is re-detected, so a refined coordinate drifting toward a special
+    position is never snapped. A position written as another lattice
+    translation of the template's pattern is stored in easydiffraction's own
+    writing.
+  powderline_does: >-
+    The gateway hands over core's exact values, and core's 5e-6 to 2e-3 band
+    refuses every position the detection could move. A position stored
+    translated by a lattice vector is the same atom: it is accepted with a
+    warning, and reports keep the recipe's writing. A refined coordinate that
+    ends near a special position is reported through the output recipe
+    (KI-18).
+  you_see: [easydiffraction_position_translated, output_recipe_not_valid]
+  status: handled
+
+- id: EB-77
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysPy 0.13.0)
+  topic: sites
+  title: CrysPy computes some special positions wrongly
+  engine_does: >-
+    CrysPy computes wrong structure factors for some equivalent writings of a
+    special position with a free coordinate. LaB6's B written as (½, ½, x)
+    instead of the template's (x, ½, ½) gives intensities off by up to ×2.
+    It also computes special positions wrongly in nine origin-choice-1
+    settings. General positions and fixed special positions are right.
+  powderline_does: >-
+    With `calculator: "cryspy"`, an atom on such a site must be written in the
+    pattern of easydiffraction's Wyckoff template. Otherwise the run stops
+    before refining, with reason `unusable_site`, and names the position to
+    write. `--validate-only` does not catch this. The nine settings are
+    refused at validation for the cryspy calculator. CrysFML has no such
+    rule.
+  you_see: [unusable_site, validation error]
+  status: handled
+
+# --- Cell, ADPs and occupancy -----------------------------------------------
+
+- id: EB-06
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: cell-and-adps
+  title: A fixed cell is not checked against its symmetry
+  engine_does: >-
+    GSAS-II enforces cell symmetry only while the cell is refined. A fixed,
+    inconsistent cell is used as given and gives wrong peak positions.
+  powderline_does: >-
+    Core refuses a cell that does not fit the space group, within 1e-9, in
+    every engine. The error gives the value to write (KI-01).
+  you_see: [validation error]
+  status: handled
+
+- id: EB-09
+  engine: topas
+  versions: TOPAS 6
+  topic: cell-and-adps
+  title: Cell values are used as given
+  engine_does: >-
+    TOPAS uses the individual `a b c al be ga` values as given.
+  powderline_does: >-
+    Core refuses a cell that does not fit the space group, within 1e-9, in
+    every engine.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-07
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: cell-and-adps
+  title: Uij site-symmetry constraints apply only while refining
+  engine_does: >-
+    GSAS-II applies the site-symmetry constraints on Uij when refining. It
+    stores the values as given.
+  powderline_does: >-
+    Core requires `Uij` values that respect the site symmetry, before any
+    engine runs.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-10
+  engine: topas
+  versions: TOPAS 6
+  topic: cell-and-adps
+  title: The adps keyword applies the Uij constraints
+  engine_does: >-
+    TOPAS's `adps` keyword applies the site-symmetry constraints on Uij.
+  powderline_does: >-
+    Core requires `Uij` values that respect the site symmetry, before any
+    engine runs.
+  you_see: [validation error]
+  status: handled
+  note: Unverified. Recorded from documentation, not from a run.
+
+- id: EB-24
+  engine: topas
+  versions: TOPAS 6
+  topic: cell-and-adps
+  title: TOPAS's isotropic ADP is beq, not Uiso
+  engine_does: >-
+    TOPAS states the isotropic ADP as `beq` = 8π²·Uiso.
+  powderline_does: >-
+    The recipe states `Uiso` in Å², as in every schema. The topas gateway
+    converts the value and its bounds to `beq` and warns once per atom.
+    Results report `Uiso`.
+  you_see: [topas_adp_converted]
+  status: handled
+
+- id: EB-23
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysFML 0.8.0)
+  topic: cell-and-adps
+  title: CrysFML ignores anisotropic ADPs
+  engine_does: >-
+    easydiffraction supports anisotropic ADPs, but CrysFML is handed only
+    B = 8π²·Ueq. A `Uaniso` has no effect with CrysFML.
+  powderline_does: >-
+    `Uaniso` with the crysfml calculator is a validation error.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-86
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysPy 0.13.0)
+  topic: cell-and-adps
+  title: A refined Uij can land in the wrong atom's column
+  engine_does: >-
+    With CrysPy, easydiffraction writes a refined Uij into the wrong atom's
+    column whenever an isotropic atom precedes the anisotropic one. The
+    refined tensor then has no effect.
+  powderline_does: >-
+    The gateway hands the anisotropic atoms to easydiffraction first. Reports
+    keep the recipe's order. A test proves that a refined Uij moves.
+  you_see: []
+  status: handled
+
+- id: EB-51
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: cell-and-adps
+  title: Negative ADPs are carried and refined
+  engine_does: >-
+    GSAS-II carries negative `Uiso` and `Uij` values and refines from them.
+  powderline_does: >-
+    Core has no sign rule for ADPs: a negative ADP can compensate for an
+    unmodelled effect.
+  you_see: []
+  status: documented
+
+- id: EB-50
+  engine: all
+  versions: GSAS-II 5.7.9; easydiffraction 0.21.1; TOPAS 6 unverified
+  topic: cell-and-adps
+  title: A Uaniso that is not positive definite is used as given
+  engine_does: >-
+    GSAS-II has no positive-definiteness check. easydiffraction computes a
+    finite pattern for such a tensor, with no message. TOPAS is unverified.
+  powderline_does: >-
+    Core uses the tensor as stated and warns when it has a principal value
+    ≤ 0.
+  you_see: [uaniso_not_positive_definite]
+  status: warned
+
+- id: EB-46
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: cell-and-adps
+  title: Negative ADPs are refused at input
+  engine_does: >-
+    easydiffraction refuses a negative `Uiso` or U11, U22, U33 at input. Its
+    physical limit for them is 0–10 Å². The minimizer skips that check, so a
+    refinement can still carry a negative value, and the pattern stays
+    finite.
+  powderline_does: >-
+    An `easydiffraction.*` recipe may not state a negative `Uiso` or U11,
+    U22, U33: validation error.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-20
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: cell-and-adps
+  title: Any occupancy is accepted
+  engine_does: >-
+    GSAS-II accepts any occupancy value.
+  powderline_does: >-
+    Core requires 0 ≤ occupancy ≤ 1 for every engine.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-21
+  engine: topas
+  versions: TOPAS 6
+  topic: cell-and-adps
+  title: Occupancy is limited per iteration
+  engine_does: >-
+    TOPAS limits `occ` to 0 … 2·value + 1 per iteration.
+  powderline_does: >-
+    Core requires 0 ≤ occupancy ≤ 1 for every engine.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-22
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: cell-and-adps
+  title: Occupancy outside [0, 1] is refused
+  engine_does: >-
+    easydiffraction refuses an occupancy outside [0, 1].
+  powderline_does: >-
+    Core requires 0 ≤ occupancy ≤ 1 for every engine, so the recipe is
+    refused before easydiffraction sees it.
+  you_see: [validation error]
+  status: handled
+
+# --- Scattering types ---------------------------------------------------------
+
+- id: EB-13
+  engine: all
+  versions: gemmi 0.7.5
+  topic: scattering
+  title: gemmi strips the charge from an element symbol
+  engine_does: >-
+    gemmi, which core uses for symmetry and elements, strips the charge from
+    a symbol: `Fe3+` becomes Fe.
+  powderline_does: >-
+    `element` takes a bare element symbol only. An ion in `element` is
+    refused, never stripped. Ions are stated in `scattering_types`, in the CIF
+    spelling.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-25
+  engine: all
+  versions: GSAS-II 5.7.9; TOPAS 6; easydiffraction 0.21.1 (CrysPy 0.13.0)
+  topic: scattering
+  title: Each engine spells ions its own way
+  engine_does: >-
+    GSAS-II and TOPAS spell an ion `Fe+3`. CrysPy spells it `Fe3+`, the CIF
+    spelling.
+  powderline_does: >-
+    You write every ion in the CIF spelling, in `scattering_types`. Each
+    gateway writes its engine's spelling. `Fe+3` in a recipe is an error that
+    names `Fe3+`.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-94
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: scattering
+  title: An ion in CIF spelling is read as hydrogen
+  engine_does: >-
+    GSAS-II reads the CIF spelling `La3+` as hydrogen (Z = 1), silently. Its
+    own spelling is `La+3`. Its form-factor table has 114 ions.
+  powderline_does: >-
+    You write `La3+` in `scattering_types`. The gsasii gateway writes
+    GSAS-II's spelling into the atom record. It refuses an ion GSAS-II has no
+    form factor for.
+  you_see: [validation error]
+  status: handled
+  seen_in: [example_LaB6_ionic]
+
+- id: EB-95
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysPy 0.13.0)
+  topic: scattering
+  title: An ion CrysPy has no form factor for becomes the neutral atom
+  engine_does: >-
+    easydiffraction accepts any CIF type symbol, such as `O2-`. When CrysPy
+    has no form factor for the ion, it uses the neutral atom with a log
+    warning only. CrysPy has 111 ions: `O1-` but no `O2-`.
+  powderline_does: >-
+    An ion outside CrysPy's table is a validation error that names the forms
+    CrysPy has.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-96
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysFML 0.8.0)
+  topic: scattering
+  title: CrysFML computes neutral atoms only
+  engine_does: >-
+    easydiffraction strips every charge before handing the type to CrysFML.
+  powderline_does: >-
+    `scattering_types` with the crysfml calculator is a validation error. Use
+    the cryspy calculator for ions.
+  you_see: [validation error]
+  status: handled
+
+# --- Names ------------------------------------------------------------------
+
+- id: EB-44
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: names
+  title: GSAS-II rewrites phase names
+  engine_does: >-
+    GSAS-II strips surrounding whitespace from a phase name and replaces
+    non-ASCII characters with `_`. The settings of a renamed phase are then
+    skipped silently. A `/` in the name breaks the report file write.
+  powderline_does: >-
+    The core name rule makes every such name invalid before an engine runs:
+    `^[A-Za-z][A-Za-z0-9_]*$`, at most 64 characters, no Python keyword,
+    distinct ignoring case.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-45
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: names
+  title: Atom labels are restricted and datablock names lowercased
+  engine_does: >-
+    easydiffraction accepts atom labels of the form
+    `[A-Za-z_][A-Za-z0-9_]*` only. It lowercases datablock names.
+  powderline_does: >-
+    The core name rule makes every name easydiffraction would reject or merge
+    invalid before it runs.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-49
+  engine: topas
+  versions: TOPAS 6
+  topic: names
+  title: Two parameters with the same name are one parameter
+  engine_does: >-
+    TOPAS treats two `prm` of the same name as one parameter, so composed
+    names could collide silently.
+  powderline_does: >-
+    The topas writer uses index-based parameter names. The core name rule
+    also applies.
+  you_see: []
+  status: handled
+  note: Unverified beyond TOPAS's documented model.
+
+# --- Bounds and limits ------------------------------------------------------
+
+- id: EB-30
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: bounds
+  title: Parameter limits apply only after all cycles
+  engine_does: >-
+    GSAS-II applies parameter limits only after all cycles of a `Refine`
+    call. An out-of-range value is set to the limit with ESD 0 and frozen for
+    the next call. The reported values, ESDs and Rwp belong to the unclamped
+    fit.
+  powderline_does: >-
+    `gsasii.*` recipes expose no bounds. A 4-element parameter list is a
+    validation error (KI-06).
+  you_see: [validation error]
+  status: handled
+
+- id: EB-31
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: bounds
+  title: Cell limits act on the reciprocal metric
+  engine_does: >-
+    Cell limits must be set on the reciprocal-metric terms. They map exactly
+    onto direct-cell boxes for only four of the seven crystal systems.
+  powderline_does: >-
+    `gsasii.*` recipes expose no bounds. A 4-element parameter list is a
+    validation error.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-58
+  engine: topas
+  versions: TOPAS 6
+  topic: bounds
+  title: Keywords and macros carry default limits
+  engine_does: >-
+    TOPAS keywords carry default limits: `scale` ≥ 1e-11, `beq` in [−10, 20],
+    cell lengths ≥ 1.5 Å, lattice ±0.5 % per iteration, among others. The
+    TOPAS.INC macros add their own: TCHZ U–Z in [−1, 2], X and Y in
+    [1e-4, 2], CS in [0.3, 10000] nm, Strain in [1e-4, 5], and the
+    March–Dollase `PO` ratio min 1e-4 and max 2r + 0.5. A user `min` or `max`
+    overrides the default on that side. A start outside a limit is moved onto
+    it silently.
+  powderline_does: >-
+    A stated bound replaces TOPAS's limit on that side. A `null` side keeps
+    TOPAS's default limit. A refined start outside a fixed default limit on a
+    `null` side is a validation error: state a bound, or start inside. A
+    refined value within 1e-4 (relative) of a stated bound or a default limit
+    gets a warning. At a limit of 0 the tolerance is 1e-12 absolute.
+  you_see: [validation error, topas_parameter_at_limit]
+  status: handled
+
+- id: EB-62
+  engine: topas
+  versions: TOPAS 6
+  topic: bounds
+  title: The limit markers TOPAS writes are unreliable
+  engine_does: >-
+    The `_LIMIT_MIN` and `_LIMIT_MAX` markers TOPAS 6 writes are mislabelled
+    or spurious.
+  powderline_does: >-
+    The at-limit warning is judged from the final values and the limits the
+    writer knows, not from TOPAS's markers.
+  you_see: [topas_parameter_at_limit]
+  status: handled
+
+- id: EB-71
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: bounds
+  title: Unbounded sides get physical limits, and starts are moved silently
+  engine_does: >-
+    When a fit starts, easydiffraction gives an unbounded side its physical
+    limit: cell lengths 0–30 Å, angles 0–180°, occupancy 0–1, `adp_iso` and
+    U11/U22/U33 0–10 Å², scale, wavelength and μR ≥ 0. It refuses a value
+    outside a physical limit at input, even when fixed, so no cell over 30 Å
+    can be modelled. lmfit moves a start outside its bounds onto the bound
+    without a message.
+  powderline_does: >-
+    A stated bound replaces the physical limit on its side, and `null` keeps
+    it. A value outside a physical limit is a validation error. A refined
+    value that ends within 1e-6 (relative) of a bound or physical limit gets
+    a warning. For a limit of 0, the test is within 1e-6 of the starting
+    value.
+  you_see: [validation error, easydiffraction_parameter_at_limit]
+  status: handled
+
+# --- Defaults -----------------------------------------------------------------
+
+- id: EB-36
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: defaults
+  title: A new project adds broadening and background you did not ask for
+  engine_does: >-
+    A new GSAS-II project gets isotropic size 1 µm, microstrain 1000 and a
+    constant 1.0 Chebyshev background, all fixed.
+  powderline_does: >-
+    Size and strain left out mean 10 µm and 0 microstrain, isotropic, fixed:
+    no sample broadening. A background left out means none: one fixed
+    Chebyshev term 0.0. Each default comes with a warning naming the phase
+    and the values. State the blocks to silence the warning.
+  you_see: [gsasii_broadening_default_applied, gsasii_background_default_applied]
+  status: warned
+
+# --- Peak profile and instrument --------------------------------------------
+
+- id: EB-37
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: profile
+  title: SH/L and Peak List widths are floored silently
+  engine_does: >-
+    GSAS-II floors SH/L at 0.002 in the Rietveld and Peak List profile
+    calculations. It floors it at 0.0005 in `GetFobsSq`, and background peaks
+    use it as stored. Peak List peaks floor σ² and γ at 0.001.
+  powderline_does: >-
+    `axial_divergence` below 0.002 is a validation error. So is a Peak List
+    width below its floor.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-35
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: profile
+  title: Background peaks are evaluated with silent floors
+  engine_does: >-
+    GSAS-II evaluates background peaks with floors: intensity 0.1, σ²
+    0.01 centideg², γ 0.1 centideg.
+  powderline_does: >-
+    A stated value below a floor is a validation error. A refined value below
+    a floor makes the output recipe invalid (KI-15).
+  you_see: [validation error, output_recipe_not_valid]
+  status: handled
+  seen_in: [example_LaB6_singlepeakfit]
+
+- id: EB-34
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: profile
+  title: The background-peak width is a variance
+  engine_does: >-
+    GSAS-II's `BkPksig` is σ² in centideg², although its GUI calls it `sig`
+    and its prose calls it "Gaussian width".
+  powderline_does: >-
+    The recipe field is named `pv_gaussian_sigma_sq`.
+  you_see: []
+  status: handled
+
+- id: EB-39
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: profile
+  title: Exported peak widths use other units, and some formulas are wrong
+  engine_does: >-
+    GSAS-II's peak `int` is an integrated area. Its exporters write σ in
+    degrees while the project holds σ² in centideg², and several exporter
+    formulas are wrong.
+  powderline_does: >-
+    PowderLine reads the project directly and uses none of those exporters.
+  you_see: []
+  status: handled
+
+- id: EB-55
+  engine: topas
+  versions: TOPAS 6
+  topic: profile
+  title: TCHZ takes the absolute value of its Gaussian term
+  engine_does: >-
+    TCHZ computes ΓG = √|U tan²θ + V tanθ + W + Z/cos²θ|. A negative sum is
+    used as its magnitude without a message. The Technical Reference's
+    formula has no absolute value.
+  powderline_does: >-
+    Documented, not validated. TOPAS carries your value consistently.
+  you_see: []
+  status: documented
+
+- id: EB-69
+  engine: topas
+  versions: TOPAS 6
+  topic: profile
+  title: A negative TCHZ Lorentzian part is computed as written
+  engine_does: >-
+    TCHZ_Peak_Type combines a Gaussian width G and a Lorentzian width
+    L = X·tanθ + Y/cosθ into one FWHM. With a fixed X < 0, TOPAS 6 neither
+    takes |X| nor clamps it at 0. X = −0.01 runs, and the profile differs
+    from X = 0. X = −0.1 makes the width negative at the top of the window,
+    and TOPAS writes no results: a negative convolution FWHM stops TOPAS.
+  powderline_does: >-
+    PowderLine honours what TOPAS computes: a negative Lorentzian part passes
+    while the total width is positive. With `TCHZ_Peak_Type`, the total width
+    at the recipe's starting values must be positive at every data point of
+    the fit window. Otherwise validation fails and names X, Y and the 2θ where
+    the width is not positive. An output recipe whose refined values break the
+    rule is not valid.
+  you_see: [validation error `topas_tchz_width_not_positive`, output_recipe_not_valid]
+  status: handled
+
+- id: EB-56
+  engine: topas
+  versions: TOPAS 7 macro file; the schema targets TOPAS 6
+  topic: profile
+  title: PVII_Peak_Type differs from the Technical Reference
+  engine_does: >-
+    TOPAS 7's macro computes h = ha + hb/cosθ + hc·tanθ and
+    m = 0.6 + ma + mb/cosθ + mc·tanθ. The Technical Reference prints the
+    tanθ and 1/cosθ terms the other way round. h1 and h2 are half-widths.
+  powderline_does: >-
+    The schema documents the macro's formula.
+  you_see: []
+  status: documented
+
+- id: EB-57
+  engine: topas
+  versions: TOPAS 6
+  topic: profile
+  title: CS and Strain terms are not sizes or strains
+  engine_does: >-
+    TOPAS's own documentation says `CS_L`, `CS_G`, `Strain_L` and `Strain_G`
+    "have no direct physical interpretation and should not be reported". The
+    interpretable quantities are LVol-IB = k / IB, with
+    IB = Voigt_Integral_Breadth_GL(1/CS_G, 1/CS_L), and
+    e0 = Voigt_FWHM_GL(Strain_G, Strain_L)·0.25·π/360.
+  powderline_does: >-
+    PowderLine reports LVol-IB (k = 1) and e0 as derived rows computed by
+    TOPAS. It documents that the four input terms are not sizes or strains.
+  you_see: []
+  status: handled
+
+- id: EB-64
+  engine: topas
+  versions: TOPAS 6
+  topic: profile
+  title: An emission line with lg alone crashes TOPAS 6
+  engine_does: >-
+    A `lam` line with `lg` and no `lh` crashes TOPAS 6.
+  powderline_does: >-
+    The schema requires `lh`, and allows `lg` only with it.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-75
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysPy 0.13.0, CrysFML 0.8.0)
+  topic: profile
+  title: The X-ray corrections easydiffraction models, and its polarization
+  engine_does: >-
+    Both calculators model the Kα doublet, the Lorentz-polarization factor
+    1 − p + p cos²2θ_m cos²2θ, the 2θ offset, sample displacement and
+    transparency, and Hewat cylinder absorption. A second wavelength alone
+    does nothing. 2θ_m acts only with p > 0. GSAS-II's polarization P is
+    easydiffraction's 1 − p: copying P to p is a 6.6 % intensity error at
+    15° 2θ.
+  powderline_does: >-
+    Every correction is a recipe slot; left out means not modelled. The
+    schema requires both Kα2 fields or neither. The hand-derived per-engine
+    recipes state p = 1 − P.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-87
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysPy 0.13.0, CrysFML 0.8.0)
+  topic: profile
+  title: Negative peak widths give a wrong pattern without a message
+  engine_does: >-
+    Where U tan²θ + V tanθ + W < 0, CrysFML drops the peaks and CrysPy
+    distorts them. Where X tanθ + Y/cosθ < 0, both give a finite pattern
+    12–24 % off.
+  powderline_does: >-
+    A stated profile that makes a width negative is a validation error. The
+    check covers the handed points and a 0.01° grid over the window widened
+    by 1° plus the position corrections. A refined profile that does so gets
+    a warning. In `example_LaB6_ionic`, the CrysPy pseudo-Voigt fit refines X
+    to −0.097, so the Lorentzian width is negative from about 11.3° on.
+  you_see: [validation error, easydiffraction_negative_width]
+  status: handled
+  seen_in: [example_LaB6_ionic]
+
+# --- Preferred orientation --------------------------------------------------
+
+- id: EB-97
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysPy 0.13.0, CrysFML 0.8.0)
+  topic: preferred-orientation
+  title: Preferred orientation reaches CrysPy only, under the right key
+  engine_does: >-
+    Only the CrysPy calculator reads the experiment's preferred-orientation
+    rows. CrysFML's pattern does not change with `march_r`, without a
+    message. CrysPy also ignores a row whose `structure_id` is not the
+    lowercase linked structure name, silently.
+  powderline_does: >-
+    `preferred_orientation` with `calculator: "crysfml"` is a validation
+    error. The builder keys the row by the structure name easydiffraction
+    uses.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-98
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysPy 0.13.0)
+  topic: preferred-orientation
+  title: CrysPy's March correction is Dollase's times r^1.5
+  engine_does: >-
+    CrysPy's texture correction is not volume-normalised, so every
+    textured-to-untextured intensity ratio carries the constant r^1.5. With
+    `march_random_fract` = 0 the scale absorbs it, and the refined `march_r`
+    is the same r as GSAS-II's. With f > 0 the correction is
+    (1 − f)·r^1.5·A + f, and the refined r and f are not GSAS-II's
+    quantities.
+  powderline_does: >-
+    Documented. A test compares normalised ratios with GSAS-II's
+    March–Dollase correction.
+  you_see: []
+  status: documented
+
+# --- Data and the fit window ------------------------------------------------
+
+- id: EB-54
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: data
+  title: GSAS-II fits one point past the upper limit
+  engine_does: >-
+    When the upper limit falls between data points, GSAS-II fits and scores
+    one point past it. With no limit, it starts at the first data point,
+    weighted or not. Its `Nobs` counts the extra point.
+  powderline_does: >-
+    The gateway hands GSAS-II the fit limits moved onto the first and last
+    weighted data points inside the window. GSAS-II then fits exactly the
+    points core scores, and its own Rwp equals core's.
+  you_see: []
+  status: handled
+
+- id: EB-59
+  engine: topas
+  versions: TOPAS 6
+  topic: data
+  title: TOPAS fits the points nearest its limits
+  engine_does: >-
+    TOPAS fits the points nearest `start_X` and `finish_X`.
+  powderline_does: >-
+    The gateway hands TOPAS the fit limits moved onto the first and last
+    weighted data points inside the window. TOPAS's `r_wp` then equals core's
+    Rwp.
+  you_see: []
+  status: handled
+
+- id: EB-70
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: data
+  title: Only the handed points are calculated
+  engine_does: >-
+    easydiffraction calculates only the points it is handed, and maps its
+    Chebyshev basis over them. Reflection tails from beyond the window are
+    lost: at most 3e-4 σ at the refined scale.
+  powderline_does: >-
+    The gateway hands easydiffraction exactly the weighted points inside the
+    window, so it fits the points core scores. The lost tails are documented.
+  you_see: []
+  status: documented
+
+- id: EB-66
+  engine: topas
+  versions: TOPAS 6
+  topic: data
+  title: An xo_Is peak loses part of its value at the last fitted point
+  engine_does: >-
+    For a background or single peak without an axial convolution, TOPAS 6
+    loses part of the peak's value at the last fitted point, wherever the
+    window ends. LaB6's background peak is 1.35 counts low there, about 4 %.
+    No calculation range, step or `exclude` avoids it.
+  powderline_does: >-
+    Documented, no workaround. The background-only run carries the same
+    value, so `y_bkg` is consistent with `y_calc`.
+  you_see: []
+  status: documented
+  note: TOPAS 7 unverified.
+
+- id: EB-73
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: data
+  title: A σ below 1e-4 becomes 1.0 silently
+  engine_does: >-
+    On every input path, easydiffraction replaces σ < 1e-4 with σ = 1.0.
+  powderline_does: >-
+    Weights above 1e8 on handed points are a validation error.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-91
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: data
+  title: Negative measured intensities are refused
+  engine_does: >-
+    easydiffraction refuses negative measured intensities.
+  powderline_does: >-
+    A negative intensity on a handed point is a validation error.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-72
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: data
+  title: The ASCII data reader rounds 2θ to 4 decimals
+  engine_does: >-
+    easydiffraction's ASCII data reader rounds 2θ to 4 decimals.
+  powderline_does: >-
+    The gateway hands the data as a CIF loop at full precision.
+  you_see: []
+  status: handled
+
+- id: EB-89
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: data
+  title: The CIF loop cannot read exponent notation
+  engine_does: >-
+    easydiffraction's CIF loop reader cannot read numbers in exponent
+    notation.
+  powderline_does: >-
+    The gateway writes every number in the data loop in positional notation.
+  you_see: []
+  status: handled
+
+# --- Refinement, convergence and failures -----------------------------------
+
+- id: EB-32
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: refinement
+  title: Refinement messages are only printed and stored
+  engine_does: >-
+    `Refine` returns nothing on success. Its messages about frozen limits,
+    parameters dropped as singular and SVD are only printed and stored in the
+    project.
+  powderline_does: >-
+    The gateway reads the stored messages into warnings.
+  you_see: [gsasii_refinement_message]
+  status: warned
+
+- id: EB-33
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: refinement
+  title: The parameter count includes parameters dropped as singular
+  engine_does: >-
+    GSAS-II's `Nvars` includes parameters it dropped as singular.
+  powderline_does: >-
+    PowderLine reports the drop as a warning and does not subtract it. In a
+    single-peak fit, the count is taken after the drops.
+  you_see: [gsasii_refinement_message]
+  status: warned
+
+- id: EB-53
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: refinement
+  title: Single-peak fitting ignores some refine flags silently
+  engine_does: >-
+    With the instrument profile in use, a peak's own σ² and γ flags are
+    ignored. With per-peak widths, the U … Z flags are ignored. Refining any
+    σ² clears the U, V, W flags. Singular parameters are dropped without a
+    message.
+  powderline_does: >-
+    A refine flag on the width source not in use is a validation error. Any
+    remaining silent drop gets a warning.
+  you_see: [validation error, gsasii_parameters_not_varied]
+  status: handled
+
+- id: EB-92
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: refinement
+  title: A peak fit fills no covariance block
+  engine_does: >-
+    `DoPeakFit` keeps its varied names and ESDs in the Peak List's own
+    record, and writes the refined values in place. A peak fit therefore has
+    no refined-parameter rows.
+  powderline_does: >-
+    The result's `peak_fit` block reads the values and ESDs from there. The
+    output recipe is built from it.
+  you_see: []
+  status: handled
+
+- id: EB-38
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: refinement
+  title: A peak outside the fit window makes the peak fit fail with a bare TypeError
+  engine_does: >-
+    A Peak List or background peak outside the fit window makes GSAS-II's
+    peak fit fail with a bare `TypeError`.
+  powderline_does: >-
+    A peak outside the fit window is a validation error. A peak fit that still
+    fails raises `EngineExecutionError` with a clear reason.
+  you_see: [validation error, peak_fit_failed]
+  status: handled
+
+- id: EB-99
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: refinement
+  title: An aborted refinement keeps a worthless pattern
+  engine_does: >-
+    When no damped step lowers χ², GSAS-II aborts the refinement. It keeps
+    the last accepted values but stores the rejected step's pattern and a wR
+    at its 100 % cap. No statistic belongs to the parameters. GSAS-II's GUI
+    shows this only as "Minimizer halted because chi**2 increased". A
+    March–Dollase ratio started at exactly 1.0 in a cubic phase triggers it.
+  powderline_does: >-
+    PowderLine is deliberately stricter: an aborted Rietveld refinement is a
+    failure, reason `diverged`. Simulations are exempt.
+  you_see: [diverged]
+  status: handled
+
+- id: EB-60
+  engine: topas
+  versions: TOPAS 6
+  topic: refinement
+  title: tc.exe gives the same exit code on success and failure
+  engine_does: >-
+    `tc.exe` returns the same exit code on success and failure. It prints its
+    messages only to its console window.
+  powderline_does: >-
+    Success is judged from the expected output files, removed before the run.
+    A missing file raises `EngineExecutionError`. Its failure record lists
+    the INP and data kept, the `tc.exe` path and exit code, and whatever
+    `tc.exe` printed. Otherwise look at TOPAS's console window and `tc.log`.
+  you_see: [output_missing]
+  status: handled
+
+- id: EB-85
+  engine: topas
+  versions: TOPAS 6
+  topic: refinement
+  title: TOPAS 6 exposes no convergence signal
+  engine_does: >-
+    TOPAS 6 writes no convergence signal in its files.
+  powderline_does: >-
+    `converged` is always `null` for TOPAS 6.
+  you_see: []
+  status: documented
+
+- id: EB-63
+  engine: topas
+  versions: TOPAS 6
+  topic: refinement
+  title: A non-finite term silently zeroes a phase
+  engine_does: >-
+    A non-finite term silently zeroes a phase, and the background absorbs the
+    pattern.
+  powderline_does: >-
+    A phase with all-zero calculated intensities gets an informative note. A
+    zero contribution can be legitimate: a phase absent from the sample.
+  you_see: [topas_phase_contributes_nothing]
+  status: warned
+
+- id: EB-65
+  engine: topas
+  versions: TOPAS 6
+  topic: refinement
+  title: The independent-parameter count works but is undocumented
+  engine_does: >-
+    `Get(number_independent_parameters)` works in TOPAS 6 although it is
+    undocumented. It excludes parameters with zero derivative.
+  powderline_does: >-
+    PowderLine uses it as `parameters_varied`, and warns when it is lower than
+    the parameters requested.
+  you_see: [topas_parameters_not_varied]
+  status: warned
+
+# --- Statistics -------------------------------------------------------------
+
+- id: EB-52
+  engine: gsasii
+  versions: GSAS-II 5.7.9
+  topic: statistics
+  title: GOF has two meanings, and R values are capped at 100 %
+  engine_does: >-
+    GSAS-II's `GOF` is √(reduced χ²) in a Rietveld refinement and the reduced
+    χ² itself in a Peak List fit. GSAS-II caps R and wR at 100 %, so a
+    simulation against placeholder data and a diverged refinement both read
+    100 %. A non-finite pattern prints wR `nan` and reports 100 %.
+  powderline_does: >-
+    The result's `rwp`, `r_exp`, `gof` and `chi2_red` are PowderLine's, with
+    one formula for every engine. GSAS-II's own values stay under
+    `engine_details`. A non-finite calculated pattern is a failure, reason
+    `diverged`. A poor fit at the cap is still reported, with core's uncapped
+    Rwp beside it.
+  you_see: [diverged]
+  status: handled
+
+- id: EB-81
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: statistics
+  title: A parameter without effect gets no ESD
+  engine_does: >-
+    easydiffraction's free-parameter count is lmfit's. A parameter without
+    effect gets no ESD. Its own `prof_wr_factor` is 1/σ²-weighted.
+  powderline_does: >-
+    `parameters_varied` is lmfit's count. The engine's own statistics stay
+    under `engine_details`.
+  you_see: [easydiffraction_parameters_not_varied]
+  status: warned
+
+- id: EB-88
+  engine: all
+  versions: GSAS-II 5.7.9; easydiffraction 0.21.1 (CrysPy 0.13.0, CrysFML 0.8.0)
+  topic: statistics
+  title: A symmetric profile shifts the refined cell
+  engine_does: >-
+    Lattice parameters agree between GSAS-II and easydiffraction when axial
+    asymmetry is modelled physically (FCJ). With a symmetric profile they
+    shift by +67 to +91 ppm, whichever calculator runs it.
+  powderline_does: >-
+    Documented on the cross-engine comparison. Rwp compares models fitted to
+    the same points, not engines.
+  you_see: []
+  status: documented
+
+# --- Calculators ------------------------------------------------------------
+
+- id: EB-76
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysPy 0.13.0, CrysFML 0.8.0)
+  topic: calculators
+  title: The two calculators compute different peak types
+  engine_does: >-
+    CrysPy computes `cwl-pseudo-voigt` and the Bérar–Baldinozzi empirical
+    asymmetry. CrysFML computes `cwl-pseudo-voigt` and the
+    Thompson–Cox–Hastings profile with FCJ axial asymmetry. Both
+    pseudo-Voigts are the TCH pseudo-Voigt with Caglioti Gaussian and
+    X tanθ + Y/cosθ Lorentzian widths. `cutoff_fwhm` acts in CrysPy only;
+    CrysFML uses a fixed 30-FWHM window.
+  powderline_does: >-
+    The peak type must be one the chosen calculator computes. Otherwise
+    validation fails.
+  you_see: [validation error]
+  status: handled
+
+- id: EB-79
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysFML 0.8.0)
+  topic: calculators
+  title: CrysFML reports no reflection list
+  engine_does: >-
+    CrysFML reports no reflection list.
+  powderline_does: >-
+    No peak list reports are written with CrysFML, and the result says so.
+  you_see: [easydiffraction_reflections_not_available]
+  status: warned
+
+- id: EB-90
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysFML 0.8.0)
+  topic: calculators
+  title: CrysFML refinements depend on their starting values
+  engine_does: >-
+    CrysFML computes in single precision, below lmfit's finite-difference
+    step. A CrysFML refinement stops at a point that depends on its starting
+    values. Starts changed by 1e-6 (relative) gave Rwp 6.79 % against 6.27 %,
+    with cells stable to about 1e-5.
+  powderline_does: >-
+    Every CrysFML refinement carries a warning. The calculator stays
+    available because you choose it, and PowderLine states the difference.
+  you_see: [easydiffraction_crysfml_start_dependent]
+  status: warned
+
+- id: EB-78
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysFML 0.8.0)
+  topic: calculators
+  title: CrysFML's integrated intensities drift with angle
+  engine_does: >-
+    Relative to m·|F|²·Lorentz, CrysFML's integrated intensities drift by
+    −4 % from 3° to 15° 2θ. This biases `Uiso` by about +0.001 Å².
+  powderline_does: >-
+    The calculator is recorded in every result.
+  you_see: []
+  status: documented
+
+- id: EB-93
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1 (CrysPy 0.13.0, CrysFML 0.8.0)
+  topic: calculators
+  title: On the temperature series, easydiffraction refines La's Uiso low
+  engine_does: >-
+    On GSAS-II-calculated LaB6 patterns, easydiffraction refines La's Uiso
+    10–22 % low. B's Uiso, the thermal expansion and GoF ≈ 1 agree. The cause
+    is the series' profile: GSAS-II clamps its Lorentzian width to
+    0.001 centideg above about 10.7°, so the high-angle peaks are pure
+    Gaussian. Neither a symmetric pseudo-Voigt nor TCH can represent that,
+    and `Uiso` absorbs the mismatch. Simulated with a profile easydiffraction
+    can represent, CrysPy's La Uiso is 0.00863 against 0.00858 programmed.
+    CrysFML's is 0.00823 (−4 %), the size of its intensity drift (EB-78).
+  powderline_does: >-
+    Documented, no code change. Across engines, compare cells, with the
+    EB-88-size offsets in mind, and the expansion. Absolute `Uiso` agrees only
+    when the profile models agree.
+  you_see: []
+  status: documented
+  seen_in: [example_LaB6_temperature_series]
+
+# --- Platform and installation ----------------------------------------------
+
+- id: EB-67
+  engine: topas
+  versions: TOPAS 6
+  topic: platform
+  title: tc.exe carries no version metadata
+  engine_does: >-
+    `tc.exe` carries no version metadata. It prints its version only to its
+    console.
+  powderline_does: >-
+    You declare the installed version (`--topas-version`, or `topas.version`
+    in `.powderline_config.yaml`). A run needs it. The check compares
+    declarations, not the binary.
+  you_see: []
+  status: handled
+
+- id: EB-61
+  engine: topas
+  versions: TOPAS 6
+  topic: platform
+  title: TOPAS 6 cannot output the fit's background
+  engine_does: >-
+    In TOPAS 6, `Get(bkg)` is 0. `phase_out_X` exists in TOPAS 7 only.
+  powderline_does: >-
+    PowderLine runs a second, background-only INP at the refined values. Its
+    calculated pattern, every convolution included, is `y_bkg`. If that run
+    writes nothing or hits the time limit, the result stays a success with an
+    empty `y_bkg` and a warning. The fit's values, statistics and output
+    recipe do not depend on it.
+  you_see: [topas_background_not_calculated]
+  status: warned
+
+- id: EB-48
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: platform
+  title: An environment variable can turn errors into log messages
+  engine_does: >-
+    With `ED_LOG_REACTION=WARN` in the environment, easydiffraction downgrades
+    its errors to log messages.
+  powderline_does: >-
+    The gateway sets the reaction to `RAISE` itself, whatever the
+    environment.
+  you_see: []
+  status: handled
+
+- id: EB-82
+  engine: easydiffraction
+  versions: easydiffraction 0.21.1
+  topic: platform
+  title: Importing easydiffraction queries PyPI
+  engine_does: >-
+    Importing easydiffraction imports `diffpy.pdffit2`, whose version module
+    queries PyPI. Offline, it prints a warning and continues.
+  powderline_does: >-
+    Nothing. The import, and the run, continue.
+  you_see: []
+  status: documented

@@ -104,7 +104,7 @@ def report() -> dict:
     names = registry.available()
     if not names:
         problems.append("no PowderLine gateway is registered: the install metadata is stale or missing "
-                        "(KI-13); re-install this environment's package: pixi reinstall powderline, or "
+                        "(KI-13); re-install the package: pixi reinstall powderline --all, or "
                         "python -m pip install --no-deps --no-build-isolation --no-index -e .")
     for name in names:
         try:

@@ -1,7 +1,7 @@
 """Simulate the textured LaB6 pattern this example refines (GSAS-II, one-cycle ``gsasii.rietveld`` run).
 
 LaB6 powders do not texture; this is a **mathematical demonstration** of PowderLine's March-Dollase preferred
-orientation (P-48, re/29) on the one well-conditioned phase in the examples. Truth: the ``example_LaB6`` structure
+orientation on the one well-conditioned phase in the examples. Truth: the ``example_LaB6`` structure
 with March-Dollase r = 0.6 along [001] (platy), the *original* ``example_LaB6`` instrument profile (U 18.72,
 V 0.600, W 1.147, X 0.281, Y 0.001, Z 0 centideg -- a profile every engine can represent, EB-93), the committed
 refinement's background and scale, Poisson counting noise (fixed seed) on the measured 28-ID-1 grid.

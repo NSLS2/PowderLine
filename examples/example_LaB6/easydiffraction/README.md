@@ -4,8 +4,7 @@
 `tests/data/easydiffraction/native/lab6_crysfml_tch.json` (LaB6, CrysFML calculator, Thompson-Cox-Hastings profile with fixed FCJ axial asymmetry — the axial-divergence model closest to GSAS-II's; U, V, W, X, Y, cell, scale and a 6-term Chebyshev refined). It was derived by hand from
 the GSAS-II recipe of this example as described in
 `tests/data/easydiffraction/native/README.md` (unit conversions, polarization
-p = 1 − P, Lorentzian X/Y swapped, FCJ S/L = H/L; no 0.26.0 → `easydiffraction.*`
-converter exists). Its golden result lives in
+p = 1 − P, Lorentzian X/Y swapped, FCJ S/L = H/L). Its golden result lives in
 `tests/data/easydiffraction/native/golden/` (`tests/test_easydiffraction_native.py`).
 `output/` is the committed reference of a run of this recipe (easydiffraction
 0.21.1); `tests/test_example_easydiffraction_references.py` checks its tables

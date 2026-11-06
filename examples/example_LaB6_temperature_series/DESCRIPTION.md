@@ -11,13 +11,13 @@ refined values written back, and the next step is that recipe with only the
 `xrd_data` block swapped (`powderline.recipes.with_block`). Nothing is copied
 by parameter name.
 
-The data are **simulated**, so the truth is known. Six LaB6 (SRM 660a)
-patterns from 25 to 500 °C were calculated with GSAS-II on the measured
-2θ grid of `example_LaB6` (28-ID-1, λ = 0.1665 Å, 3821 points in 0.9–15.1°)
-with:
+The data are **simulated**, so the truth is known. Six LaB6 patterns from
+25 to 500 °C were calculated with GSAS-II on the measured 2θ grid of
+`example_LaB6` (28-ID-1, λ = 0.1665 Å, 3821 points in 0.9–15.1°) with:
 
-- the lattice parameter of Akdoğan & Payzant, *J. Appl. Cryst.* **58** (2025)
-  1635: a(T) = 4.15678 + 2.4645·10⁻⁵ ΔT + 1.0325·10⁻⁸ ΔT² Å, ΔT = T − 298 K
+- the lattice parameter Akdoğan & Payzant measured on NIST SRM 660a,
+  *J. Appl. Cryst.* **58** (2025) 1635:
+  a(T) = 4.15678 + 2.4645·10⁻⁵ ΔT + 1.0325·10⁻⁸ ΔT² Å, ΔT = T − 298 K
   (α ≈ 5.9·10⁻⁶ K⁻¹ at room temperature; the same paper notes LaB6 has no
   phase transition below 1805 °C), so a grows from 4.156784 to 4.170821 Å
   over the series;
@@ -102,7 +102,7 @@ whose output recipe is not valid (none here). The committed reference
 ```bash
 pixi run -e gsasii python examples/example_LaB6_temperature_series/make_series.py   # regenerate data/ and input.json (deterministic for a given GSAS-II build)
 pixi run -e gsasii python examples/example_LaB6_temperature_series/run_series.py    # the chain; writes output/
-pixi run -e gsasii kicker examples/example_LaB6_temperature_series/input.json --validate-only  # the first step alone
+pixi run powderline examples/example_LaB6_temperature_series/input.json --validate-only        # the first step alone
 ```
 
 `tests/test_example_temperature_series.py` checks the data against
@@ -116,7 +116,7 @@ regression tolerance.
   is deterministic for a given GSAS-II build, but the patterns are GSAS-II's
   calculated profile: a change of the GSAS-II pin changes every data file and
   therefore every number in `output/`. Regenerating is a deliberate change
-  (`docs/policies.md`), not a refresh.
+  ([policies](../../docs/development/policies.md)), not a refresh.
 - **The copied instrument profile has a negative Lorentzian width above
   ≈ 10.7° 2θ.** The committed `example_LaB6` refinement gives Y = −10.26
   centideg, so γ = X/cos θ + Y tan θ + Z crosses zero near 10.7°; GSAS-II

@@ -1,6 +1,6 @@
 """Refine the simulated LaB6 temperature series sequentially: each step starts from the previous
 step's **output recipe** with only the ``xrd_data`` block swapped (``powderline.recipes.with_block``, the core
-block chaining of KI-04 / P-43 D4), and the chain stops at the first step whose output recipe is not valid.
+block chaining of KI-04), and the chain stops at the first step whose output recipe is not valid.
 
 Writes, under ``--output`` (default ``output/`` beside this file): ``series_report.csv`` (one row per step:
 temperature, programmed and refined cell with ESD, programmed and refined Uiso, Rwp, Rexp, GoF, parameters varied,
@@ -15,7 +15,7 @@ full per-step engine output goes to ``--work`` (default: a temp dir).
 
 The first-step recipe decides the engine (``--recipe``; default ``input.json``, GSAS-II); the loop is the same for
 every engine because only the core ``xrd_data`` block moves. The same loop, in six lines, is what an automation
-would run (see docs/integration-guide.md).
+would run (see docs/how-to/sequential-refinement.md).
 """
 from __future__ import annotations
 

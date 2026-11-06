@@ -459,7 +459,7 @@ def test_stale_server_falls_back_in_process_in_auto_mode(client, monkeypatch, tm
     result = client.submit_simulation(RECIPE, tmp_path)
     assert calls and result["method"] == "subprocess"
     out = capsys.readouterr().out
-    assert "stale" in out and "gsas-server restart" in out
+    assert "stale" in out and "gsas-server stop" in out
 
 
 def test_stale_server_with_fallback_disabled_is_server_unavailable(monkeypatch, tmp_path):
@@ -470,7 +470,7 @@ def test_stale_server_with_fallback_disabled_is_server_unavailable(monkeypatch, 
     monkeypatch.setattr(c, "_submit_via_subprocess", lambda rd, od, verbose: pytest.fail("must not fall back"))
     result = c.submit_simulation(RECIPE, tmp_path)
     assert result["status"] == "failed" and result["failure"]["reason"] == "server_unavailable"
-    assert "stale" in result["failure"]["message"] and "gsas-server restart" in result["failure"]["message"]
+    assert "stale" in result["failure"]["message"] and "gsas-server stop" in result["failure"]["message"]
 
 
 def test_current_server_is_used(client, monkeypatch, tmp_path):

@@ -19,7 +19,7 @@ Normative semantics:
   symmetry-consistent flags is the upstream recipe builder's job. For a
   well-formed recipe the translation is exact; for mixed flags within a group
   the group-OR interpretation is deterministic and documented
-  (docs/known_issues.md, KI-02).
+  (docs/reference/known-issues.md, KI-02).
 
 The DOF-group structure mirrors GSAS-II's own machinery at the pinned commit:
 

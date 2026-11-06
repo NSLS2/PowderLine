@@ -1,5 +1,5 @@
 """Gateway registry: discovers PowderLine gateways from the ``powderline.gateways``
-entry-point group (master plan A17, A7).
+entry-point group.
 
 Discovery is lazy: entry points are listed on first use and a gateway's
 factory is imported (``ep.load()``) only when that gateway is first requested,
@@ -17,7 +17,7 @@ entry point of the same name.
 
 Entry-point metadata is written when the package is installed: after editing
 ``[project.entry-points]`` in ``pyproject.toml``, re-install the editable
-package (``pixi reinstall powderline``) or discovery finds nothing.
+package (``pixi reinstall powderline --all``) or discovery finds nothing.
 """
 
 from __future__ import annotations
@@ -56,7 +56,7 @@ class Gateway:
     run: Callable[..., dict]
 
 
-#: The keys of every gateway's ``validate_only`` summary (P-28).
+#: The keys of every gateway's ``validate_only`` summary.
 VALIDATE_ONLY_KEYS = ("status", "rwp", "elapsed_time", "method", "schema_name", "core_schema_version",
                       "engine_schema_version", "phases", "simulation_mode", "parameters_requested", "warnings",
                       "engine", "output_recipe", "output_recipe_valid")
@@ -64,7 +64,7 @@ VALIDATE_ONLY_KEYS = ("status", "rwp", "elapsed_time", "method", "schema_name", 
 
 def validate_only_summary(model, warnings: list, *, phases: int, simulation_mode: bool, engine: dict,
                           validator=None) -> dict:
-    """The ``validate_only`` result every gateway returns (P-28): no refinement, nothing written, no ``run_id``.
+    """The ``validate_only`` result every gateway returns: no refinement, nothing written, no ``run_id``.
 
     Common keys: ``status`` (``"validated"``), ``rwp`` (None),
     ``elapsed_time`` (0.0), ``method`` (``"validate_only"``),
@@ -73,7 +73,7 @@ def validate_only_summary(model, warnings: list, *, phases: int, simulation_mode
     (:func:`powderline.schema_core.parameters_requested`) and ``warnings`` (the structured warnings of
     validating the user's recipe, A115). Engine-specific items go under ``engine`` (gsasii
     ``refinement_cycles``; topas ``iters``, ``engine_version``; easydiffraction ``calculator``).
-    ``output_recipe`` (re/20a, KI-04) is the *resolved* recipe -- what the engine would see: derived values
+    ``output_recipe`` (KI-04) is the *resolved* recipe -- what the engine would see: derived values
     exact, gateway defaults stated -- and ``output_recipe_valid`` whether it re-validates through ``validator``
     (the gateway's own ``validate_recipe``; default: :func:`powderline.api.validate`); nothing is written.
     """
@@ -155,7 +155,7 @@ def _not_installed_message(name: str, eps: Dict[str, Any]) -> str:
             f"no PowderLine gateway named {name!r}: no {ENTRY_POINT_GROUP!r} entry "
             "points were found at all, although powderline is importable. The "
             "package's install metadata is stale or missing; re-install it "
-            "(`pixi reinstall powderline`, or `pip install -e .`)."
+            "(`pixi reinstall powderline --all`, or `pip install -e .`)."
         )
     return (
         f"no PowderLine gateway named {name!r} is installed (available: "

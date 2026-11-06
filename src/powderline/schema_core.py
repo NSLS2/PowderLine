@@ -77,7 +77,7 @@ SUPPORTED_CORE_SCHEMAS = "==0.1.0"
 
 #: Size cap on the serialized ``metadata`` block, in bytes of UTF-8 JSON (A64).
 #: A sanity limit against accidents (e.g. a pasted pattern); amend here and in
-#: docs/SCHEMA_HISTORY.md.
+#: docs/reference/versions.md.
 METADATA_MAX_BYTES = 1024 * 1024
 
 #: ``schema_name`` format: ``"<engine>.<workflow>"`` (A1, A18).
@@ -474,7 +474,7 @@ class XRDData(BaseModel):
 
     Every engine consumes ``tth`` in degrees 2theta and ``Itth_weights`` as
     1/sigma^2, as-is. (The rules are those of the unified schema's
-    ``XRDDataModel``, see ``docs/SCHEMA_HISTORY.md``.)
+    ``XRDDataModel``, see ``docs/development/migrating-from-0.1.md``.)
     """
 
     model_config = _STRICT
@@ -661,7 +661,7 @@ class ChebyshevBackground(BaseModel):
 
     Coefficient semantics (scaling, which polynomial basis) are engine-specific
     and documented in each engine schema (A22.7), not here. (The shape is the
-    unified schema's, see ``docs/SCHEMA_HISTORY.md``.)
+    unified schema's, see ``docs/development/migrating-from-0.1.md``.)
     """
 
     model_config = _STRICT

@@ -1,5 +1,15 @@
 # Multi-phase refinement with atom parameter refinement (isotropic ADPs)
 
+> **Teaching example.** This refinement is ill-posed on purpose. It releases
+> atom parameters on top of the size and strain refinement of
+> `example_DRX_33`: the DRX_33 Li occupancy runs to about −0.35 (Mg to about
+> −0.14) and the Li4MgWO6 crystallite size to about −8 µm. The output recipe is
+> therefore not valid (`output_recipe_valid: false`, warning
+> `output_recipe_not_valid`). The DRX_33 Mg Uiso also ends unphysical, at about
+> −1.0 Å². No well-posed variant is committed: with the
+> sizes held at 10 µm, GSAS-II fails with an invalid metric tensor. More in
+> [Teaching examples](../../docs/examples/index.md#teaching-examples).
+
 ## Scientific Purpose
 
 This example extends `example_DRX_33` to demonstrate **atom parameter refinement** capabilities. While the base example refines only lattice parameters, scale factors, and peak broadening, this example additionally refines:
@@ -22,17 +32,18 @@ This example validates PowderLine's ability to refine structural parameters in m
 ### Atom Parameters Being Refined:
 
 **DRX_33 Phase (cubic):**
-- **Coordinates (x, y, z)**: the DRX_33 atoms sit on the fixed special position 4a
-  (0, 0, 0), so their coordinate flags are `false` in the gsasii recipe (the
-  converter wrote the flags v0.1.1 effectively refined: a symmetry-fixed
-  coordinate cannot carry `true`)
+- **Coordinates (x, y, z)**: every DRX_33 atom sits on a fixed special
+  position: Li, Mg, Mn1 and W on 4a (0, 0, 0), O1 on 4b (½, ½, ½). Their
+  coordinate flags are therefore `false` in the gsasii recipe (a
+  symmetry-fixed coordinate cannot carry `true`)
 - **Isotropic displacement (Uiso)**: Li, Mg, Mn1, O1, W atoms all have Uiso=true
 - **Occupancies**: Li, Mg, Mn1, O1, W atoms all have occupancy=true
 
 **Li4MgWO6_SG12 Phase (monoclinic):**
-- **Coordinates (x, y, z)**: the free components of Li1, Li2, Li3, Mg, O1, O2, W
+- **Coordinates (x, y, z)**: the free components of Li1, Li2, Mg, O1 and O2
   are refined (`true`); the components fixed by site symmetry (e.g. x and z of
-  the 4g/4h sites) are `false`, as the schema requires
+  the 4g/4h sites) are `false`, as the schema requires. Li3 and W have no free
+  coordinate, so all their coordinate flags are `false`
 - **Isotropic displacement (Uiso)**: All atoms locked (Uiso=false)
 - **Occupancies**: All atoms locked (occupancy=false)
 
@@ -44,7 +55,7 @@ This example validates PowderLine's ability to refine structural parameters in m
 - **Phase scale factors**: Both phases
 - **Peak broadening**: Size and strain for both phases
 - **Background**: Chebyshev with 6 terms
-- **Atomic coordinates**: Li4MgWO6_SG12 (the symmetry-free components); DRX_33's atoms are on a fixed position
+- **Atomic coordinates**: Li4MgWO6_SG12 (the symmetry-free components); DRX_33's atoms are on fixed positions
 - **Displacement parameters**: DRX_33 phase only (isotropic Uiso for all 5 atoms)
 - **Occupancies**: DRX_33 phase only (all 5 atoms)
 
@@ -61,9 +72,10 @@ This example validates PowderLine's ability to refine structural parameters in m
 
 ### Fit Quality:
 - **Expected Rwp**: 15.06% (39 refined parameters; GSAS-II's own wR in `dummy.lst`, PowderLine's uniform `rwp` 15.059)
-- Higher Rwp than base example_DRX_33 (10.83%) due to increased parameter count and model complexity
-- This 39-parameter refinement is sensitive to the fit window: with v0.1.1's window (one data point more at the high end, EB-54) it converged to another minimum at Rwp 19.35%; the native path fits exactly 1 ≤ 2θ ≤ 15
-- χ² should still be reasonable given the added structural freedom
+- Rwp rises to 15.06 % from 10.83 % (`example_DRX_33`) although more parameters
+  are free: the fit has moved to a worse, unphysical minimum (see the banner
+  above), not a better model
+- This 39-parameter refinement is sensitive to the fit window: with one data point more at the high end (EB-54) it converges to another minimum at Rwp 19.35%; PowderLine fits exactly 1 ≤ 2θ ≤ 15
 
 ### Typical Runtime:
 - **Subprocess mode**: 2-4 seconds
@@ -81,12 +93,11 @@ Note highly correlated parameters:
 ** 1:0:Mustrain;mx and 1:0:Mustrain;i (@100.00%)
 ```
 
-Additional expected warnings with atom refinement:
-- High correlations between atom coordinates and displacement parameters (>90% normal)
-- Correlations between atomic coordinates of nearby atoms
-- Correlations between occupancy and displacement (if both refined)
-
-**These correlations are typical for structural refinements** and indicate that multiple parameters affect peak intensities similarly. As long as the refinement converges and parameters are physically reasonable, this is not a problem.
+Atom refinement can add more correlations, for example between the
+occupancy and the Uiso of one site. A high correlation between parameters
+means the data cannot separate them. This refinement ends on unphysical
+values (see the banner above). See
+[Know which parameters fight each other](../../docs/concepts/refinement-practice.md#know-which-parameters-fight-each-other).
 
 ## Schema Features Demonstrated
 
@@ -141,14 +152,15 @@ This two-phase Rietveld refinement produces:
 - **Li4MgWO6_SG12_unit_cell_report.csv** - Phase 2 unit cell parameters with ESDs (3 columns: parameter, value, esd)
 - **Li4MgWO6_SG12_peak_list_report.csv** - Phase 2 reflection list (hkl, d-spacing, 2θ, intensities)
 - **fit_profile.txt** - Observed/calculated/background/difference intensities
-
+- **output_recipe.json** - The resolved recipe with the refined values written back (KI-04; not valid as posed, see below); `metadata.powderline_provenance` names the run
+- **parameter_dispositions.csv** - One row per refinable value: path, value, esd, disposition (`varied`, `held_by_user`, `held_by_symmetry`, `default_applied`, ...), at_limit
 
 ## Known Issues
 
 **The output recipe of this example is not valid as posed** (`output_recipe_valid:
 false`, warning `output_recipe_not_valid`; KI-04): the committed reference
-refines the DRX_33 Li occupancy to about −0.35 and the Li4MgWO6 crystallite size to
-about −8 µm, which the schema refuses; the output recipe is written and returned with
+refines the DRX_33 Li occupancy to about −0.35 (Mg to about −0.14) and the Li4MgWO6
+crystallite size to about −8 µm, which the schema refuses; the output recipe is written and returned with
 those values and the warning names them. Holding the sizes at 10 µm does not rescue
 this posing (GSAS-II then fails with an invalid metric tensor); the reference is kept
 as posed.
@@ -158,7 +170,7 @@ as posed.
 | Example | DRX_33 Atom Parameters | Li4MgWO6 Atom Parameters | Key Feature |
 |---------|------------------------|--------------------------|-------------|
 | example_DRX_33 | ❌ None | ❌ None | Base multi-phase refinement |
-| example_DRX_33_atomrefine | ✅ x, Uiso, occupancy (all 5 atoms) | ✅ x only (7 atoms) | Demonstrate comprehensive atom parameter refinement |
+| example_DRX_33_atomrefine | ✅ Uiso, occupancy (all 5 atoms; coordinates fixed by symmetry) | ✅ free coordinates only (5 atoms) | Demonstrate comprehensive atom parameter refinement |
 | example_DRX_33_anisoADP | ❌ None | ✅ Uaniso (O1 only, 6 components) | Demonstrate anisotropic displacement parameters |
 | example_DRX_33_simulation | ❌ All locked | ❌ All locked | Validate forward calculation only |
 
@@ -171,10 +183,6 @@ when the recipe is validated: a refined strict subset of a tie group (e.g. only
 `a` of a cubic cell) or a refined symmetry-fixed parameter is an error, so the
 recipe states exactly what GSAS-II refines. This example uses the **explicit
 style** - every parameter is listed with a symmetry-consistent flag.
-
-The recipe was converted from its schema-0.26.0 form with
-`scripts/convert_recipe_026.py` at PowderLine 0.2.0; the converter's
-notes for each example are in `docs/SCHEMA_HISTORY.md`'s gsasii section.
 
 ## Data citation
 

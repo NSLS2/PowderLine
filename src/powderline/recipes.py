@@ -1,6 +1,6 @@
 """Recipe files and core blocks (engine-free): load a recipe asset from disk; move a core block between recipes.
 
-``load_recipe_asset`` moved here from ``powderline.kicker`` (re/07, P-06) so
+``load_recipe_asset`` moved here from ``powderline.kicker`` so
 the public API can read a recipe without importing any engine. Interpreting
 the recipe is the gateways' job (:func:`powderline.validate`).
 """
@@ -52,7 +52,7 @@ def load_recipe_asset(recipe_path: Path) -> dict:
 
 
 #: The blocks every engine schema shares by construction (the core schema): the only parts of a recipe that may
-#: move from one recipe to another, whatever their engines (P-43 D4). ``payload.phases.<name>`` is one of them.
+#: move from one recipe to another, whatever their engines. ``payload.phases.<name>`` is one of them.
 CORE_BLOCKS = ("payload.xrd_data", "payload.fit_range")
 
 
@@ -72,7 +72,7 @@ def _walk(recipe: dict, keys: list, create: bool = False) -> dict:
 
 def block(recipe: dict, path: str) -> dict:
     """A deep copy of the core block at ``path`` (``payload.xrd_data``, ``payload.fit_range``,
-    ``payload.phases.<name>``) of a recipe dict -- the chaining currency between tools (re/20a, KI-04).
+    ``payload.phases.<name>``) of a recipe dict -- the chaining currency between tools (KI-04).
 
     Raises:
         ValueError: ``path`` is not a core block (engine blocks are never shared between engines).

@@ -1,5 +1,15 @@
 # Multi-phase refinement with anisotropic displacement parameters (ADPs)
 
+> **Teaching example.** This refinement is ill-posed on purpose. It adds
+> anisotropic ADPs to the size and strain refinement of `example_DRX_33`,
+> which the data cannot separate: the DRX_33 crystallite size runs to about
+> −9.7 µm. The negative size makes the output recipe not valid
+> (`output_recipe_valid: false`, warning `output_recipe_not_valid`). The O1
+> tensor also ends unphysical, with U11 = −0.170(12) Å². Holding both sizes at 10 µm, as
+> `example_DRX_33_strainonly` does, gives a valid output recipe and Rwp 8.58 %
+> against 15.53 % here; see *Known Issues*. More in
+> [Teaching examples](../../docs/examples/index.md#teaching-examples).
+
 ## Scientific Purpose
 
 This example demonstrates **anisotropic atomic displacement parameter refinement** in PowderLine. While `example_DRX_33_atomrefine` uses isotropic displacement (single Uiso value per atom), this example refines **full anisotropic displacement tensors** with six independent components (U11, U22, U33, U12, U13, U23).
@@ -57,14 +67,17 @@ The refinement uses the same disordered rocksalt battery material (DRX_33 + Li4M
 
 ### Convergence:
 - Refinement should converge after 5 cycles
-- Anisotropic ADPs are highly correlated - expect large parameter correlations (>95%)
-- U11, U22, U33 may shift differently depending on thermal ellipsoid orientation
-- Off-diagonal terms (U12, U13, U23) may be small or near zero depending on symmetry
+- The six Uij components of one atom can correlate strongly on powder data
+- In this run the O1 tensor ends unphysical: U11 = −0.170(12) Å² and
+  U23 = −0.101(17) Å² (see *Positive-Definite Constraint* below)
 
 ### Fit Quality:
 - **Expected Rwp**: 15.53% (27 refined parameters; GSAS-II's own wR in `dummy.lst`, PowderLine's uniform `rwp` 15.530)
-- Anisotropic ADPs increase parameter count but improve model flexibility
-- Fit improvement over isotropic ADPs may be modest for powder data (anisotropy is often better resolved in single-crystal data)
+- Rwp is higher than the 10.83 % of `example_DRX_33` although more parameters
+  are free: the fit has moved to a worse, unphysical minimum (see the banner
+  above), not a better model
+- Powder data carry little information about anisotropy; single-crystal data
+  resolve it better
 
 ### Typical Runtime:
 - **Subprocess mode**: 2-4 seconds
@@ -79,11 +92,10 @@ Warning: Highly correlated parameters:
 ** O1:U12 and O1:U13
 ```
 
-**This is EXPECTED behavior** for anisotropic displacement parameters:
-- Powder diffraction provides limited information about anisotropy compared to single-crystal data
-- High correlations between Uij components are normal and acceptable
-- Off-diagonal terms (U12, U13, U23) are particularly correlated
-- As long as the thermal ellipsoid is positive-definite and physically reasonable, correlations are not a problem
+Read these correlations as a warning. A strong correlation means the data
+cannot separate the parameters. Here they go with an O1 tensor that is not
+positive definite, so it describes no thermal ellipsoid. See
+[Know which parameters fight each other](../../docs/concepts/refinement-practice.md#know-which-parameters-fight-each-other).
 
 Additional warnings may include:
 ```
@@ -152,7 +164,15 @@ Significant deviations suggest:
 - Incorrect structural model
 
 ### Positive-Definite Constraint:
-The Uij tensor must be **positive-definite** (all eigenvalues > 0) to represent physical thermal motion. GSAS-II enforces this constraint during refinement. If refinement produces a non-positive-definite tensor, it indicates:
+The Uij tensor must be **positive-definite** (all eigenvalues > 0) to represent
+physical thermal motion. GSAS-II does not enforce this during refinement
+(EB-50). PowderLine's core warns with `uaniso_not_positive_definite` when a
+recipe states a `Uaniso` with a principal value ≤ 0, and uses the tensor as
+stated.
+
+This example's refined O1 tensor is not physical. U11 is −0.170(12) Å², and
+two of the tensor's three principal values are negative. A non-positive-definite
+tensor indicates:
 - Over-parameterization (too many refined ADPs for available data)
 - Poor starting values
 - Model errors
@@ -169,7 +189,8 @@ This two-phase Rietveld refinement produces:
 - **Li4MgWO6_SG12_unit_cell_report.csv** - Phase 2 unit cell parameters with ESDs (3 columns: parameter, value, esd)
 - **Li4MgWO6_SG12_peak_list_report.csv** - Phase 2 reflection list (hkl, d-spacing, 2θ, intensities)
 - **fit_profile.txt** - Observed/calculated/background/difference intensities
-
+- **output_recipe.json** - The resolved recipe with the refined values written back (KI-04; not valid as posed, see below); `metadata.powderline_provenance` names the run
+- **parameter_dispositions.csv** - One row per refinable value: path, value, esd, disposition (`varied`, `held_by_user`, `held_by_symmetry`, `default_applied`, ...), at_limit
 
 ## Known Issues
 
@@ -191,7 +212,7 @@ If anisotropic refinement fails to converge or produces unphysical Uij values:
 | Example | DRX_33 Atom Parameters | Li4MgWO6 Atom Parameters | Key Feature |
 |---------|------------------------|--------------------------|-------------|
 | example_DRX_33 | ❌ None | ❌ None | Base multi-phase refinement |
-| example_DRX_33_atomrefine | ✅ x, Uiso, occupancy (all 5 atoms) | ✅ x only (7 atoms) | Comprehensive atom parameter refinement |
+| example_DRX_33_atomrefine | ✅ Uiso, occupancy (all 5 atoms; coordinates fixed by symmetry) | ✅ free coordinates only (5 atoms) | Comprehensive atom parameter refinement |
 | example_DRX_33_anisoADP | ❌ None | ✅ Uaniso (O1 only, 6 components) | **Full anisotropic displacement tensors** |
 | example_DRX_33_simulation | ❌ All locked | ❌ All locked | Validate forward calculation only |
 
@@ -218,10 +239,6 @@ when the recipe is validated: a refined strict subset of a tie group (e.g. only
 `a` of a cubic cell) or a refined symmetry-fixed parameter is an error, so the
 recipe states exactly what GSAS-II refines. This example uses the **explicit
 style** - every parameter is listed with a symmetry-consistent flag.
-
-The recipe was converted from its schema-0.26.0 form with
-`scripts/convert_recipe_026.py` at PowderLine 0.2.0; the converter's
-notes for each example are in `docs/SCHEMA_HISTORY.md`'s gsasii section.
 
 ## Data citation
 

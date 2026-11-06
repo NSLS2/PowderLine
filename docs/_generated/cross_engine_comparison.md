@@ -24,7 +24,7 @@ Fit window and points: 3767 points (every engine scores the same points).
 
 | Engine (version) | Source | Model | Varied | Rwp % | Rexp % | GoF | Warnings |
 |---|---|---|---:|---:|---:|---:|---|
-| GSAS-II 5.7.9 | run | FCJ axial asymmetry (SH/L 0.002); no background peak; isotropic size + microstrain refined per phase; not converged in 5 cycles | 21 | 10.829 | 9.814 | 1.103 | `gsasii_fit_not_converged`, `gsasii_refinement_message` |
+| GSAS-II 5.7.9 | run | FCJ axial asymmetry (SH/L 0.002); no background peak; isotropic size + microstrain refined per phase; not converged in 5 cycles | 21 | 10.829 | 9.814 | 1.103 | `gsasii_fit_not_converged`, `gsasii_refinement_message`, `output_recipe_not_valid` |
 | TOPAS 6 (golden) | golden `drx33_rietveld` | TCHZ instrument fixed; Chebyshev; Strain_L/Strain_G per phase; no size term | 17 | 7.305 | 9.820 | 0.744 | — |
 | easydiffraction 0.21.1 | golden `drx33_two_phase_cryspy` | cryspy (`cwl-pseudo-voigt`): pseudo-Voigt, no asymmetry; U-V-W-X-Y refined instead of per-phase size/strain | 18 | 7.248 | 9.818 | 0.738 | — |
 
@@ -56,7 +56,7 @@ Fit window and points: 3767 points (every engine scores the same points).
 
 ### Versions and dates
 
-- GSAS-II 5.7.9: run 2026-10-13 (PowderLine 0.1.1, Python 3.13.15); `execution_mode='subprocess'`.
+- GSAS-II 5.7.9: run 2026-11-05 (PowderLine 0.2.0, Python 3.13.16); `execution_mode='subprocess'`.
 - TOPAS: TOPAS-64 Version 6 goldens (`tests/data/topas/native/golden/6/`, TOPAS machine runs of 2026-10-09); **not executed for this page**: the rows are the gateway's result built from the committed files.
 - easydiffraction goldens (`tests/data/easydiffraction/native/golden/`, runs of 2026-10-09): easydiffraction 0.21.1, cryspy 0.13.0, crysfml 0.8.0, lmfit 1.3.4, numpy 2.4.6, scipy 1.18.0.
-- Table generated 2026-11-04 by `scripts/cross_engine_comparison.py` at commit `4029d22` in `--no-run` mode (GSAS-II rows from the committed JSON record).
+- Table generated 2026-11-05 by `scripts/cross_engine_comparison.py` at commit `b6cee8a`.

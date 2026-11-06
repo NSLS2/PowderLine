@@ -25,7 +25,7 @@ preview = ["pixi-build"]
 # engine's feature, so without `-e` pixi reports them as ambiguous and prints
 # the `--environment` form to use. Tasks only the dev env has (`test-all`,
 # `docs`) resolve to it automatically. All tasks use the task-level `env` dict
-# for PYTHONPATH (cross-platform; docs/cross-platform-guide.md Issue B).
+# for PYTHONPATH (cross-platform; docs/development/contributing.md, "Write portable pixi tasks").
 #
 # Test suites (markers declared in pyproject.toml, one per test):
 #   pixi run test                              core + topas_gen, engine-free, any env;
@@ -40,7 +40,7 @@ preview = ["pixi-build"]
 # ---------------------------------------------------------------------------
 
 [tasks]
-# The one CLI: `powderline <recipe.json>` after `pixi reinstall powderline`;
+# The one CLI: `powderline <recipe.json>`, installed by `pixi install --frozen`;
 # this task runs the same main. Dispatches on the recipe's schema_name.
 kicker = { cmd = "python -m powderline.kicker", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
 doctor = { cmd = "python -m powderline.kicker --doctor", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
@@ -56,6 +56,12 @@ test = { cmd = 'pytest -m "core or topas_gen"', env = { PYTHONPATH = "$PIXI_PROJ
 # installation, so they run only on the TOPAS Windows machine. The core guard is off here.
 test-topas = { cmd = 'pytest -m "topas_gen or topas_exec"', env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
 fields-check = { cmd = "python scripts/gen_schema_field_tables.py --check", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
+# The EB/KI catalogue fragments (docs/_generated/eb_*.md, ids.md, known_issues.md) are
+# current, every EB-/KI- id cited in the repository has a catalogue entry, and every
+# `you_see` item is a warning code or failure reason (hence PYTHONPATH).
+catalog-check = { cmd = "python scripts/gen_catalog.py --check", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
+# The example fit figures (docs/_generated/examples/*.svg) match the committed fit profiles.
+figures-check = { cmd = "python scripts/gen_example_figures.py --check" }
 
 [dependencies]
 # Core = the pyproject runtime dependencies + what the editable install and the
@@ -154,9 +160,12 @@ test-easydiffraction = { cmd = 'pytest -m "easydiffraction"', env = { PYTHONPATH
 # ---------------------------------------------------------------------------
 [feature.dev.dependencies]
 sphinx = ">=8.0.0,<9"
-sphinx_rtd_theme = ">=3.0.0,<4"
 myst-parser = ">=4.0.0,<5"
 gitpython = ">=3.1.44,<4"
+pydata-sphinx-theme = ">=0.24.0,<0.25"
+sphinx-design = ">=0.7.0,<0.8"
+sphinxcontrib-mermaid = ">=2.1.1,<3"
+sphinx-copybutton = ">=0.5.2,<0.6"
 
 [feature.dev.tasks]
 # The full gauntlet: every marker, every engine, before a merge (`pixi run

@@ -1,5 +1,13 @@
 # LaB6 with ionic scattering types (La3+)
 
+> **Teaching example (easydiffraction recipe only).** The output recipe of
+> `easydiffraction/` is not valid, on purpose. Its fit refines CrysPy's
+> Lorentzian `broad_lorentz_x` negative, so the Lorentzian FWHM is negative
+> above 11.3° 2θ, inside the 1–15° window (EB-87). The run reports
+> `easydiffraction_negative_width` and `output_recipe_valid: false`. The
+> GSAS-II recipe and its output recipe are valid. See
+> [Teaching examples](../../docs/examples/index.md#teaching-examples).
+
 ## Scientific Purpose
 
 `example_LaB6` refined with lanthanum as the **La3+ ion** instead of the neutral
@@ -43,7 +51,8 @@ The standard gsasii set (`refined_parameters.csv`, `LaB6_unit_cell_report.csv`,
 
 ## Known Issues
 
-None.
+None for the GSAS-II recipe. The easydiffraction recipe ends on a negative
+Lorentzian width; see the note at the top and *Per-engine recipes*.
 
 ## Per-engine recipes
 

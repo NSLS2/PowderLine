@@ -1,0 +1,399 @@
+# PowderLine known-issues catalogue (public).
+#
+# One entry per KI-NN id: a known behaviour of PowderLine itself, what it
+# does today and what to do about it. scripts/gen_catalog.py renders it into
+# docs/_generated/known_issues.md (included by reference/known-issues.md)
+# and docs/_generated/ids.md; `--check` fails when a KI id used in src/ or
+# docs/ has no entry here.
+#
+# Public facts and the current state only. Never write process here: review
+# rounds, dates, evidence file:line lists or private record ids.
+#
+# Fields
+#   id           KI-NN, permanent, never reused (a withdrawn id stays listed).
+#   title        one short sentence, in the current state.
+#   status       one of the statuses below.
+#   severity     one of the severities below (may be left out when withdrawn).
+#   what_happens plain, short sentences.
+#   what_to_do   plain, short sentences.
+#   applies_to   optional: the engine or area, e.g. core, gsasii, topas,
+#                easydiffraction, GSAS-II server, examples, installation,
+#                docs build.
+#
+# Statuses
+#   open       known and not yet addressed.
+#   accepted   known, and deliberately not prevented; documented here.
+#   watch      a quirk to keep in mind; no action planned.
+#   resolved   addressed in the current release; the id stays listed.
+#   withdrawn  not a defect; the id stays listed so it is never reused.
+#
+# Severities (impact if you meet it, independent of status)
+#   critical   silent wrong or empty output, or data loss.
+#   major      breaks a real workflow.
+#   minor      works, but fragile or wrong in edge cases.
+#   nit        cleanup.
+
+- id: KI-01
+  title: A cell that breaks its space group is refused
+  status: resolved
+  severity: critical
+  applies_to: core
+  what_happens: >-
+    GSAS-II uses a fixed cell as given, even when it breaks the space group
+    (EB-06). A cubic phase with a ≠ b ≠ c would give wrong peak positions and
+    a refinement that reports success. Core refuses such a cell in every
+    engine schema. Tied lengths and angles must equal the first member, and
+    fixed angles must be exact, within 1e-9. The error gives the value to
+    write.
+  what_to_do: >-
+    Write the value the error names. PowderLine has no switch that accepts a
+    symmetry-breaking cell.
+
+- id: KI-02
+  title: A partly refined GSAS-II cell group is refused
+  status: resolved
+  severity: minor
+  applies_to: gsasii
+  what_happens: >-
+    GSAS-II refines a cell through its reciprocal-metric terms. Holding one
+    of them equals holding a direct-cell parameter only for orthogonal cells.
+    In a b-unique monoclinic cell `a`, `c` and `β` are coupled. In a
+    triclinic cell, and on rhombohedral axes, all six are. A `gsasii.*`
+    recipe that refines a strict subset of such a group, or of a symmetry tie
+    group, is a validation error at the offending field. A flag is never
+    silently overridden.
+  what_to_do: >-
+    Refine the whole group or none of it. `engine_details.parameters_requested`
+    and `parameters_varied` show what GSAS-II varied.
+
+- id: KI-03
+  title: Site symmetry and multiplicity are derived and checked
+  status: resolved
+  severity: major
+  applies_to: core, gsasii
+  what_happens: >-
+    Core derives each atom's site symmetry, multiplicity and tie groups with
+    gemmi, without an engine. It cross-checks a stated `Multiplicity`. After
+    phase setup, the gsasii gateway compares GSAS-II's reading of every site
+    with core's. It stops with an error when GSAS-II misreads a site or
+    cannot name it (EB-40, EB-05). Nothing is swallowed.
+  what_to_do: >-
+    Site symmetry is derived, not stated. If a GSAS-II run stops with
+    `unusable_site`, write the equivalent position the error names.
+
+- id: KI-04
+  title: Every result carries an output recipe and per-parameter dispositions
+  status: resolved
+  severity: major
+  applies_to: core
+  what_happens: >-
+    Every result carries `output_recipe`: the resolved recipe, with the
+    refined values written back at their recipe paths. It also carries
+    `parameter_dispositions`, one row per refinable value, with its ESD and
+    `at_limit`. The disposition is `varied`, `held_by_user`,
+    `held_by_symmetry`, `requested_not_varied` or `default_applied`. When a
+    refined value breaks a schema rule, the output recipe is still returned,
+    with `output_recipe_valid: false` and the warning
+    `output_recipe_not_valid`.
+  what_to_do: >-
+    To chain runs, swap only the `xrd_data` block into each step's output
+    recipe. `example_LaB6_temperature_series` does this with GSAS-II and with
+    easydiffraction. See [Run a sequential
+    refinement](../how-to/sequential-refinement.md).
+
+- id: KI-05
+  title: GSAS-II refinement failures raise, with the console text attached
+  status: resolved
+  severity: major
+  applies_to: gsasii
+  what_happens: >-
+    GSAS-II's `refine()` does not raise on failure. Its notices go to the
+    console, or into the project. The gsasii gateway reads the stored
+    messages into `gsasii_refinement_message` warnings (EB-32). It reads the
+    convergence flag into `converged`, with `gsasii_fit_not_converged`. A
+    non-finite pattern or an aborted refinement raises
+    `EngineExecutionError`, reason `diverged`. The other reasons are
+    `unusable_site`, `peak_fit_failed` and `engine_crashed`. The gateway also
+    keeps the last 65,536 characters of GSAS-II's Python console output for
+    each run.
+  what_to_do: >-
+    After a failure, read `failure.console_tail`, in the exception's
+    `.result` or in `failure.json`. The CLI prints its last lines after
+    "Refinement failed". A verbose run that succeeded carries the tail under
+    `engine_details`. Output from compiled code is not captured.
+
+- id: KI-06
+  title: GSAS-II recipes have no parameter bounds
+  status: accepted
+  severity: minor
+  applies_to: gsasii
+  what_happens: >-
+    GSAS-II enforces a limit by resetting an out-of-range value to the limit
+    after a refine, and freezing it for the next one (EB-30). Coordinate
+    limits are set on `Ax`, `Ay`, `Az`, while GSAS-II varies `dAx`, `dAy`,
+    `dAz`. Cell limits map exactly onto direct-cell boxes for only four of
+    the seven crystal systems (EB-31). `gsasii.*` recipes therefore expose no
+    bounds: a 4-element parameter list is a validation error.
+  what_to_do: >-
+    Write `[value, flag]` in `gsasii.*` recipes. `topas.*` and
+    `easydiffraction.*` recipes have bounds, each with its engine's
+    semantics. Bounds may come in a later gsasii schema version.
+
+- id: KI-07
+  title: The space-group setting is stated, never inferred
+  status: resolved
+  severity: critical
+  applies_to: core, gsasii
+  what_happens: >-
+    `R -3 c` on hexagonal axes and `R -3 c R` on rhombohedral axes imply
+    different cells. GSAS-II reads a two-origin group in origin choice 2, so
+    origin-1 coordinates would run on the wrong structure without a message.
+    Core requires gemmi's canonical extended Hermann–Mauguin name, which
+    states the setting: `:1` or `:2`, `:H` or `:R`, and the monoclinic axis.
+    Any other spelling is an error naming the canonical form. A bare
+    two-origin or rhombohedral symbol lists both choices. The gsasii gateway
+    refuses origin choice 1 and 9 further settings (EB-03, EB-41).
+  what_to_do: >-
+    Write the canonical name. For a setting the gsasii gateway refuses,
+    transform the structure to a standard setting.
+
+- id: KI-08
+  title: The docs build treats every warning as an error
+  status: resolved
+  severity: nit
+  applies_to: docs build
+  what_happens: >-
+    `pixi run docs` runs `sphinx-build -W --keep-going` with
+    `nitpicky = True`. Targets that are documented nowhere Sphinx can link
+    to are listed in `nitpick_ignore` in `docs/conf.py`.
+  what_to_do: >-
+    Keep the build warning-free. Add a target to `nitpick_ignore` only when
+    it has no documentation Sphinx can link to.
+
+- id: KI-09
+  title: Withdrawn
+  status: withdrawn
+  what_happens: >-
+    The reported behaviour was intentional, not a defect.
+  what_to_do: >-
+    Nothing. The id is kept so it is never reused.
+
+- id: KI-10
+  title: Stopping an unresponsive GSAS-II server escalates to a forced kill on every platform
+  status: resolved
+  severity: minor
+  applies_to: GSAS-II server
+  what_happens: >-
+    When the server has not exited 5 s after a stop request, `stop`
+    escalates to a forced kill. On Windows, where `SIGKILL` does not exist,
+    it uses `SIGTERM`, which Python maps to `TerminateProcess`, a hard kill.
+    Unit tests drive the escalation path with a mocked process. The Windows
+    branch has not been run against a live, unresponsive server.
+  what_to_do: >-
+    Nothing in normal use. If `stop` fails on Windows, end the server
+    process by hand.
+
+- id: KI-11
+  title: A server whose state directory is deleted keeps running unseen
+  status: accepted
+  severity: minor
+  applies_to: GSAS-II server
+  what_happens: >-
+    The GSAS-II server keeps its state in a per-user directory: `server.lock`,
+    `server.pid`, and `server.json` with the port and token. "Running" means
+    holding the kernel lock on `server.lock`, and clients use only the
+    endpoint in `server.json`. If that directory is deleted while a server
+    runs, for example `$XDG_RUNTIME_DIR` removed at logout or a temp-directory
+    cleaner, the server keeps running unused. Clients cannot find it,
+    and `gsas-server status` and `stop` cannot see it. A running job's
+    scratch files, under the same directory, are lost too.
+  what_to_do: >-
+    End the server by hand. On Linux and macOS, list your server processes
+    with `ps -u "$(id -un)" -o pid=,args= | grep -E "python[^ ]* .*gsasii[/.]server"`,
+    check that each path is this checkout's, and end each one with
+    `kill <PID>`. On Windows, end the Python process whose command line ends
+    in `gsasii\server.py start` or `-m powderline.gateways.gsasii.server
+    start`. Don't use `pkill -f`: its pattern also matches an editor open on
+    `server.py` and servers of other checkouts.
+
+- id: KI-12
+  title: The GSAS-II server returns output files inside its response
+  status: resolved
+  severity: major
+  applies_to: GSAS-II server
+  what_happens: >-
+    The server runs each job in a private scratch directory under its
+    per-user state directory. It returns every PowderLine output file,
+    base64-encoded, inside the signed response. The client writes the files
+    into its own output directory and lists them in `output_files`. No
+    shared filesystem is needed, so a server on another node or in a
+    container works like a local one. The response is a versioned envelope.
+  what_to_do: >-
+    Nothing.
+
+- id: KI-13
+  title: Engine dispatch depends on install-time entry-point metadata
+  status: resolved
+  severity: minor
+  applies_to: installation
+  what_happens: >-
+    `powderline.run()` and `powderline.validate()` find every gateway through
+    the `powderline.gateways` entry points of the installed distribution.
+    That is the only discovery path. If an environment's editable install is
+    stale or half-installed, or PowderLine is imported from source with
+    `PYTHONPATH` and no installed distribution, every run fails with
+    `GatewayNotInstalledError`. The message names the fix.
+  what_to_do: >-
+    Run `pixi run powderline --doctor`. It lists the gateways the registry
+    finds and each engine's version against its requirement. It exits
+    non-zero when something is missing, and names the repair to run.
+    Contributors who edit the package's entry points: see [Troubleshooting
+    for contributors](../development/contributing.md#troubleshooting-for-contributors).
+
+- id: KI-14
+  title: The GSAS-II server is private to the user who started it
+  status: resolved
+  severity: critical
+  applies_to: GSAS-II server
+  what_happens: >-
+    Each user gets their own server. Its lock, PID, log and endpoint live in
+    a private per-user state directory, with mode 0600 files on POSIX. The
+    server listens on `127.0.0.1` on an ephemeral port. Every request and
+    every response is signed with a per-start token that never crosses the
+    wire. Unsigned, wrongly signed, stale or replayed requests are refused. A
+    kernel-held lock on `server.lock` allows one server per user. The request
+    carries no output directory: files travel back inside the response
+    (KI-12).
+  what_to_do: >-
+    Nothing in normal use. To keep any server from starting, set
+    `POWDERLINE_NO_SERVER=1`. Then `auto` runs in-process, `server` mode and
+    `--use-server` fail, and `gsas-server start` refuses. Operation is
+    described in [Run at a beamline](../how-to/beamline-operation.md).
+
+- id: KI-15
+  title: Four example references refine unphysical values, so their output recipes are invalid
+  status: accepted
+  severity: minor
+  applies_to: examples
+  what_happens: >-
+    Four committed GSAS-II references end on values the schemas refuse.
+    `example_DRX_33` refines a Li4MgWO6 crystallite size of about −1355 µm.
+    `example_DRX_33_anisoADP` refines a size of about −9.7 µm.
+    `example_DRX_33_atomrefine` refines a Li occupancy of about −0.35 and a
+    size of about −8 µm. `example_LaB6_singlepeakfit` refines its background
+    peak's σ² to about −2700 centideg², below GSAS-II's silent floor
+    (EB-35). These runs return `output_recipe_valid: false`, with the warning
+    `output_recipe_not_valid` naming the value. The easydiffraction leg of
+    `example_LaB6_ionic` is in the same position: its fit refines CrysPy's
+    Lorentzian `X` negative (EB-87).
+  what_to_do: >-
+    Read these as teaching examples of ill-conditioned refinements: the SVD
+    warnings, the railed sizes. `example_DRX_33_strainonly` is the physical
+    DRX_33 variant. Each example's description gives the result of a
+    physical re-posing where one exists.
+
+- id: KI-16
+  title: TOPAS execution is verified on TOPAS 6
+  status: resolved
+  severity: major
+  applies_to: topas
+  what_happens: >-
+    The `topas_exec` tests run `tc.exe` against the committed goldens under
+    `tests/data/topas/native/golden/6/`. On the release's code they
+    reproduced all seven golden fixtures file for file through
+    `powderline.run()`. The ionic example's La3+/La intensity ratios agree
+    with GSAS-II's within 0.069 %. The textured example recovers the
+    March–Dollase ratio as 0.5982(14), against the programmed 0.6. Without
+    `tc.exe`, a run is generate-only, with the goldens as the contract.
+  what_to_do: >-
+    On a TOPAS machine, run `pixi run test-topas` with `POWDERLINE_TOPAS_DIR`
+    and `POWDERLINE_TOPAS_VERSION` set. TOPAS 7 is not supported: it needs
+    its own goldens and the same tests.
+
+- id: KI-17
+  title: A split atom's occupancy is not checked against its coinciding images
+  status: accepted
+  severity: minor
+  applies_to: core
+  what_happens: >-
+    An atom placed off a special position to model disorder has `k` symmetry
+    images where the ordered atom had one. `k` is the general multiplicity
+    divided by the special one. Unless its occupancy is divided by `k`, the
+    site holds `k` atoms. PowderLine checks the position: no symmetry image
+    of the atom may lie 5e-6 to 2e-3 from it. It does not check the occupancy,
+    because a full occupancy is also a legitimate model: a genuinely general
+    site.
+  what_to_do: >-
+    Divide the occupancy by `k` yourself. See [Model disorder near special
+    positions](../how-to/disorder.md).
+
+- id: KI-18
+  title: A coordinate that refines close to a special position is reported only through the output recipe
+  status: accepted
+  severity: minor
+  applies_to: core
+  what_happens: >-
+    Validation refuses an atom stated near a special position without being
+    on it: one with a symmetry image 5e-6 to 2e-3 (fractional) away. During a
+    refinement, no engine moves a coordinate back onto a special position. GSAS-II never snaps, easydiffraction detects Wyckoff positions
+    only when the structure is built (EB-74), and TOPAS compares exactly. So
+    a split atom can refine into that band. The result is still returned,
+    because its numbers are what the engine computed. Its output recipe fails
+    validation, and the warning `output_recipe_not_valid` names the
+    coordinate, so a chained next step stops there.
+  what_to_do: >-
+    State the atom on the special position, or restart it further off. See
+    [Model disorder near special positions](../how-to/disorder.md).
+
+- id: KI-19
+  title: The GSAS-II server keeps running until it is stopped
+  status: open
+  severity: minor
+  applies_to: GSAS-II server
+  what_happens: >-
+    A `gsasii.*` run in the default `auto` mode starts the GSAS-II server in
+    the background if none is running. The server has no idle timeout. It
+    keeps GSAS-II loaded in memory until you stop it or the computer
+    restarts. If its state directory is removed at logout, the server keeps
+    running unseen (KI-11), and the next login starts another one.
+  what_to_do: >-
+    Stop the server when you finish a session, before you log out:
+    `pixi run -e gsasii gsas-server stop`. On a shared workstation where no
+    one will stop it, set `POWDERLINE_NO_SERVER=1` so runs go in-process. See
+    [Run at a beamline](../how-to/beamline-operation.md).
+
+- id: KI-20
+  title: The GSAS-II server's state directory must be on this computer's own disk
+  status: open
+  severity: minor
+  applies_to: GSAS-II server
+  what_happens: >-
+    The server's state directory holds `server.lock`, `server.pid` and
+    `server.json`. It is `$XDG_RUNTIME_DIR/powderline`, or
+    `<temp folder>/powderline-<uid>`, because the server belongs to one
+    computer. If `TMPDIR` points into a network folder shared by several
+    computers, such as a network home directory, those computers share the
+    files. `gsas-server stop` on one computer could then read the process ID
+    of a server on another and signal an unrelated process of yours. This is
+    inferred from the code; it has not been reproduced.
+  what_to_do: >-
+    Keep `TMPDIR` on this computer's local disk. If PowderLine refuses the
+    state directory because the temp folder is not private, point `TMPDIR`
+    or `XDG_RUNTIME_DIR` at a private folder on the local disk, not in a
+    network home directory.
+
+- id: KI-21
+  title: "`gsas-server stop` can read a leftover process ID in a narrow race"
+  status: open
+  severity: minor
+  applies_to: GSAS-II server
+  what_happens: >-
+    `gsas-server stop` treats the server as running while anything holds the
+    lock on `server.lock`. Another client checks for a server by taking that
+    lock for a moment. If a server died without removing `server.pid`, and a
+    client's check coincides with `stop`, `stop` signals the process ID in
+    that leftover file. The ID may by then belong to another of your
+    processes. The window is a fraction of a second.
+  what_to_do: >-
+    Run `pixi run -e gsasii gsas-server status` before `stop` when a server
+    may have crashed. If status reports no server, there is nothing to stop.

@@ -1,18 +1,18 @@
 """Engine-free factory for the TOPAS gateway (entry point ``powderline.gateways:topas``).
 
 - **Schema layer** — ``validate`` / ``capabilities``: a ``topas.rietveld`` /
-  ``topas.spf`` recipe validates against the native schemas (:mod:`.schema`,
-  re/05); any other ``schema_name`` is a validation error at ``schema_name``.
+  ``topas.spf`` recipe validates against the native schemas (:mod:`.schema`);
+  any other ``schema_name`` is a validation error at ``schema_name``.
 - **Runtime layer** — ``run``: :func:`.native_run.run_native`.
 
 TOPAS has no Python engine dependency, so ``EngineNotAvailableError`` never
 applies: without ``tc.exe`` a run is generate-only. TOPAS also has no
 queryable runtime version (``tc.exe`` carries no version metadata and prints
-its banner only to its console window; devkit ``re05-topas6-compat.md`` C29),
+its banner only to its console window),
 so version checks use the **declared** version (``topas_version`` argument,
 else ``.powderline_config.yaml`` ``topas.version``): a run that will execute
 TOPAS needs a declared version, equal to the recipe's ``engine_version`` and
-within ``supported_engine_versions`` (A144, A145); a missing declaration is an
+within ``supported_engine_versions``; a missing declaration is an
 error.
 """
 
@@ -23,7 +23,7 @@ from powderline.gateways.topas import schema
 from powderline.registry import Gateway
 
 NAME = "topas"
-#: The TOPAS versions the native recipes are written for (A143, A144): the
+#: The TOPAS versions the native recipes are written for: the
 #: same declaration the schema makes (``supported_engine_versions``, derived
 #: from ``schema.SUPPORTED_ENGINE_VERSIONS``).
 ENGINE_VERSION_SPEC = schema.SUPPORTED_ENGINE_VERSION_SPEC
@@ -37,7 +37,7 @@ def capabilities() -> dict:
 
 
 def validate(recipe, *, verbose: bool = False):
-    """Validate a recipe (dict or model); return the validated model (A50, A59).
+    """Validate a recipe (dict or model); return the validated model.
 
     A ``topas.*`` recipe gives its native model (``TopasRietveldRecipe`` /
     ``TopasSpfRecipe``). ``verbose`` is part of the uniform gateway contract;
@@ -56,9 +56,9 @@ def configured_engine_version(topas_version=None):
 
 
 def check_native_engine_version(model, topas_version=None, *, allow_unsupported: bool = False) -> None:
-    """A145: the declared installed TOPAS version must exist and equal the recipe's ``engine_version``.
+    """The declared installed TOPAS version must exist and equal the recipe's ``engine_version``.
 
-    Both are TOPAS release numbers as written (A190, A196): the declared version must be one of
+    Both are TOPAS release numbers as written: the declared version must be one of
     ``schema.SUPPORTED_ENGINE_VERSIONS`` exactly (``"6"``; ``"6.0"`` is refused, as in a recipe), so the membership
     check is the explicit tuple, not a PEP 440 comparison. A YAML ``version: 6`` (an integer) reads as ``"6"``.
     """
@@ -106,7 +106,7 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
 
     from powderline.gateways.topas.runner import configured_timeout
 
-    model = schema.validate_recipe(recipe)  # the model validated from the user's recipe (A115)
+    model = schema.validate_recipe(recipe)  # the model validated from the user's recipe
     if validate_only:
         return native_run.run_native_validate(model)
     timeout = configured_timeout(topas_timeout)  # a bad value is refused before anything is written

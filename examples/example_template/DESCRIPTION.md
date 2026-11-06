@@ -1,6 +1,6 @@
 # ⚠️ **This is a Template File**
 
-**This template is NOT meant to be run directly.** Copy this directory and fill in your refinement details to create a working example. `input.json` is the `gsasii.rietveld` skeleton; `topas/input.json` and `easydiffraction/input.json` are the per-engine skeletons (delete the ones you do not fill in). Validate your copy with `powderline <your_dir>/input.json --validate-only` (or `pixi run kicker ... --validate-only`); the element `X` and the empty data arrays are the blanks you must fill.
+**This template is NOT meant to be run directly.** Copy this directory and fill in your refinement details to create a working example. `input.json` is the `gsasii.rietveld` skeleton; `topas/input.json` and `easydiffraction/input.json` are the per-engine skeletons (delete the ones you do not fill in). Validate your copy with `powderline <your_dir>/input.json --validate-only` (or `pixi run powderline ... --validate-only` from a checkout); the element `X` and the empty data arrays are the blanks you must fill.
 
 ---
 
@@ -21,7 +21,7 @@ List the schema features this example demonstrates:
 - **[Parameter patterns]**: Key refinement parameter patterns demonstrated (gsasii `[value, refine_flag]`; topas and easydiffraction `[value, refine_flag, min, max]`)
 - **[Special capabilities]**: File-less payload? Background modeling? Single peak fitting?
 - **[Data format]**: XRD data embedded or referenced? CIF structures?
-- **[Validation]**: Expected Rwp range, convergence behavior
+- **[Validation]**: Rwp, Rexp and GoF of the committed run, convergence behavior
 
 Examples of features you might highlight:
 - Basic Rietveld refinement with instrument parameter fitting
@@ -46,22 +46,21 @@ Describe what goes in `input.json`:
 
 Describe what should happen when this refinement runs:
 - **Parameters that converge**: Which refinement parameters should stabilize?
-- **Expected fit quality**:
-  - Rwp target: __%
-  - Typical range: 8-12% for good quality powder data
-  - >15%: May indicate data quality or model issues
+- **Fit statistics of the committed run**: Rwp __ %, Rexp __ %, GoF __
+  (PowderLine's uniform `rwp`, `r_exp` and `gof`). Report all three: Rwp
+  alone does not grade a fit, because Rexp, the Rwp expected from the noise
+  alone, differs from one data set to another
 - **Typical runtime**: How long does this refinement take?
 - **Normal warnings/messages**: Are there expected warnings that can be ignored?
 
 ### Expected Parameter Correlations
 
-Which parameters typically show high correlation (>90%)?
-- Background coefficients: [Expected? Yes/No]
-- Instrument broadening (U, V, W): [Expected? Yes/No]
-- Phase scales (multi-phase only): [Expected? Yes/No]
-- Any others specific to your refinement:
+Which parameters does GSAS-II report as highly correlated in the committed
+run, and what did you do about them?
+- [Parameter pair]: [correlation, and whether you held one of them]
 
-See [CONTRIBUTING_EXAMPLES.md](../CONTRIBUTING_EXAMPLES.md#expected-parameter-correlation-warnings) for details on interpreting correlation warnings.
+A strong correlation means the data cannot separate the parameters. See
+[Know which parameters fight each other](../../docs/concepts/refinement-practice.md#know-which-parameters-fight-each-other).
 
 ## Known Issues
 
@@ -69,12 +68,12 @@ Document any quirks, edge cases, or special considerations:
 - **GSAS-II version requirements**: Does this need a specific version?
 - **Convergence issues**: Are there known problems with parameter correlations?
 - **Data preparation**: Does the data need special processing before refinement?
-- **Space group quirks**: Does normalization occur? (e.g., R-3m → R-3c for rhombohedral)
+- **Space group setting**: Which setting does the recipe state (gemmi's canonical name, e.g. `R -3 m:H`)?
 - **Workarounds**: Any tricks needed to make this work?
 
 ## Reference Files
 
-After running this example successfully with `powderline input.json` (or `pixi run -e gsasii kicker input.json` for a gsasii recipe), the `output/` directory should contain:
+After running this example successfully with `powderline input.json` (or `pixi run -e gsasii powderline input.json` for a gsasii recipe), the `output/` directory should contain:
 - `.gpx`: GSAS-II project file (can be reopened in GUI)
 - `.lst`: Refinement log with final parameters and Rwp
 - `refined_parameters.csv`: every refined parameter with its ESD (9 columns); absent for a simulation

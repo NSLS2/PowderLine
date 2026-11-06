@@ -20,28 +20,34 @@ This example demonstrates fundamental refinement capabilities:
 
 ## Input Parameters
 
-- What data file(s) are you using?
-    None - this is an example of the payload carrying all necessary information including the diffraction data, instrument parameters, and structure information.
-- What phases are being refined?
-    LaB6
-- What parameters are constrained vs refined?
-    Lattice parameters (known since it is a SRM), atomic positions, atomic occupancies, and atomic displacement parameters are constrained.
-    Phase scale factor, Chebyshev background, and instrument broadening parameters are refined.
-- Starting values for refinement
-    Lattice parameters from NIST certification and atomic coordinates from CIF.
-    Initial instrument broadening parameters come from a dictionary of values obtained from previous fitting of data collected in a similar configuration.
-- Any special GSAS-II settings or options
-    None.
+- **Data**: no data file. The payload carries everything: the diffraction
+  data, the instrument parameters and the structure.
+- **Phase**: LaB6.
+- **Held**: the lattice parameters (known, since it is a standard reference
+  material), atomic positions, occupancies and displacement parameters.
+- **Refined**: the phase scale factor, the Chebyshev background and the
+  instrument broadening parameters.
+- **Starting values**: the lattice parameters from the NIST certificate and
+  the atomic coordinates from a CIF. The instrument broadening starts from
+  values fitted earlier to data collected in a similar configuration.
+- **Special GSAS-II settings**: none.
+- **Background**: the recipe has no background peak. The data have no
+  feature below the first Bragg peak at 2.29° 2θ (a flat background of about
+  30 counts), so a peak there cannot be determined.
+- **Size and strain broadening**: left out of the recipe, so the documented
+  default applies (10 µm, 0 microstrain, both held). Validation reports it as
+  a structured warning.
+- **Axial divergence**: SH/L is 0.002, the smallest value GSAS-II computes
+  with.
 
 ## Expected Behavior
 
-- What parameters should converge?
-- Expected fit quality (Rwp, χ²)
-    Rwp = 6.53%
-- Typical runtime
-    Less than 10 seconds.
-- Any warnings or messages that are normal
-    Correlated variables dropped (particularly for instrument parameters, bkg).
+- **Fit quality**: Rwp = 6.53 % (GSAS-II's wR in `dummy.lst`), GOF 0.52.
+- **Typical runtime**: less than 10 seconds.
+- **Messages you will see**: GSAS-II reports highly correlated parameters,
+  mostly instrument profile terms (for example `X` and `Z`) and background
+  terms. A strong correlation means the data cannot separate the parameters;
+  see [Know which parameters fight each other](../../docs/concepts/refinement-practice.md#know-which-parameters-fight-each-other).
 
 ## Output Files
 
@@ -61,23 +67,11 @@ This Rietveld refinement produces:
 
 None.
 
-## History
-
-- The schema-0.26.0 form of this recipe carried a single background peak at
-  1.5° 2θ (position, intensity and widths refined). The data have no feature
-  there (a flat ~30-count background; the first Bragg peak is at 2.29°), so the
-  peak could not be determined: GSAS-II drove it out of the pattern with
-  singular (zero) ESDs in every v0.1.1 reference. It was removed when the
-  example migrated to `gsasii.rietveld` at PowderLine 0.2.0;
-  every other refined value moved by less than 0.31 ESD.
-- Converted with `scripts/convert_recipe_026.py`: SH/L 0.0005 → 0.002 (the
-  value GSAS-II computed with anyway); size/strain broadening left out, so
-  the documented default (10 µm / 0 microstrain, fixed) applies and is
-  reported as a structured warning when the recipe is validated.
-
 ## Per-engine recipes
 
 `topas/input.json` (`topas.rietveld`, TOPAS 6) and `easydiffraction/input.json`
 (`easydiffraction.rietveld`, CrysFML with the Thompson-Cox-Hastings profile)
 describe the same case in each engine's native terms; see the `README.md` in
-each directory. Only the GSAS-II recipe has committed reference output.
+each directory. The GSAS-II and easydiffraction recipes have committed
+reference output (`output/`, `easydiffraction/output/`); no TOPAS output is
+committed under `examples/`.

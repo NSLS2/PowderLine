@@ -24,7 +24,7 @@ from powderline.exceptions import EngineExecutionError, ExecutionBackendError
 # meanings change. A returned result's status is "ok" or "generated"; "failed" is raised. The two
 # reason sets are failure.kind == "engine" (the engine ran and failed) and "backend" (it did not run).
 ENVELOPE_VERSION = "1"
-# The envelope has two parts (P-43 D3). The *base* every tool returns: status, envelope_version, run_id,
+# The envelope has two parts. The *base* every tool returns: status, envelope_version, run_id,
 # warnings, elapsed_time, method, output_files, engine_details, output_recipe, output_recipe_valid. The
 # *refinement section* a refinement workflow fills: converged, rwp, r_exp, gof, chi2_red, simulation_mode,
 # fit_profile, unit_cell_data, peak_list_data, refined_parameters, parameter_dispositions, spf_peaks,
@@ -79,10 +79,9 @@ def generated_envelope(*, run_id: Optional[str] = None, elapsed: float, method: 
 
 
 def with_status_fields(result: dict, *, status: str, converged: Optional[bool]) -> dict:
-    """Stamp an engine's ``ok``/``generated`` result with the envelope fields; drop the pre-0.2.0 keys.
+    """Stamp an engine's ``ok``/``generated`` result with the envelope fields.
 
-    The pre-envelope ``success`` flag is dropped with ``error`` and ``traceback``: ``status``
-    is the outcome.
+    ``status`` is the outcome, so any ``success``, ``error`` or ``traceback`` key is removed.
     """
     if status not in ("ok", "generated"):
         raise ValueError(f"with_status_fields takes 'ok' or 'generated', not {status!r}")
@@ -97,7 +96,7 @@ def with_status_fields(result: dict, *, status: str, converged: Optional[bool]) 
 
 def converged_of(result: dict) -> Optional[bool]:
     """The uniform ``converged`` of an engine result: ``None`` for every simulation (nothing was optimized,
-    whatever the engine's own flag says, spec D4), else the engine's flag under ``engine_details.converged``
+    whatever the engine's own flag says), else the engine's flag under ``engine_details.converged``
     (``None`` when the engine cannot report it)."""
     if result.get("simulation_mode"):
         return None
@@ -106,8 +105,8 @@ def converged_of(result: dict) -> Optional[bool]:
 
 
 def legacy_failure(result: dict, *, kind: str = "engine", reason: str = "engine_crashed") -> dict:
-    """Adapt a pre-envelope ``{'success': False, 'error', 'traceback', ...}`` dict (the frozen GSAS-II
-    executor's catch-alls) to a ``failed`` envelope."""
+    """Turn a ``{'success': False, 'error', 'traceback', ...}`` dict (what the frozen GSAS-II
+    executor's catch-alls return) into a ``failed`` envelope."""
     return failure_envelope(kind, reason, str(result.get("error") or "the engine failed without a message"),
                             run_id=result.get("run_id"), elapsed=float(result.get("elapsed_time") or 0.0),
                             method=str(result.get("method") or "none"), warnings=result.get("warnings"),

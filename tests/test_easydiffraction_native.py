@@ -1022,7 +1022,7 @@ _GOLDEN_CASES = [("lab6_crysfml_tch.json", "lab6_crysfml_tch_build", "lab6_crysf
                  ("lab6_slots_simulation.json", "lab6_slots_simulation_build", "lab6_slots_simulation_result"),
                  ("drx33_two_phase_cryspy.json", "drx33_two_phase_build", "drx33_two_phase_run")]
 
-#: Cross-build tolerances (A179; docs/regression-tolerance.md: rtol 1e-3 for values, ESDs and statistics,
+#: Cross-build tolerances (A179; docs/development/contributing.md, "Regression references and tolerance": rtol 1e-3 for values, ESDs and statistics,
 #: 1e-4 for the cell). A value near zero is also accepted within 1 % of its ESD (easydiffraction's scales are
 #: ~1e-6, so GSAS-II's atol 1e-4 does not fit).
 GOLDEN_RTOL, GOLDEN_CELL_RTOL, GOLDEN_ESD_FRACTION = 1e-3, 1e-4, 1e-2

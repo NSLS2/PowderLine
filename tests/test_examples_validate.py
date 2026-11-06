@@ -1,5 +1,5 @@
-"""Every recipe shipped under examples/ validates engine-free, and the getting-started
-snippet is a valid recipe (review items 30 and 10; the five per-engine recipes had no test)."""
+"""Every recipe shipped under examples/ validates engine-free, and the minimal recipe on
+docs/engines/gsasii.md is a valid recipe (review items 30 and 10; the five per-engine recipes had no test)."""
 import json
 import re
 from pathlib import Path
@@ -35,10 +35,10 @@ def test_the_twenty_one_shipped_recipes_are_all_covered():
 
 
 def _getting_started_recipe() -> dict:
-    text = (REPO / "docs" / "getting-started.rst").read_text(encoding="utf-8")
-    block = re.search(r"A minimal ``gsasii\.rietveld`` recipe[^\n]*\n(?:[^\n]+\n){0,3}\n\.\. code-block:: json\n\n((?:    .*\n|\n)+)", text)
-    assert block, "getting-started.rst: the minimal recipe code block was not found"
-    return json.loads("\n".join(line[4:] for line in block.group(1).splitlines()))
+    text = (REPO / "docs" / "engines" / "gsasii.md").read_text(encoding="utf-8")
+    block = re.search(r"A minimal `gsasii\.rietveld` recipe.*?```json\n(.*?)\n```", text, re.S)
+    assert block, "docs/engines/gsasii.md: the minimal recipe code block was not found"
+    return json.loads(block.group(1))
 
 
 def test_getting_started_minimal_recipe_validates(tmp_path):

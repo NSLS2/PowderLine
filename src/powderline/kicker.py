@@ -5,10 +5,10 @@
     powderline <recipe.json> [--output DIR] [--validate-only] [--verbose]
                              [--use-server | --no-server] [--server-timeout SECONDS]
                              [--topas-dir DIR] [--topas-version V] [--topas-timeout SECONDS]
-    powderline --doctor      (what this environment can do: gateways, engines, server; re/27)
+    powderline --doctor      (what this environment can do: gateways, engines, server)
 
-(``pixi run kicker ...`` / ``python src/powderline/kicker.py ...`` run the same
-``main``; re/08 binds the task names.) The CLI loads the recipe
+(``pixi run powderline ...``, the pixi task ``pixi run kicker ...`` and ``python src/powderline/kicker.py ...`` run the same
+``main``.) The CLI loads the recipe
 (:func:`powderline.load_recipe_asset`), refuses template files, maps the
 engine flags onto the gateway's run options and calls :func:`powderline.run`;
 the engine is the one named by the recipe's ``schema_name``, so the same
@@ -188,13 +188,13 @@ Examples:
     return parser
 
 
-#: Labels of the engine-specific ``validate_only`` items (``engine`` sub-dict, P-28); other keys are title-cased.
+#: Labels of the engine-specific ``validate_only`` items (``engine`` sub-dict); other keys are title-cased.
 _ENGINE_ITEM_LABELS = {'refinement_cycles': 'Refinement cycles', 'iters': 'Iterations',
                        'engine_version': 'Engine version', 'calculator': 'Calculator'}
 
 
 def _print_validate_only(result: dict, input_path: Path, verbose: bool = False) -> None:
-    """Print the uniform ``validate_only`` summary (``powderline.registry.validate_only_summary``, P-28)."""
+    """Print the uniform ``validate_only`` summary (``powderline.registry.validate_only_summary``)."""
     print(f"{CHECK} Recipe validation successful: {input_path}")
     print(f"   Schema name: {result['schema_name']}")
     print(f"   Core schema version: {result['core_schema_version']}")
@@ -210,7 +210,7 @@ def _print_validate_only(result: dict, input_path: Path, verbose: bool = False) 
 
 def _print_warnings(warnings, verbose: bool = False) -> None:
     """Print the structured warnings: ``warning``-level entries always, ``info``-level ones only with
-    ``verbose`` (otherwise their count and a hint; P-34)."""
+    ``verbose`` (otherwise their count and a hint)."""
     if not warnings:
         return
     actionable = [w for w in warnings if w.get('level', 'warning') != 'info']
@@ -270,11 +270,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"\nTemplate files are not meant to be run directly.")
         print(f"To create a working example:")
         print(f"  1. Copy the template directory:")
-        print(f"     cp -r examples/example_template")
-        print(f"  2. Edit examples/example_template/input.json with your refinement parameters")
+        print(f"     cp -r examples/example_template my_sample")
+        print(f"  2. Edit my_sample/input.json with your refinement parameters")
         print(f"  3. See examples/example_template/DESCRIPTION.md for guidance")
         print(f"\nOr run an existing example:")
-        print(f"     pixi run kicker examples/example_LaB6/input.json\n")
+        print(f"     pixi run -e gsasii powderline examples/example_LaB6/input.json --output my_lab6\n")
         return 1
 
     try:
@@ -303,7 +303,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"See examples/example_LaB6/input.json for a working example.\n")
         return 1
 
-    except EngineExecutionError as e:  # the engine ran and failed (re/12)
+    except EngineExecutionError as e:  # the engine ran and failed
         print(f"\n{CROSS} Refinement failed ({e.reason}): {e}")
         tail = ((e.result or {}).get("failure") or {}).get("console_tail")
         if tail:
@@ -320,7 +320,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"\nCheck the engine's log for details: {hint}\n")
         return 1
 
-    except ExecutionBackendError as e:  # the engine did not run (re/12)
+    except ExecutionBackendError as e:  # the engine did not run
         print(f"\n{CROSS} Could not run the engine ({e.reason}): {e}\n")
         return 1
 
@@ -336,15 +336,14 @@ def main(argv: list[str] | None = None) -> int:
             print()
             print(traceback.format_exc())
         else:
-            print(f"\nTry running with --verbose for the full traceback:")
-            print(f"  pixi run kicker {args.input_json} --verbose\n")
+            print(f"\nAdd --verbose to the same command for the full traceback.\n")
         return 1
 
     if args.validate_only:
         _print_validate_only(result, args.input_json, verbose=args.verbose)
         return 0
 
-    if result.get('status') == 'generated':  # the engine's input was written, the engine did not run (re/12 D6)
+    if result.get('status') == 'generated':  # the engine's input was written, the engine did not run
         print(f"\n{INFO} Generated the engine input only ({result.get('method')}, {result.get('elapsed_time', 0):.1f}s):")
         for f in result.get('output_files', []):
             print(f"   {f}")
@@ -372,7 +371,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _print_output_recipe(result: dict, verbose: bool = False) -> None:
-    """Where the output recipe went (re/20a, KI-04) and, with ``verbose``, how its values came about."""
+    """Where the output recipe went (KI-04) and, with ``verbose``, how its values came about."""
     path = next((f for f in result.get('output_files') or [] if f.endswith('output_recipe.json')), None)
     if result.get('output_recipe') is None:
         return  # the gateway said why in its warnings

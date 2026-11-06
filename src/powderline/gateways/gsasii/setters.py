@@ -1,6 +1,6 @@
 """GSAS-II gateway — refinement-parameter setters.
 
-Moved verbatim from ``powderline/kicker.py`` (multi-engine refactor, re/01).
+Moved verbatim from ``powderline/kicker.py`` (multi-engine refactor).
 """
 from __future__ import annotations
 import numpy as np
@@ -457,7 +457,7 @@ def set_phase_unit_cell(proj: Any, phase_name: str, unit_cell_dict: dict, print_
 
     # Note: cell values are set verbatim; validating them against the phase's
     # crystal system is intentionally NOT done here (PowderLine is the engine,
-    # not the arbiter of recipe correctness — see docs/known_issues.md, KI-01).
+    # not the arbiter of recipe correctness — see docs/reference/known-issues.md, KI-01).
 
     # Note2: hist not required since unit cell is phase-specific, not histogram-specific.
     # The delineation of phase and histogram parameters is confusing in GSAS-II documentation.
@@ -933,7 +933,7 @@ def set_phase_atom_parameters(proj: Any, phase_name: str, atom_parameters_dict: 
 
 @require_phase("Cannot set preferred orientation.")
 def set_phase_preferred_orientation(proj: Any, hist: Any, phase_name: str, po_dict: dict, print_info: bool = False) -> None:
-    """R36 (re/29, P-48): write the recipe's March-Dollase block into the HAP ``'Pref.Ori.'`` entry.
+    """Write the recipe's March-Dollase block into the HAP ``'Pref.Ori.'`` entry.
 
     The entry GSAS-II created for the phase (``GSASIImath.SetDefaultDData``: ``['MD', 1.0, False, [0, 0, 1], 0,
     {}, [], 0.1]``) is kept and three slots are overwritten: ``[0]`` the type ``'MD'``, ``[1]`` the coefficient,
@@ -989,7 +989,7 @@ def set_phase_parameterization(proj: Any, hist: Any, phases_dict: dict, print_in
         # This will call on a few helper functions to set scale, unit cell, peak broadening, atom parameters, etc.
         # Each of these helper functions will take the proj, phase name (rather than phase object), and relevant parameterization dict
 
-        # The phase block itself holds values and refine flags (gsasii 0.1.0, A93)
+        # The phase block itself holds values and refine flags (gsasii 0.1.0)
         param_dict = phase_info
 
         # Keys in param dict are 'scale', 'unit_cell', 'peak_broadening', and 'atoms' for now
@@ -1025,7 +1025,7 @@ def set_phase_parameterization(proj: Any, hist: Any, phases_dict: dict, print_in
             if any(value is not None for value in strain_broadening_dict.values()):
                 set_phase_strain_broadening(proj, hist, phase_name, strain_broadening_dict, print_info=False)
 
-        # R37 (re/29, P-48): March-Dollase preferred orientation, when the phase block states it
+        # March-Dollase preferred orientation, when the phase block states it
         po_dict = param_dict.get('preferred_orientation')
         if po_dict:
             set_phase_preferred_orientation(proj, hist, phase_name, po_dict, print_info=False)
@@ -1155,7 +1155,7 @@ def set_instrument_parameterization(proj: Any, hist: Any, instrument_param_dict:
             elif param_key == 'axial_divergence':
                 gsas_key = 'SH/L'
             elif param_key == 'polarization':
-                continue  # set above ('Polariz.'); it sits in corrections (A103)
+                continue  # set above ('Polariz.'); it sits in corrections
             #elif param_key == 'sample_height_displacement': # irrelevant to area detector data, future work for Bragg-Brentano geometry
             #    gsas_key = 'SampHt'
             else:

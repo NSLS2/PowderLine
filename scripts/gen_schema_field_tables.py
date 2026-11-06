@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Generate the docs' field tables and support matrix from the schemas themselves (re/10 §1.2; P-27).
+"""Generate the docs' field tables and support matrix from the schemas themselves.
 
 The user docs must not drift from the code, so the field-by-field tables on
-``docs/fields.md`` and the matrix on ``docs/support-matrix.md`` are not
+``docs/reference/fields.md`` and the matrix on ``docs/reference/versions.md`` are not
 hand-written: this script derives them from each schema's pydantic JSON
 Schema (``model_json_schema()``, including the ``json_schema_extra={"unit":
-...}`` metadata every quantity carries, A19) and from
-``powderline.support_matrix()`` (A40, A65), and writes MyST fragments that the
+...}`` metadata every quantity carries) and from
+``powderline.support_matrix()``, and writes MyST fragments that the
 pages pull in with ``{include}``:
 
 * ``docs/_generated/fields_core.md`` -- the core-owned fields (recipe frame,
@@ -39,7 +39,7 @@ OUT_DIR = ROOT / "docs" / "_generated"
 
 #: Core ``$defs`` names (``CoreJsonSchema`` strips the parameter type from the title).
 CORE_DEFS = {"XRDData", "FitRange", "ChebyshevBackground", "UnitCell", "Atom", "UanisoTensor"}
-#: Core-owned phase fields (A93): every engine schema carries them unchanged.
+#: Core-owned phase fields: every engine schema carries them unchanged.
 CORE_PHASE_FIELDS = ("space_group", "unit_cell", "atoms")
 #: Core-owned payload blocks, collapsed to one row in the engine tables.
 CORE_BLOCKS = {"XRDData": "xrd_data (core block)", "FitRange": "fit_range (core block)",
