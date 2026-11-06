@@ -346,8 +346,8 @@ def analyze_site(space_group: str, xyz) -> SiteAnalysis:
             f"position {_fmt_xyz(x)} is near {where} in {space_group!r} without "
             f"being on it: a symmetry image of the atom is {max(ambiguous):.2g} "
             f"(fractional) away from it. State the special-position coordinates "
-            f"to at least 6 decimals, or move the atom until its symmetry images "
-            f"are at least {AMBIGUOUS_BAND:g} away"
+            f"to at least 6 decimals, or move the atom until none of its symmetry "
+            f"images is between {SPECIAL_POSITION_TOL:g} and {AMBIGUOUS_BAND:g} away"
         )
 
     stab = [op for op, d in zip(ops, dist) if d < SPECIAL_POSITION_TOL]
