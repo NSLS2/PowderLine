@@ -121,7 +121,7 @@
 
 {bdg-success}`handled` · TOPAS 6
 
-**TOPAS does:** The `_LIMIT_MIN` and `_LIMIT_MAX` markers TOPAS 6 writes are mislabelled or spurious.
+**TOPAS does:** The `_LIMIT_MIN` and `_LIMIT_MAX` markers TOPAS 6 writes are mislabeled or spurious.
 
 **PowderLine does:** The at-limit warning is judged from the final values and the limits the writer knows, not from TOPAS's markers.
 
@@ -145,7 +145,7 @@
 
 **TOPAS does:** TCHZ_Peak_Type combines a Gaussian width G and a Lorentzian width L = X·tanθ + Y/cosθ into one FWHM. With a fixed X < 0, TOPAS 6 neither takes |X| nor clamps it at 0. X = −0.01 runs, and the profile differs from X = 0. X = −0.1 makes the width negative at the top of the window, and TOPAS writes no results: a negative convolution FWHM stops TOPAS.
 
-**PowderLine does:** PowderLine honours what TOPAS computes: a negative Lorentzian part passes while the total width is positive. With `TCHZ_Peak_Type`, the total width at the recipe's starting values must be positive at every data point of the fit window. Otherwise validation fails and names X, Y and the 2θ where the width is not positive. An output recipe whose refined values break the rule is not valid.
+**PowderLine does:** PowderLine honors what TOPAS computes: a negative Lorentzian part passes while the total width is positive. With `TCHZ_Peak_Type`, the total width at the recipe's starting values must be positive at every data point of the fit window. Otherwise validation fails and names X, Y and the 2θ where the width is not positive. An output recipe whose refined values break the rule is not valid.
 
 **You see:** validation error `topas_tchz_width_not_positive`, `output_recipe_not_valid`
 

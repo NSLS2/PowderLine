@@ -1,6 +1,6 @@
 # Known issues
 
-A **known issue** is a behaviour of PowderLine itself that is understood and
+A **known issue** is a behavior of PowderLine itself that is understood and
 recorded: a limit it accepts, a failure route it documents, or a problem it
 has resolved. Each has a permanent ID, `KI-NN`, that the code, messages and
 the changelog cite. An ID is never reused, so a withdrawn or resolved issue

@@ -4,8 +4,8 @@
 
 A heated powder standard measured at successive temperatures is the simplest
 sequential refinement: the structure does not change, the lattice expands and
-the atoms vibrate more, and each pattern is best refined starting from the
-previous one. This example runs that workflow end to end with PowderLine's
+the atoms vibrate more, and each step's refinement is best started from the
+previous step's result. This example runs that workflow end to end with PowderLine's
 **output recipe** (KI-04): each step's result is a complete recipe with the
 refined values written back, and the next step is that recipe with only the
 `xrd_data` block swapped (`powderline.recipes.with_block`). Nothing is copied
@@ -194,8 +194,9 @@ What the leg shows:
   25 °C pattern simulated with a GSAS-II profile easydiffraction can
   represent (the original `example_LaB6` posing, no clamp) gives CrysPy La
   Uiso 0.00863 vs 0.00858 programmed and GSAS-II itself 0.00868, while
-  CrysFML lands at 0.00823 (−4 %; no ESD, 0.00817(18) with X free — the size
-  of its own intensity drift, EB-78). On this pattern the axial asymmetry
+  CrysFML lands at 0.00823 (−4 %; no ESD, 0.00817(18) with X free; its
+  remaining profile mismatch and its intensity drift, EB-78, both act on
+  Uiso, and the two were not separated). On this pattern the axial asymmetry
   moves the cell for the symmetric profile (CrysPy +76 ppm, an EB-88-size
   shift), not Uiso. Compare cells (with the EB-88-size offsets in mind) and
   expansion across engines; absolute Uiso agrees only when the profile

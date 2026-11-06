@@ -60,7 +60,7 @@ templates_path = ['_templates']
 exclude_patterns = [
     '_build', 'Thumbs.db', '.DS_Store',
     '_generated',  # script-generated fragments pulled in with MyST {include}, not pages of their own
-    'catalog',     # the public engine-behaviour / known-issues catalogue (data, rendered by a script)
+    'catalog',     # the public engine-behavior / known-issues catalog (data, rendered by a script)
 ]
 
 # Treat missing cross-reference targets as warnings (not silently ignored)

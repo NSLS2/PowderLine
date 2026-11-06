@@ -5,8 +5,8 @@ window with a positive weight $w_i$. $P$ is the number of parameters the
 engine varied.
 
 ADP, `Uiso`, `Uaniso`
-: Atomic displacement parameter: how far an atom vibrates or is displaced
-  about its site. `Uiso` is one isotropic value; `Uaniso` is the six values
+: Atomic displacement parameter: the mean-square displacement of an atom
+  about its site, from vibration or static disorder. `Uiso` is one isotropic value; `Uaniso` is the six values
   `U11 U22 U33 U12 U13 U23`. Both are in Å². An atom's `ADP` field says which
   one it states.
 
@@ -100,7 +100,7 @@ Provenance
 
 Recipe
 : A complete refinement as structured data: a dictionary in Python,
-  serialised as JSON when it is stored or sent.
+  serialized as JSON when it is stored or sent.
 
 Refine flag
 : The second entry of a parameter: `true` to refine the value, `false` to

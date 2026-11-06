@@ -1,11 +1,11 @@
 # Run a series
 
-**Goal:** refine a series of patterns of one sample (a temperature ramp, a
-time series, an in situ experiment) in sequence. Each step starts from the
+**Goal:** refine one sample's model against a series of patterns (a
+temperature ramp, a time series, an in situ experiment) in sequence. Each step starts from the
 refined values of the step before, and only the data change.
 
 **You need:**
-- A recipe that refines the first pattern well. Calibrate the instrument
+- A recipe that fits the first pattern well. Calibrate the instrument
   first ([Calibrate the instrument](calibrate-instrument.md)).
 - Each further pattern as an `xrd_data` block: `tth`, `Itth`,
   `Itth_weights` and, optionally, `filename`. Your own reader builds these
@@ -119,9 +119,9 @@ directly.
 
 ## Try the example
 
-`examples/example_LaB6_temperature_series/` is this loop, complete. Six
-simulated LaB6 patterns from 25 to 500 °C, with a known thermal expansion
-and Poisson noise, are refined in sequence by `run_series.py`:
+`examples/example_LaB6_temperature_series/` is this loop, complete.
+`run_series.py` refines one model in sequence against six simulated LaB6
+patterns from 25 to 500 °C, with a known thermal expansion and Poisson noise:
 
 ```bash
 pixi run -e gsasii python examples/example_LaB6_temperature_series/run_series.py --output my_series

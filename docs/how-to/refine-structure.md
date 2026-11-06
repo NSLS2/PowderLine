@@ -182,7 +182,7 @@ preferred orientation, between 0 and 1. The block needs
 
 :::{tip}
 Start `ratio` on the side of 1 you expect, not at exactly 1.0. In a cubic
-phase the correction does not change at r = 1, and GSAS-II then aborts the
+phase the correction is stationary at r = 1, and GSAS-II then aborts the
 refinement ({ref}`EB-99 <eb-99>`).
 :::
 

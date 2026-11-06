@@ -1,6 +1,6 @@
 # Recipe format
 
-A recipe is structured data: a dictionary in Python, serialised as JSON when
+A recipe is structured data: a dictionary in Python, serialized as JSON when
 it is stored or sent. This page gives the rules every recipe follows,
 whatever its engine. Every individual field, with its unit, is on
 [Fields](fields.md).
@@ -26,7 +26,7 @@ Every recipe has four required top-level keys (`schema_name`,
 | `schema_name` | yes | `<engine>.<workflow>`: one of the five names below. It selects the engine that runs the recipe. |
 | `core_schema_version` | yes | The core schema version the recipe is written against: `"0.1.0"`. |
 | `engine_schema_version` | yes | The engine schema version the recipe is written against: `"0.1.0"` for every engine. |
-| `metadata` | no | Free-form, JSON-serialisable data. At most 1 MiB as UTF-8 JSON. PowderLine never reads it and carries it into the [output recipe](outputs.md#the-output-recipe). |
+| `metadata` | no | Free-form, JSON-serializable data. At most 1 MiB as UTF-8 JSON. PowderLine never reads it and carries it into the [output recipe](outputs.md#the-output-recipe). |
 | `payload` | yes | The refinement itself, written in the engine's own terms. |
 | `engine_version` | `topas.*` only | The TOPAS release the recipe is written for: `"6"`. |
 
@@ -277,7 +277,7 @@ physical limit ({ref}`EB-71 <eb-71>`):
   keeps it.
 - easydiffraction refuses a value outside a physical limit, even a fixed one.
   Such a value is a validation error. A cell length over 30 Å cannot be
-  modelled.
+  modeled.
 - lmfit would silently move a start outside its bounds onto the bound. The
   rule that a value lies between its stated bounds prevents this.
 - A refined value that ends within 1e-6 (relative) of a bound or physical
@@ -315,7 +315,7 @@ field means when it is left out.
   10 µm and 0 microstrain, no background, and 5 refinement cycles. Each
   default comes with a [warning](messages.md#warning-codes).
 - In `topas.*` and `easydiffraction.*` nothing has a default. A block left
-  out is not modelled.
+  out is not modeled.
 
 ## Names
 
@@ -344,7 +344,7 @@ centidegree², easydiffraction's `broad_gauss_u` in degree².
 | `degree` | degrees (angles, not 2θ) | every schema |
 | `angstrom` | Å | every schema |
 | `angstrom^2` | Å² (`Uiso`, `Uij`) | every schema |
-| `arbitrary` | intensity units (counts, normalised) | every schema |
+| `arbitrary` | intensity units (counts, normalized) | every schema |
 | `1/intensity^2` | weight, 1/σ² | every schema |
 | `dimensionless` | a pure number | every schema |
 | `centidegree 2theta` | 0.01° on the 2θ axis | `gsasii.*` |

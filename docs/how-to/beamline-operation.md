@@ -130,7 +130,7 @@ own, for example to watch the server start.
 :::
 
 The server runs one refinement at a time. Requests from several of your
-processes wait their turn. Time spent waiting counts towards a time
+processes wait their turn. Time spent waiting counts toward a time
 limit.
 
 ### Restart it after an update

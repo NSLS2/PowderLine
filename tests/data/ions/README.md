@@ -3,7 +3,7 @@
 `lab6_la3_over_la_gsasii.json` — GSAS-II 5.7.9's La3+/La per-reflection
 integrated-intensity ratios for the `example_LaB6_simulation` recipe (one
 cycle, nothing refined; the 28-ID-1 grid, λ = 0.1665 Å): the twelve resolved
-reflections between 1.5 and 14.5° with no neighbour closer than 0.3°, as
+reflections between 1.5 and 14.5° with no neighbor closer than 0.3°, as
 `hkl`, `two_theta` and `ratio_ion_over_neutral` (±0.12° windows,
 `tests/intensity_ratio.peak_areas`; `what` and `generated` inside the file
 record how it was produced). The (100) ratio is 0.9854 (the three removed

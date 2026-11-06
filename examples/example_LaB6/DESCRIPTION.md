@@ -11,12 +11,12 @@ The intention is to capture the peak broadening that is contributed by the instr
 
 This example demonstrates fundamental refinement capabilities:
 
-- **File-less JSON payload**: All data embedded directly in JSON (XRD data, CIF structure, instrument parameters)
+- **File-less JSON payload**: All data embedded directly in JSON (XRD data, structure, instrument parameters)
 - **Standard refinement parameter format**: Uses `[value, refine_flag]` throughout (gsasii 0.1.0 exposes no bounds)
 - **Background modeling**: Chebyshev polynomial with 6 coefficients
 - **Instrument parameter refinement**: Thompson-Cox-Hastings pseudo-Voigt broadening (U, V, W, X, Y, Z parameters)
 - **Phase scale refinement**: Single-phase calibrant fitting for instrument profile characterization
-- **Constrained structural parameters**: Lattice and atomic parameters fixed to known values (SRM certification)
+- **Held structural parameters**: Lattice parameter held at the certified SRM value; atomic parameters held at the stated values
 
 ## Input Parameters
 

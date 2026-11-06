@@ -142,4 +142,4 @@ explains why the results differ slightly.
 
 You checked a recipe, ran it, and read standard results. Next, see
 [how PowderLine works](../concepts/how-powderline-works.md), or go straight to
-[refining your own data](your-own-data.md).
+[analyzing your own data](your-own-data.md).

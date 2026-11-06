@@ -25,7 +25,7 @@ pixi run test                           # the engine-free suites
   when they are stale).
 - The frozen GSAS-II modules
   (`src/powderline/gateways/gsasii/{helpers,project,setters,executors,extractors,constraints}.py`)
-  change behaviour only with the maintainers' explicit consent. Comment and
+  change behavior only with the maintainers' explicit consent. Comment and
   docstring edits are fine. After any edit, run `pixi run update-code-hash`.
 - `examples/**/output/` is tracked on purpose (regression references). It
   moves only as a deliberate, reviewed change.

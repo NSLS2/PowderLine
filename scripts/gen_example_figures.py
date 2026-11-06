@@ -7,7 +7,7 @@ Every example with a committed ``fit_profile.txt`` gets one small SVG under
 * ``examples/<name>/output/fit_profile.txt`` -> ``<name>.svg`` (the GSAS-II recipe);
 * ``examples/<name>/<engine>/output/fit_profile.txt`` -> ``<name>_<engine>.svg``.
 
-Each figure shows the observed pattern (grey), the calculated pattern (blue)
+Each figure shows the observed pattern (gray), the calculated pattern (blue)
 and the difference curve (orange, offset below) over the fit window, with a
 2θ axis. The colours are mid-tones and the background is transparent, so a
 figure reads on the light and on the dark theme.
@@ -190,7 +190,7 @@ def svg(example: str, engine: str, path: Path) -> str:
         f"<!-- source: {source} -->",
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" '
         f'viewBox="0 0 {WIDTH} {HEIGHT}" role="img">',
-        f"<title>{example} ({label}): observed (grey), calculated (blue) and difference (orange) "
+        f"<title>{example} ({label}): observed (gray), calculated (blue) and difference (orange) "
         f"over the fit window</title>",
         f'<line x1="{fmt(LEFT)}" y1="{fmt(BOTTOM + 4)}" x2="{fmt(RIGHT)}" y2="{fmt(BOTTOM + 4)}" '
         f'stroke="{AXIS}" stroke-width="1"/>',

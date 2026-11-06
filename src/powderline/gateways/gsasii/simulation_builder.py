@@ -264,7 +264,7 @@ class SimulationRecipeBuilder:
             'instrument_defaults': {
                 'wavelength': 0.4133,      # Angstroms (30 keV)
                 'polarization': 0.99,      # GSAS-II 'Polariz.'
-                'zero_shift': 0.0,         # centidegrees 2theta ('Zero')
+                'zero_shift': 0.0,         # degrees 2theta ('Zero')
                 'axial_divergence': 0.002, # GSAS-II 'SH/L': its own floor (A91; P-05)
                 # TCH pseudo-Voigt instrumental broadening (GSAS-II U,V,W,X,Y,Z)
                 'broadening': {'U': 1.0, 'V': -0.5, 'W': 0.1,

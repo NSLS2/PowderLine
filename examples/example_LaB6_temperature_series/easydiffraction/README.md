@@ -8,7 +8,7 @@ describes) with
 
 - the `xrd_data` block replaced by the simulated 25 °C pattern
   (`../data/lab6_025C.json`, via `powderline.recipes.with_block`);
-- both Uiso refined (the series programmes Uiso(T)), the scale and six
+- both Uiso refined (the series programs Uiso(T)), the scale and six
   Chebyshev coefficients refined from 30, 0, 0, 0, 0, 0;
 - the cell (one tie group) and the TCH profile U, V, W, Y refined as in the
   parent recipe: the profile must be refined here because easydiffraction's

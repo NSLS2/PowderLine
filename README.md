@@ -80,7 +80,7 @@ walks through them.
 | Engine | Workflows | Runs on |
 |---|---|---|
 | GSAS-II 5.7.9 | Rietveld, single-peak fitting | Linux, Windows, macOS\* |
-| TOPAS 6 | Rietveld, single-peak fitting | Windows with a TOPAS licence (input files are written anywhere) |
+| TOPAS 6 | Rietveld, single-peak fitting | Windows with a TOPAS license (input files are written anywhere) |
 | easydiffraction 0.21.1 | Rietveld | Linux, Windows, macOS\* |
 
 \* macOS (Apple Silicon) is expected to work but is not routinely tested.
@@ -106,7 +106,7 @@ Full references, including the calculators and gemmi, are on
 [Citing PowderLine](https://nsls2.github.io/PowderLine/about/citing.html).
 Machine-readable metadata is in [`CITATION.cff`](CITATION.cff).
 
-## Contributing and licence
+## Contributing and license
 
 See the [developer guide](https://nsls2.github.io/PowderLine/development/).
-BSD 3-Clause licence, see [LICENSE](LICENSE).
+BSD 3-Clause license, see [LICENSE](LICENSE).

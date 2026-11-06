@@ -185,13 +185,13 @@ was, with any earlier results in place. All PowderLine errors derive from
 ## Carry metadata and provenance through
 
 A recipe may carry a free-form `metadata` block: a sample ID, a scan ID, the
-data's place in your catalogue, how the recipe was made.
+data's place in your catalog, how the recipe was made.
 
 ```python
 recipe["metadata"] = {"sample_id": "S-0421", "scan_id": "70c707"}
 ```
 
-PowderLine never reads it. It must be JSON-serialisable and at most 1 MiB as
+PowderLine never reads it. It must be JSON-serializable and at most 1 MiB as
 JSON. The output recipe keeps it unchanged and adds one key,
 `powderline_provenance`:
 

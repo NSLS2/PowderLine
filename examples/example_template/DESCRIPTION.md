@@ -38,7 +38,7 @@ Examples of features you might highlight:
 Describe what goes in `input.json`:
 - **Data file(s)**: Which XRD data files are being used? Format? Source?
 - **Phases**: Which phase(s) are being refined? CIF files used?
-- **Constrained vs refined parameters**: What is fixed? What is being optimized?
+- **Held vs refined parameters**: What is fixed? What is being optimized?
 - **Starting values**: Where do initial parameter values come from?
 - **Special GSAS-II settings**: Any specific options or unusual configurations?
 

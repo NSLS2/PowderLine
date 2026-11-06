@@ -14,7 +14,7 @@
 | `payload.instrument.geometry.bank` | engine | integer |  | yes | GSAS-II 'Bank' |
 | `payload.instrument.geometry.azimuth` | engine | number | `degree` | yes | GSAS-II 'Azimuth' |
 | `payload.instrument.corrections` | engine | block |  | yes | Instrument corrections: zero shift, polarization, axial divergence (GSAS-II 'SH/L'). |
-| `payload.instrument.corrections.zero_shift` | engine | `[value, flag]` | `centidegree 2theta` | yes | GSAS-II 'Zero' |
+| `payload.instrument.corrections.zero_shift` | engine | `[value, flag]` | `degree 2theta` | yes | GSAS-II 'Zero' |
 | `payload.instrument.corrections.polarization` | engine | `[value, flag]` | `dimensionless` | yes | GSAS-II 'Polariz.' |
 | `payload.instrument.corrections.axial_divergence` | engine | `[value, flag]` | `dimensionless` | yes | GSAS-II 'SH/L' (asymmetry); at least 0.002 (GSAS-II's own floor) |
 | `payload.instrument.broadening` | engine | block |  | yes | Instrument profile (Caglioti U, V, W; Lorentzian X, Y, Z). |

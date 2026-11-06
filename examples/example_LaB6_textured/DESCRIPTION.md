@@ -11,11 +11,11 @@ programmed coefficient recovered by refinement?*
 The truth is the `example_LaB6` structure (SRM 660c, a = 4.15682 Å, La at the
 origin, B on 6f) with March–Dollase **r = 0.6 along [001]** — platy, in the
 IUCr / GSAS-II convention (1 random, < 1 platy, > 1 needle; the correction
-`A = 1/sqrt((r cos P)² + sin²P / r)` averaged over the symmetry equivalents of
-the axis, Dollase 1986). GSAS-II calculated it in one cycle on the measured
-28-ID-1 2θ grid (λ = 0.1665 Å, 3821 points in 0.9–15.1°) with the *original*
-`example_LaB6` instrument profile (U 18.72, V 0.600, W 1.147, X 0.281, Y 0.001,
-Z 0 centideg² — a positive-Y profile every engine can represent, EB-93), the
+A³, with `A = 1/sqrt((r cos P)² + sin²P / r)`, averaged over the symmetry
+equivalents of the axis, Dollase 1986). GSAS-II calculated it in one cycle on
+the measured 28-ID-1 2θ grid (λ = 0.1665 Å, 3821 points in 0.9–15.1°) with the
+*original* `example_LaB6` instrument profile (U 18.72, V 0.600, W 1.147
+centideg²; X 0.281, Y 0.001, Z 0 centideg — a positive-Y profile every engine can represent, EB-93), the
 committed refinement's background and scale, and Poisson counting noise with
 a fixed seed (`data/truth.json`; `make_textured.py` regenerates everything).
 
@@ -65,7 +65,7 @@ the sample suggests.
 | output recipe valid | yes | yes |
 
 Both engines recover r within two ESD of the truth, and agree with each other
-within one. The residual 0.002 is the Poisson realisation (GoF ≈ 1). GSAS-II
+within one. The residual 0.002 is the Poisson realization (GoF ≈ 1). GSAS-II
 refines `0:0:MD`; the output recipe carries it back as
 `payload.phases.LaB6.preferred_orientation.ratio` (`parameter_dispositions.csv`
 row `varied`).
@@ -95,6 +95,6 @@ The cryspy calculator is required: CrysFML ignores preferred orientation
 
 `topas/input.json`: the same refinement as a `topas.rietveld` recipe, written
 with TOPAS's March–Dollase `PO(...)` macro. On TOPAS 6 the correction equals
-GSAS-II's per reflection, and a refinement of this pattern recovers r =
+GSAS-II's per reflection, and a refinement against this pattern recovers r =
 0.5982(14). Its reference comes from the TOPAS machine (see
 `topas/README.md`).

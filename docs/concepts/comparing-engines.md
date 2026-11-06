@@ -1,7 +1,7 @@
 # Comparing engines
 
-What happens when the same data are refined by different engines? This page
-shows two reference cases, refined by every engine PowderLine drives and by
+What happens when models are refined against the same data in different
+engines? This page shows two reference cases, refined in every engine PowderLine drives and by
 each profile model the engines offer, and explains why the numbers differ.
 It does not rank the engines.
 
@@ -26,7 +26,7 @@ model, and sometimes an unphysical one.
 - **Source.** `run` means the engine was run for this page. `golden` means
   the row is rebuilt from a stored reference run: the engine's committed
   output files, named after the recipe that produced them. The TOPAS rows
-  are always stored runs, produced on a computer with a TOPAS licence.
+  are always stored runs, produced on a computer with a TOPAS license.
 - **The LaB6 cell is refined** in every row here, unlike `example_LaB6`,
   which holds it at the certified value. That is why the GSAS-II LaB6 row
   differs from that example.
@@ -58,10 +58,13 @@ Two lessons:
   ({ref}`EB-87 <eb-87>`, warning `easydiffraction_negative_width`).
 - **Compare cells, and know what each model was free to do.**
 
-**Against the NIST certificate.** Every refined LaB6 cell sits about +80 to
-+180 ppm above the certified a = 4.156826(8) Å. The offset is common to all
-engines, so it belongs to the measurement, not to the refinement: the
-wavelength and the sample position were not refined against the standard.
+**Against the NIST certificate.** Every refined LaB6 cell sits above the
+certified a = 0.415 682 6 nm ± 0.000 008 nm (expanded uncertainty, k = 2): by +84 to +94 ppm with
+a physical asymmetry model, and by +161 to +181 ppm with a symmetric profile (the shift above).
+The common part is in the data, not in an engine: the pattern was integrated
+from 2D detector images without a parallax correction, which shifts the
+peaks. A zero shift has the wrong angular dependence to correct that and
+only partly compensates, so the recipes leave it at 0.
 The Δ vs GSAS-II columns are the ones that compare engines.
 
 **CrysFML depends on its starting values.** CrysFML computes in single
@@ -80,13 +83,14 @@ GSAS-II with a known cell and Uiso. Refined by easydiffraction:
 | CrysFML, Thompson–Cox–Hastings + FCJ | 14–31 ppm low (1.7–4 ESD) | recovered to 0.8 % | 10–22 % low (8–12 ESD) |
 | CrysPy, symmetric pseudo-Voigt | +68 ppm (the asymmetry shift above) | — | 17 % low |
 
-The cause is the peak shape, not the intensities ({ref}`EB-93 <eb-93>`). The
+Most of the shortfall comes from the peak shape ({ref}`EB-93 <eb-93>`). The
 simulated peaks carry a GSAS-II Lorentzian width that neither easydiffraction
 profile can represent, and the mismatch lands in the parameter that most
 affects intensity versus angle: Uiso. Simulated with a profile easydiffraction
 *can* represent, the same pattern gives a La Uiso of 0.00863 with CrysPy and
 0.00868 with GSAS-II, against 0.00858 programmed. CrysFML gives 0.00823, 4 %
-low, the size of its own intensity drift ({ref}`EB-78 <eb-78>`).
+low; its remaining profile mismatch and its intensity drift
+({ref}`EB-78 <eb-78>`) both act on Uiso, and the two were not separated.
 
 **Lesson:** compare cells and their changes across engines. Compare absolute
 displacement parameters only when the profile models agree.

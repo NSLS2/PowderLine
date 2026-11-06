@@ -106,7 +106,7 @@ in these ways:
 | | Value in a simulation |
 |---|---|
 | `simulation_mode` | `true` |
-| `converged` | `null`: nothing was optimised |
+| `converged` | `null`: nothing was optimized |
 | `rwp`, `r_exp`, `gof`, `chi2_red` | PowderLine's uniform statistics with no refined parameters. Against real data they show how good the starting values are. Against placeholder intensities they mean nothing. |
 | ESDs in `<phase>_unit_cell_report.csv` | `0.0` for every value |
 | `refined_parameters.csv` | not written by GSAS-II; written with no rows by TOPAS and easydiffraction |

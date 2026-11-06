@@ -3,14 +3,14 @@
 ## Scientific Purpose
 
 This example is a re-parameterization of `example_DRX_33` (the same two-phase
-disordered-rocksalt battery material — a face-centred-cubic DRX main phase,
+disordered-rocksalt battery material — a face-centered-cubic DRX main phase,
 space group Fm-3m / No. 225, plus a monoclinic Li4MgWO6 secondary phase, space
 group C2/m / No. 12). Everything about the data, structures, and instrument is
 identical; only the **peak-broadening parameterization** changes.
 
 In the base example both **size** and **strain** broadening are refined per
-phase. That refinement is ill-conditioned over this limited 1-15 deg 2-theta,
-low-Q synchrotron range (lambda = 0.1665 A): size and strain broadening are
+phase. That refinement is ill-conditioned over this 1-15 deg 2-theta
+synchrotron range (lambda = 0.1665 A): size and strain broadening are
 strongly correlated, so the isotropic size parameters run away. In the
 committed base reference the DRX size ends near 253 um with a runaway
 LG-mixing coefficient (about 15 000), and the Li4MgWO6 size goes negative
@@ -56,7 +56,7 @@ Concretely, each phase's `peak_broadening.size_broadening` is set to
 
 ## Expected Behavior
 
-- **Convergence**: the refinement converges in a few cycles. Because both the
+- **Convergence**: the refinement stops at its 5-cycle limit without converging (`converged: false`, warning `gsasii_fit_not_converged`). Because both the
   isotropic strain magnitude and the strain LG-mixing term are refined, the two
   are fully correlated and GSAS-II reports a soft (SVD) singularity — see
   *Known Issues*. The reported equatorial microstrain (which combines them) is
@@ -64,7 +64,7 @@ Concretely, each phase's `peak_broadening.size_broadening` is set to
 - **Fit quality**: **Rwp = 8.46%, GOF = 0.86** (chi**2 = 2781.62 on 3767
   observations: the native path fits exactly 1 ≤ 2θ ≤ 15). This is an improvement over the base example (Rwp = 10.83%,
   GOF = 1.10): removing the ill-conditioned size parameters yields a cleaner fit.
-  GOF < 1 indicates the profile ESDs are mildly overestimated.
+  GOF < 1 indicates the intensity uncertainties (σ of y_obs) are mildly overestimated.
 - **Refined values (with ESDs)**:
 
   Phase 1 — DRX (Fm-3m, cubic):

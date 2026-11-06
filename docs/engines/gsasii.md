@@ -91,7 +91,7 @@ and [Fields: `gsasii.spf`](../reference/fields.md#gsasiispf).
 | Quantity | GSAS-II unit |
 |---|---|
 | `U`, `V`, `W` (Gaussian variance) | centidegree² |
-| `X`, `Y`, `Z`, `zero_shift` | centidegree |
+| `X`, `Y`, `Z` | centidegree |
 | `axial_divergence` (SH/L) | dimensionless |
 | `pv_gaussian_sigma_sq` (peak σ²) | centidegree² |
 | `pv_lorentzian_gamma` (peak γ) | centidegree |
@@ -220,7 +220,7 @@ How to start, check and secure the server, and how to limit the wait for it:
   console text GSAS-II printed ({ref}`KI-05 <ki-05>`). Details:
   [Outputs](../reference/outputs.md#when-a-run-fails).
 
-## Behaviours
+## Behaviors
 
 Each entry says what GSAS-II does on its own and what PowderLine does about
 it. Messages and the changelog cite these IDs.

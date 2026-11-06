@@ -2,7 +2,7 @@
 
 ## Overview
 
-This example demonstrates **powder diffraction pattern simulation** for a **two-phase system** using PowderLine. The sample is a composite mixture of two crystalline phases with locked structural parameters. Unlike the refinement mode (which optimizes parameters to fit data), simulation mode calculates the theoretical diffraction pattern for a given structure at fixed parameters.
+This example demonstrates **powder diffraction pattern simulation** for a **two-phase system** using PowderLine. The model is a mixture of two crystalline phases with every parameter held. Unlike the refinement mode (which optimizes parameters to fit data), simulation mode calculates the theoretical diffraction pattern for a given structure at fixed parameters.
 
 ## Use Case: Multi-Phase Simulation
 
@@ -22,8 +22,8 @@ This example demonstrates multi-phase simulation capabilities:
 - **Single-cycle execution**: `refinement_cycles: 1` (no iterative optimization)
 - **Phase-specific outputs**: Separate reports for each phase (unit cell, peak lists)
 - **Combined pattern calculation**: Theoretical pattern from superposition of both phases
-- **Scale factor control**: Fixed relative phase intensities (both set to 1.0)
-- **Meaningless fit statistics**: `rwp` compares the simulated pattern with the placeholder data (pure forward calculation, no fitting); GSAS-II's own 100 % is under `engine_details`
+- **Scale factor control**: Fixed phase scales (both set to 1.0)
+- **Meaningless fit statistics**: `rwp` compares the simulated pattern with the placeholder data (the measured pattern, used here only for its 2θ grid; pure forward calculation, no fitting); GSAS-II's own 100 % is under `engine_details`
 
 ## Key Differences from Refinement
 
@@ -41,7 +41,7 @@ This example demonstrates multi-phase simulation capabilities:
 1. **Structure Input**: Two crystal structures (DRX_33 + Li4MgWO6_SG12) from CIF with known unit cell parameters
 2. **Instrument Definition**: Same synchrotron beamline setup as refinement example (λ = 0.1665 Å)
 3. **Parameter Locking**: All structural and peak broadening parameters set to `refine_flag = false`
-4. **Scale Factors**: Each phase has a fixed scale factor (1.0 in this example - equal contributions)
+4. **Scale Factors**: Each phase has a fixed scale factor (1.0 in this example)
 5. **Single Cycle**: `refinement_cycles = 1` with all parameters locked = pure calculation (no optimization)
 6. **Output**: Theoretical y_calc values representing the combined two-phase pattern
 
@@ -113,10 +113,10 @@ To study phase fractions, modify the scale factors in `input.json`:
 
 ```json
 "DRX_33": {
-  "scale": [0.7, false]  // 70% relative phase fraction by mass
+  "scale": [0.7, false]  // relative phase scale (not a mass fraction)
 },
 "Li4MgWO6_SG12": {
-  "scale": [0.3, false]  // 30% relative phase fraction by mass
+  "scale": [0.3, false]  // relative phase scale (not a mass fraction)
 }
 ```
 

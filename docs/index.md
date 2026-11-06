@@ -47,14 +47,14 @@ motivation.
 
 ::::{grid} 2
 
-:::{grid-item-card} 🔬 I refine powder data
+:::{grid-item-card} 🔬 I analyze powder data
 Run a complete refinement in a few minutes, then write a recipe for your own
 data.
 
 [Get started →](getting-started/index.md)
 :::
 :::{grid-item-card} 🛰️ I run a beamline
-Calibrate once, refine every sample, chain a series, and run unattended.
+Calibrate once, analyze every sample, chain a series, and run unattended.
 
 [Calibrate the instrument →](how-to/calibrate-instrument.md) ·
 [Run a series →](how-to/sequential-refinement.md) ·
@@ -67,7 +67,7 @@ failures, and carry metadata through.
 [Use PowderLine from Python →](how-to/python-pipelines.md)
 :::
 :::{grid-item-card} ⚙️ I develop a refinement engine
-What PowderLine does with each engine, every behaviour it found, and how
+What PowderLine does with each engine, every behavior it found, and how
 the engines compare on the same data.
 
 [Engines →](engines/index.md) · [Comparing engines →](concepts/comparing-engines.md)
@@ -78,7 +78,7 @@ Real and teaching cases, with their recipes and results.
 [Examples →](examples/index.md)
 :::
 :::{grid-item-card} 🛠️ I want to contribute
-How the code is organised, how to test it, and how to add an engine.
+How the code is organized, how to test it, and how to add an engine.
 
 [Development →](development/index.md)
 :::
@@ -88,7 +88,7 @@ How the code is organised, how to test it, and how to add an engine.
 
 | PowderLine **is** | PowderLine **is not** |
 |---|---|
-| One validated, machine-writable description of a refinement | A new refinement algorithm: the engines do the maths |
+| One validated, machine-writable description of a refinement | A new refinement algorithm: the engines do the math |
 | A strict checker of form and symmetry | A judge of your refinement choices: see [Good refinement practice](concepts/refinement-practice.md) |
 | One interface and one result format for three engines | A translator: a GSAS-II recipe stays a GSAS-II recipe |
 | A component you plug into larger workflows | A CIF reader or recipe builder: your tools write the recipe |

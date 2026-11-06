@@ -15,7 +15,7 @@
 | `payload.instrument.polarization` | engine | block |  | no | Left out: no polarization correction (p = 0) |
 | `payload.instrument.polarization.setup_polarization_coefficient` | engine | number | `dimensionless` | yes | p, 0..1 |
 | `payload.instrument.polarization.setup_monochromator_twotheta` | engine | number | `degree` | yes | Monochromator 2theta_m, 0 <= 2theta_m < 180 |
-| `payload.instrument.corrections` | engine | block |  | yes | Peak-position corrections (degrees 2theta). Displacement and transparency left out: not modelled. |
+| `payload.instrument.corrections` | engine | block |  | yes | Peak-position corrections (degrees 2theta). Displacement and transparency left out: not modeled. |
 | `payload.instrument.corrections.calib_twotheta_offset` | engine | `[value, flag, min, max]` | `degree 2theta` | yes | Zero offset |
 | `payload.instrument.corrections.calib_sample_displacement` | engine | `[value, flag, min, max]` | `degree 2theta` | no | Specimen displacement term (shift x cos 2theta) |
 | `payload.instrument.corrections.calib_sample_transparency` | engine | `[value, flag, min, max]` | `degree 2theta` | no | Transparency term (shift x sin 2theta) |

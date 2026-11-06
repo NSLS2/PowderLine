@@ -110,7 +110,7 @@ start-dependent points ({ref}`EB-90 <eb-90>`), so their goldens compare only
 the counts, the warnings and the cell.
 
 A reference moves only as a deliberate change, with an equivalence check
-([Policies](policies.md#deliberate-behaviour-changes)).
+([Policies](policies.md#deliberate-behavior-changes)).
 
 ## Build the docs
 
@@ -128,7 +128,7 @@ same change that affects them, and commit the result.
 | Script | Writes | Check |
 |---|---|---|
 | `scripts/gen_schema_field_tables.py` | The field tables and support matrix in `docs/_generated/` | `pixi run fields-check` |
-| `scripts/gen_catalog.py` | The engine-behaviour entries, the ID index and the known-issue entries, from `docs/catalog/*.yaml` | `pixi run catalog-check` |
+| `scripts/gen_catalog.py` | The engine-behavior entries, the ID index and the known-issue entries, from `docs/catalog/*.yaml` | `pixi run catalog-check` |
 | `scripts/gen_example_figures.py` | The example gallery's figures, from each example's committed `fit_profile.txt` | `pixi run figures-check` |
 | `scripts/cross_engine_comparison.py` | The cross-engine comparison tables in `docs/_generated/` | none; `--no-run` rebuilds from committed results |
 
@@ -139,7 +139,7 @@ declarations:
 pixi run python scripts/gen_schema_field_tables.py
 ```
 
-The engine-behaviour entries, the [ID index](../reference/ids.md) and
+The engine-behavior entries, the [ID index](../reference/ids.md) and
 [Known issues](../reference/known-issues.md) are generated from
 `docs/catalog/engine_behaviour.yaml` and `docs/catalog/known_issues.yaml`.
 Edit the YAML, never the generated pages, then run
@@ -184,7 +184,7 @@ These rules keep the pages consistent. They apply to every page under
   "no longer" or "previously". History belongs in the CHANGELOG.
 - **One home per fact.** Write a fact on the page that owns it. Everywhere
   else, write one sentence and link it.
-- **A recipe is structured data.** It is a dictionary, serialised as JSON.
+- **A recipe is structured data.** It is a dictionary, serialized as JSON.
   Don't define it as a file.
 - **Engine differences in tabs.** Use a sphinx-design `tab-set` with
   `:sync-group: engine` and the keys `gsasii`, `topas` and `easydiffraction`.
@@ -267,7 +267,7 @@ points are missing and `GatewayNotInstalledError` follows. Fix that with
 2. For a GSAS-II regression, compare the engine's log:
    `diff output/dummy.lst examples/example_LaB6/output/dummy.lst`.
 3. If your change moves a result on purpose, it is a deliberate change
-   ([Policies](policies.md#deliberate-behaviour-changes)). Regenerate the
+   ([Policies](policies.md#deliberate-behavior-changes)). Regenerate the
    reference only then, for example:
 
    ```bash
@@ -277,9 +277,9 @@ points are missing and `GatewayNotInstalledError` follows. Fix that with
 ### `test_code_hash` fails
 
 A frozen GSAS-II module changed. If the edit is a comment or docstring edit,
-or a behaviour change the maintainers agreed to, run
+or a behavior change the maintainers agreed to, run
 `pixi run update-code-hash` and commit `src/powderline/_code_hash.json` with
-it. Otherwise revert the edit and put the behaviour in a non-frozen module
+it. Otherwise revert the edit and put the behavior in a non-frozen module
 ([Architecture](architecture.md#the-frozen-gsas-ii-modules)).
 
 ### A generated-docs check fails

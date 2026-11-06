@@ -47,7 +47,7 @@ This example validates PowderLine's ability to refine structural parameters in m
 - **Isotropic displacement (Uiso)**: All atoms locked (Uiso=false)
 - **Occupancies**: All atoms locked (occupancy=false)
 
-### Parameters Constrained:
+### Parameters Held:
 - **Instrument parameters**: Wavelength, polarization, broadening locked
 
 ### Parameters Refined:
@@ -66,7 +66,7 @@ This example validates PowderLine's ability to refine structural parameters in m
 ## Expected Behavior
 
 ### Convergence:
-- Refinement should converge after 5 cycles
+- The refinement stops at its 5-cycle limit without converging (`converged: false`, warning `gsasii_fit_not_converged`)
 - Atom parameters may show larger shifts in first few cycles
 - Coordinate refinement is sensitive to starting values
 
@@ -113,7 +113,7 @@ The `ADP` field serves two purposes:
 
 ### Phase block (gsasii 0.1.0):
 Each atom states its values and flags together. DRX_33's Li (fixed position 4a)
-refines occupancy and Uiso; Li4MgWO6_SG12's Li1 (site 4g: x and z fixed by
+refines occupancy and Uiso; Li4MgWO6_SG12's Li1 (site 4h: x and z fixed by
 symmetry) refines only y:
 ```json
 "atoms": {
@@ -126,7 +126,7 @@ symmetry) refines only y:
   },
   "Li1": {
     "element": "Li",
-    "x": [0.0, false], "y": [0.33, true], "z": [0.5, false],   // only y is free on 4g
+    "x": [0.0, false], "y": [0.33, true], "z": [0.5, false],   // only y is free on 4h
     "occupancy": [1.0, false],
     "ADP": "Uiso",
     "Uiso": [0.0, false]

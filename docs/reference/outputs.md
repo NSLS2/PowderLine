@@ -232,7 +232,7 @@ The unit-cell report follows one rule on every engine:
 | Volume of a cell with nothing refined | `0.0` |
 | Volume otherwise (easydiffraction) | empty |
 
-## Native artefacts
+## Native artifacts
 
 Each engine's own files stay in the output directory beside the reports.
 

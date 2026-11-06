@@ -35,7 +35,7 @@ They are also the regression references, so a change to them is a
 deliberate change.
 
 The figures show the committed fit over the fit window: the observed pattern
-in grey, the calculated pattern in blue and the difference curve in orange,
+in gray, the calculated pattern in blue and the difference curve in orange,
 below.
 
 ## Starting points
@@ -48,7 +48,7 @@ below.
 :img-alt: Observed, calculated and difference curves of the LaB6 fit
 :link: https://github.com/NSLS2/PowderLine/tree/main/examples/example_LaB6
 
-Fit the NIST SRM 660c standard to measure the instrument profile.
+Refine against a NIST SRM 660c pattern to determine the instrument profile.
 Rwp 6.53 %.
 
 {bdg-primary}`calibration` {bdg-secondary}`GSAS-II · TOPAS · easydiffraction`
@@ -70,8 +70,8 @@ microstrain is refined. Rwp 8.46 %.
 :img-alt: Observed, calculated and difference curves of the first temperature step
 :link: https://github.com/NSLS2/PowderLine/tree/main/examples/example_LaB6_temperature_series
 
-Six simulated patterns from 25 to 500 °C, refined in sequence through the
-output recipe. The figure shows the first step in easydiffraction.
+One model refined in sequence against six simulated patterns from 25 to
+500 °C, through the output recipe. The figure shows the first step in easydiffraction.
 
 {bdg-primary}`sequential` {bdg-info}`simulated` {bdg-secondary}`GSAS-II · easydiffraction`
 :::
@@ -111,7 +111,7 @@ These examples show what an ill-posed refinement looks like.
 :::{admonition} These examples are ill-posed on purpose
 :class: caution
 
-They ask the data for more than it can determine. They are kept as they are,
+They ask more of the data than the data can determine. They are kept as they are,
 so you can see what that looks like and which signals PowderLine gives. Each
 one names its well-posed variant where one exists. Don't copy their
 refinement choices.

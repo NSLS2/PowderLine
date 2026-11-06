@@ -48,7 +48,7 @@ registers a gateway in code without an entry point.
      `json_schema_extra={"unit": ...}`, which the field tables read. Keep
      `extra='forbid'`. A block that may be left out is left out, never
      `null`.
-   - Add no default that silently replaces an engine behaviour. Either the
+   - Add no default that silently replaces an engine behavior. Either the
      value is required, or the default is documented and reported with a
      structured warning.
    - Write the recipe models as subclasses of `schema_core.EngineRecipe`,
@@ -164,8 +164,8 @@ The goldens are the references. A change in what the engine is asked to do
   matrix regenerates itself.
 - Write the engine page under `docs/engines/` and add a column to the
   feature table on [Engines](../engines/index.md).
-- Add a catalogue entry in `docs/catalog/engine_behaviour.yaml` for every
-  engine behaviour a user can meet, with PowderLine's policy. Regenerate with
+- Add a catalog entry in `docs/catalog/engine_behaviour.yaml` for every
+  engine behavior a user can meet, with PowderLine's policy. Regenerate with
   `scripts/gen_catalog.py`. Anything the engine does silently is written up
   before the gateway ships.
 - Add the engine schema's entry to [Versions](../reference/versions.md) and a
@@ -176,7 +176,7 @@ The goldens are the references. A change in what the engine is asked to do
 The same discipline, smaller.
 
 1. **Find the ground truth.** Read and run the engine to see what it does with
-   the quantity. If the engine's behaviour is unknown, ask the maintainers
+   the quantity. If the engine's behavior is unknown, ask the maintainers
    rather than infer it.
 2. **Add the field** to the engine's `schema.py`, with its unit, validators
    and refusals. A structural quantity shared by every engine goes into
@@ -185,7 +185,7 @@ The same discipline, smaller.
    this way (`schema_core.MarchDollase`).
 3. **Consume it in the runtime layer** from the validated model. For gsasii,
    put the read in a non-frozen module. A read inside a frozen module is a
-   behaviour change and needs the maintainers' consent
+   behavior change and needs the maintainers' consent
    ([Policies](policies.md#frozen-gsas-ii-code)). Map the refined parameter
    back to its recipe path (gsasii `paths.py`) so it reaches the output
    recipe.
@@ -194,10 +194,10 @@ The same discipline, smaller.
    simulated pattern as the gate, and an example as the demonstration.
 5. **Add an example** if it is a real case: `examples/<case>/` with its
    `DESCRIPTION.md` and, for gsasii, the committed output.
-6. **Record it.** Regenerate the field tables, add catalogue entries for
+6. **Record it.** Regenerate the field tables, add catalog entries for
    anything the engine does silently, and update
    [Versions](../reference/versions.md) and the CHANGELOG.
 
 If the new field changes what an existing recipe means, it is a deliberate
 change: a schema version bump, a CHANGELOG entry, and a note for users
-([Policies](policies.md#deliberate-behaviour-changes)).
+([Policies](policies.md#deliberate-behavior-changes)).

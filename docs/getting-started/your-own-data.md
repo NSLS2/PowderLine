@@ -1,4 +1,4 @@
-# Refine your own data
+# Analyze your own data
 
 This tutorial takes you from your own pattern and structure to a validated,
 running recipe. It assumes you have done [your first refinement](first-refinement.md).
@@ -170,5 +170,5 @@ Look at the fit (see [Plot the fit](first-refinement.md#plot-the-fit)), then
 adjust the flags and run again. Each run's `output_recipe.json` holds the
 refined values, ready to be the next starting point.
 
-**Next:** [Run a series](../how-to/sequential-refinement.md) to refine many
-patterns, or [Refine a structure](../how-to/refine-structure.md) to go further.
+**Next:** [Run a series](../how-to/sequential-refinement.md) to refine one model
+against many patterns, or [Refine a structure](../how-to/refine-structure.md) to go further.

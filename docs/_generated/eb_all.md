@@ -44,6 +44,6 @@
 
 {bdg-secondary}`documented` · GSAS-II 5.7.9; easydiffraction 0.21.1 (CrysPy 0.13.0, CrysFML 0.8.0)
 
-**What happens:** Lattice parameters agree between GSAS-II and easydiffraction when axial asymmetry is modelled physically (FCJ). With a symmetric profile they shift by +67 to +91 ppm, whichever calculator runs it.
+**What happens:** Lattice parameters agree between GSAS-II and easydiffraction when axial asymmetry is modeled physically (FCJ). With a symmetric profile they shift by +67 to +91 ppm, whichever calculator runs it.
 
 **PowderLine does:** Documented on the cross-engine comparison. Rwp compares models fitted to the same points, not engines.

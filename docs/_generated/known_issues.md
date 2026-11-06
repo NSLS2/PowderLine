@@ -193,6 +193,6 @@
 
 {bdg-secondary}`withdrawn`
 
-**What happens:** The reported behaviour was intentional, not a defect.
+**What happens:** The reported behavior was intentional, not a defect.
 
 **What to do:** Nothing. The id is kept so it is never reused.
