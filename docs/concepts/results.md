@@ -113,9 +113,10 @@ every output recipe:
 | `powderline_version` | the PowderLine version |
 | `created` | when, in UTC |
 
-Each run has a unique `run_id`. Follow the `parent_run_id` links and a chain
-of analyses leads back, step by step, to the recipe and the data it started
-from.
+Each output recipe identifies the run that produced it. PowderLine replaces
+any incoming `powderline_provenance` block rather than retaining its history.
+To trace a whole series, your pipeline must archive each step's input and result
+and record the input recipe's `parent_run_id` alongside the new result's `run_id`.
 
 ```mermaid
 flowchart LR
