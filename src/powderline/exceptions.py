@@ -1,7 +1,7 @@
 """PowderLine exception hierarchy and the structured-warning shape (engine-free).
 
 Every PowderLine-raised error derives from :class:`PowderLineError`. The
-gateway errors split along the schema/runtime layers (master plan A23, A5/A8):
+gateway errors split along the schema/runtime layers:
 
 - :class:`GatewayNotInstalledError` — no gateway of that name is registered at
   all (an out-of-tree plugin that is not installed). The only case where
@@ -9,9 +9,9 @@ gateway errors split along the schema/runtime layers (master plan A23, A5/A8):
 - :class:`EngineNotAvailableError` — the gateway is present but its engine
   dependency is missing from this environment. Raised at ``run()`` time only,
   never by ``validate()``/``validate_only``. Also an :class:`ImportError`, so
-  callers that caught the underlying import failure keep working (A52).
+  callers that caught the underlying import failure keep working.
 - :class:`EngineVersionError` — the installed engine is outside the gateway's
-  supported ``ENGINE_VERSION_SPEC``. A hard error (A44).
+  supported ``ENGINE_VERSION_SPEC``. A hard error.
 - :class:`EngineExecutionError` — the engine ran and failed (``.reason`` is a
   code from :mod:`powderline.results`, ``.result`` the failed envelope).
 - :class:`ExecutionBackendError` — the engine did not run: the execution
@@ -19,11 +19,11 @@ gateway errors split along the schema/runtime layers (master plan A23, A5/A8):
   Same ``.reason`` / ``.result`` shape. Both pickle (``ProcessPoolExecutor``).
 - :class:`SymmetryError` — core symmetry helpers (``powderline.symmetry``)
   cannot interpret a space group or site. Gateways convert it to their own
-  error type (A61).
+  error type.
 
 An invalid recipe raises pydantic's own ``ValidationError``, which lists every
 problem with its field location. Recipe checks live in the schema models
-(core + engine), so there is no PowderLine wrapper for it (A70).
+(core + engine), so there is no PowderLine wrapper for it.
 
 This module must never import an engine (enforced by an import-block test).
 """
@@ -43,8 +43,7 @@ class SymmetryError(PowderLineError, ValueError):
 
     A ``ValueError`` so that, raised inside a pydantic validator, it is reported
     as a validation error with the field location. Gateways that call the
-    symmetry helpers outside validation convert it to their own error type
-    (A56, A61).
+    symmetry helpers outside validation convert it to their own error type.
     """
 
 
@@ -74,7 +73,7 @@ class EngineNotAvailableError(PowderLineError, ImportError):
         self.env = env
         self.install_command = install_command
 
-    def __reduce__(self):  # keyword-only constructor: make it picklable (re/12 spec §4)
+    def __reduce__(self):  # keyword-only constructor: make it picklable
         return (_rebuild, (type(self), (), {"gateway": self.gateway, "dependency": self.dependency,
                                            "env": self.env, "install_command": self.install_command}))
 
@@ -101,7 +100,7 @@ class EngineVersionError(PowderLineError):
 
 
 class _RunFailure(PowderLineError):
-    """Shared shape of the two run-failure classes (re/12 spec §4): ``reason`` (a code from
+    """Shared shape of the two run-failure classes: ``reason`` (a code from
     :mod:`powderline.results`) and ``result`` (the failed envelope, JSON-safe; ``{}`` when the error was
     raised before any run data existed)."""
 
@@ -166,7 +165,7 @@ class WarningCode(NamedTuple):
     level: Literal["warning", "info"]
 
 
-# The vocabulary of structured warnings (P-37): every code PowderLine emits,
+# The vocabulary of structured warnings: every code PowderLine emits,
 # its owner and its level. Nothing checks a code at emission; a test asserts
 # that this registry, the ``code="..."`` literals under ``src/powderline`` and
 # the warning-codes table in ``docs/reference/messages.md`` agree, so a

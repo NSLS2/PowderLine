@@ -343,10 +343,11 @@ def analyze_site(space_group: str, xyz) -> SiteAnalysis:
         else:  # near more than one special position: no single one to name
             where = "a special position"
         raise SymmetryError(
-            f"position {_fmt_xyz(x)} is {max(ambiguous):.2g} from {where} in "
-            f"{space_group!r} without being on it: state the special-position "
-            f"coordinates to at least 6 decimals, or move the atom at least "
-            f"{AMBIGUOUS_BAND:g} (fractional) off it"
+            f"position {_fmt_xyz(x)} is near {where} in {space_group!r} without "
+            f"being on it: a symmetry image of the atom is {max(ambiguous):.2g} "
+            f"(fractional) away from it. State the special-position coordinates "
+            f"to at least 6 decimals, or move the atom until its symmetry images "
+            f"are at least {AMBIGUOUS_BAND:g} away"
         )
 
     stab = [op for op, d in zip(ops, dist) if d < SPECIAL_POSITION_TOL]

@@ -2,18 +2,18 @@
 
 WHY THIS EXISTS:
     The GSAS-II setup/execution code (src/powderline/gateways/gsasii/
-    helpers, project, setters, executors, extractors, constraints) is frozen
-    for the multi-engine refactor (master plan invariant 1, A39): it moves
-    verbatim, and every edit goes through the signed edits ledger. The hash
-    manifest is the tripwire. The GSAS-II server also caches these modules in
-    memory, so a change on disk needs a server restart (pixi run gsas-server
-    restart).
+    helpers, project, setters, executors, extractors, constraints) is frozen:
+    a behaviour-changing edit needs the maintainers' explicit consent; a
+    comment or docstring edit does not. The hash manifest is the tripwire for
+    both. The GSAS-II server also caches these modules in memory, so a change
+    on disk needs a fresh server (pixi run -e gsasii gsas-server stop; the
+    next run starts one).
 
 WHEN THIS TEST FAILS:
     A hashed module was modified but _code_hash.json was not updated. Fix it:
 
-    1. Record the edit (ledger row) if the module is frozen, or bump the
-       engine_schema_version where the output behaviour changed.
+    1. Check the edit: a comment or docstring edit, or a behaviour change the
+       maintainers agreed to. Otherwise revert it.
     2. Run: pixi run update-code-hash
     3. Commit _code_hash.json alongside your changes.
 
@@ -64,8 +64,8 @@ def test_gateway_hashes_match(module_name):
     If this test fails, it means a gateway module was modified without updating
     the code hash. To fix:
 
-    1. Record the edit (ledger row), or bump the engine_schema_version where the
-       output behaviour changed.
+    1. Check the edit: a comment or docstring edit, or a behaviour change the
+       maintainers agreed to. Otherwise revert it.
     2. Run: pixi run update-code-hash
     3. Commit the updated _code_hash.json along with your changes.
     """
@@ -84,7 +84,7 @@ def test_gateway_hashes_match(module_name):
         f"\n{module_name} has changed but _code_hash.json was not updated!\n"
         f"  Stored hash:  {stored_hash}\n"
         f"  Current hash: {current_hash}\n\n"
-        f"Record the edit in the frozen-edits ledger (or bump engine_schema_version).\n"
-        f"Then run: pixi run update-code-hash\n"
+        f"If this is a comment or docstring edit, or a behaviour change the maintainers agreed to,\n"
+        f"run: pixi run update-code-hash, and commit _code_hash.json. Otherwise revert the edit.\n"
         f"See docs/development/policies.md 'Frozen GSAS-II code' for details."
     )

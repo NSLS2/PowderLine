@@ -1,4 +1,4 @@
-"""The public API: ``validate`` and ``run`` dispatch on the recipe's ``schema_name`` (re/07, P-06).
+"""The public API: ``validate`` and ``run`` dispatch on the recipe's ``schema_name``.
 
 A recipe names its engine in ``schema_name`` (``<engine>.<workflow>``, e.g.
 ``gsasii.rietveld``); the engine prefix is the gateway's registry name
@@ -6,19 +6,19 @@ A recipe names its engine in ``schema_name`` (``<engine>.<workflow>``, e.g.
 recipe and hand the recipe to it:
 
 - :func:`validate` uses the gateway's **schema layer** only, so it works in an
-  environment with no engine installed (the re/08 precondition). It returns a
+  environment with no engine installed. It returns a
   :class:`ValidationResult`: the gateway's validated model plus the structured
   warnings the validation produced.
 - :func:`run` uses the gateway's **runtime layer**; engine options are
   forwarded to the gateway unchanged. Around the gateway it owns the output
-  directory's PowderLine files (re/30): once the recipe has validated and the
+  directory's PowderLine files: once the recipe has validated and the
   gateway's engine is importable here, it removes the fixed-name outputs before
   dispatch; when the run fails, it writes the failed envelope to
   ``failure.json`` beside the engine's own files before re-raising.
 
 This module imports no engine and no gateway module at import time (enforced
 by an import-block test). There is no engine argument: the recipe names its
-engine (P-06).
+engine.
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ from powderline import registry
 from powderline.exceptions import EngineExecutionError, ExecutionBackendError, StructuredWarning
 from powderline.schema_core import CoreRecipe, collect_warnings
 
-#: Gateway ``run()`` options the public ``run()`` refuses to forward (A53: test-only).
+#: Gateway ``run()`` options the public ``run()`` refuses to forward (test-only).
 _NOT_PUBLIC_RUN_OPTIONS = ("allow_unsupported_engine_version",)
 
 
@@ -49,12 +49,11 @@ class ValidationResult:
       once, in the same call -- a default applied, a symmetry remark
       (``Phase.warnings()``).
 
-    Why a result object rather than the bare model: the warnings are a product
-    of validating the user's recipe (what the recipe left out), which a dump of
-    the validated model (which now states the default) no longer shows; so the
-    only way to expose them without re-validating is to return them with the
-    model. Frozen, because it is a record of one validation, not a mutable
-    recipe builder: edit the recipe dict and validate again.
+    The warnings come with the model because they describe the recipe as
+    written (for example, a block it left out). The validated model states
+    the default instead, so a dump of it cannot show them. The result is
+    frozen: it records one validation. To change the recipe, edit the dict and
+    validate again.
     """
 
     recipe: Any
@@ -182,15 +181,18 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
 
     Returns:
         The gateway's ``ok`` or ``generated`` envelope (:mod:`powderline.results`).
-        Every engine returns the same keys and types: ``status`` (``"ok"``, or
+        Every engine returns these keys: ``status`` (``"ok"``, or
         ``"generated"`` when TOPAS's input was written but no ``tc.exe`` is
         declared), ``converged`` (``True`` / ``False`` / ``None`` when the engine
         cannot report it or nothing was refined), ``envelope_version``,
         ``run_id``, ``rwp``, ``r_exp``, ``gof``, ``chi2_red``, ``simulation_mode``,
         ``engine_details``, ``warnings``, ``elapsed_time``, ``method``,
         ``output_files``, ``fit_profile``, ``unit_cell_data``, ``peak_list_data``,
-        ``refined_parameters``, ``spf_peaks``, ``spf_convergence_diagnostics``.
-        A failed run never returns: it raises (below). See docs/reference/outputs.md.
+        ``refined_parameters``, ``output_recipe``, ``output_recipe_valid``,
+        ``parameter_dispositions``. GSAS-II and TOPAS results also carry
+        ``spf_peaks`` and ``spf_convergence_diagnostics``, and GSAS-II results
+        ``peak_fit``; the Outputs reference page lists every key.
+        A failed run never returns: it raises (below).
 
     Raises:
         pydantic.ValidationError: the recipe is invalid, or ``schema_name`` is
@@ -222,7 +224,7 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
     gateway.validate(recipe, verbose=verbose)
     _engine_importable(gateway)
     from powderline import reports
-    reports.clear_fixed_outputs(output_dir)       # one run's results per directory (re/30); the engine's files stay
+    reports.clear_fixed_outputs(output_dir)       # one run's results per directory; the engine's files stay
     try:
         return gateway.run(recipe, output_dir, verbose=verbose, validate_only=False, **engine_options)
     except (EngineExecutionError, ExecutionBackendError) as exc:
@@ -254,12 +256,12 @@ def _schema_name_of(recipe) -> str:
 
 
 def _record_failure(output_dir, exc, schema_name: str, engine_options: Optional[dict] = None) -> None:
-    """Write the failed envelope to ``<output_dir>/failure.json`` (re/30) and list it in ``exc.result``.
+    """Write the failed envelope to ``<output_dir>/failure.json`` and list it in ``exc.result``.
 
     Only when ``output_dir`` already exists (a backend failure before the gateway created it leaves nothing). The
     record is the envelope as the exception carries it -- or a minimal one built here when a gateway raised without
     one -- plus a ``powderline_provenance`` block in the output recipe's shape, so a directory found later says which
-    recipe, which engine version and which PowderLine failed (A191).
+    recipe, which engine version and which PowderLine failed.
     """
     import datetime as _dt
     import json

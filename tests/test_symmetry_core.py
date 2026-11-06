@@ -203,7 +203,7 @@ def test_is_group_detects_closure():
 
 
 def test_ambiguous_band_message_names_the_special_position():
-    with pytest.raises(SymmetryError, match=r"from the special position \(1/3, 2/3, 1/4\) \(multiplicity 2\)"):
+    with pytest.raises(SymmetryError, match=r"near the special position \(1/3, 2/3, 1/4\) \(multiplicity 2\)"):
         analyze_site("P 63/m m c", (0.3333, 0.6667, 0.25))
 
 

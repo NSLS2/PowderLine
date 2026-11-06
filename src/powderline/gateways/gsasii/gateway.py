@@ -2,10 +2,10 @@
 
 - **Schema layer** — ``validate`` / ``capabilities``: engine-free; runs with
   GSAS-II not installed. ``gsasii.rietveld`` / ``gsasii.spf`` recipes validate
-  against the native schemas (``gateways.gsasii.schema``, A39); any other
+  against the native schemas (``gateways.gsasii.schema``); any other
   ``schema_name`` is a validation error at ``schema_name``.
 - **Runtime layer** — ``run``: the GSAS-II refinement entry point (moved here
-  from ``powderline.kicker.run`` in re/07, P-06, behaviour unchanged). It
+  from ``powderline.kicker.run``, behaviour unchanged). It
   validates, enforces ``ENGINE_VERSION_SPEC`` against the installed GSAS-II,
   then executes in this process (``execution_mode='subprocess'``) or through
   the persistent server (``'server'`` / ``'auto'``, via ``GSASClient``), and
@@ -33,13 +33,13 @@ from powderline.registry import Gateway, check_engine_version, validate_only_sum
 from powderline.schema_core import collect_warnings
 
 NAME = "gsasii"
-#: Supported GSAS-II runtime versions (A41/A44). The pixi pin is the source
+#: Supported GSAS-II runtime versions. The pixi pin is the source
 #: revision of the pixi-build fork (pixi.toml, feature ``gsasii``); this spec is
 #: the drift guard, asserted against ``GSASII.__version__`` in that env.
 ENGINE_VERSION_SPEC = "==5.7.9"
 #: Workflows served (the native schemas).
 WORKFLOWS = tuple(schema.SCHEMA_NAMES)
-#: pixi environment providing GSAS-II + how to install it (re/08, A31).
+#: pixi environment providing GSAS-II + how to install it.
 ENV = "gsasii"
 INSTALL_COMMAND = "pixi install --frozen -e gsasii"
 
@@ -58,11 +58,11 @@ def capabilities() -> dict:
 
 
 def validate(recipe, *, verbose: bool = False):
-    """Validate a recipe (dict or model); return the validated model (A50, A59).
+    """Validate a recipe (dict or model); return the validated model.
 
     A ``gsasii.rietveld`` / ``gsasii.spf`` recipe gives its native model
     (``GsasiiRietveldRecipe`` / ``GsasiiSpfRecipe``); its simulation rule is
-    part of the schema (A88). ``verbose`` is part of the uniform gateway
+    part of the schema. ``verbose`` is part of the uniform gateway
     contract; this gateway prints nothing extra.
     """
     return schema.validate_recipe(recipe)
@@ -214,7 +214,7 @@ def run(
     # 2. Validate (raises ValidationError on failure)
     recipe = validate(recipe, verbose=verbose)
     # The recipe's structured warnings come from validating the user's recipe
-    # and are carried to the result (A115, A119): here for validate_only and
+    # and are carried to the result: here for validate_only and
     # the in-process run, by GSASClient on its paths
     warnings = collect_warnings(recipe)
 
@@ -224,7 +224,7 @@ def run(
         phases = getattr(recipe.payload, 'phases', None)
         return validate_only_summary(
             recipe, warnings, phases=len(phases) if phases else 0,
-            simulation_mode=controls.refinement_cycles == 1,  # A88
+            simulation_mode=controls.refinement_cycles == 1,
             engine={'refinement_cycles': controls.refinement_cycles}, validator=schema.validate_recipe)
 
     # 4. Ensure output directory exists
@@ -232,13 +232,13 @@ def run(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # 5. Dispatch by execution_mode; every outcome is an envelope (powderline.results) and a failed one
-    #    is raised (re/12 spec §6.2)
+    #    is raised
     if execution_mode == 'subprocess':
         from powderline.gateways.gsasii import console
         with console.capture_console() as tail:  # the engine's console text, kept for a failed run (KI-05)
             try:
                 result = run_refinement(recipe, output_dir, verbose=verbose, method='subprocess')
-            except EngineExecutionError as exc:  # R30: PowderLine's own failure, raised by the frozen executor
+            except EngineExecutionError as exc:  # PowderLine's own failure, raised by the frozen executor
                 import traceback
                 result = exc.result or envelopes.failure_envelope(
                     "engine", exc.reason, str(exc), method="subprocess", traceback=traceback.format_exc(),
@@ -314,12 +314,12 @@ def _frames(result: dict, model=None, output_dir=None) -> dict:
         pd.DataFrame(spf_diag_raw) if spf_diag_raw else pd.DataFrame()
     )
 
-    # re/12: the ok envelope fields (status, converged, envelope_version);
-    # the pre-0.2.0 top-level error/traceback keys are dropped (a failure never reaches here: it is raised).
+    # The ok envelope fields (status, converged, envelope_version); any top-level
+    # error/traceback keys are dropped (a failure never reaches here: it is raised).
     envelope = envelopes.with_status_fields(result, status="ok", converged=envelopes.converged_of(result))
     if model is None:
         return envelope
-    # re/20b (KI-04): the output recipe from GSAS-II's own names (paths.py), built and written on the side that
+    # KI-04: the output recipe from GSAS-II's own names (paths.py), built and written on the side that
     # owns output_dir (the client's, in server mode). A name the map does not know is never dropped silently:
     # the output recipe is then built from nothing refined and marked not valid, naming the parameter.
     from powderline.gateways.gsasii import paths

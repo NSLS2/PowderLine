@@ -1239,7 +1239,7 @@ def _run_action(action: str) -> None:
             print(f"\n   To view logs: pixi run -e gsasii gsas-server logs")
         else:
             print("Server is not running")
-            print(f"\n   To start: pixi run gsas-server start")
+            print(f"\n   To start: pixi run -e gsasii gsas-server start")
             print(f"   Log file: {log_file()}")
             sys.exit(1)
 

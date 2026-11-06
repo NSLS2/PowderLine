@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Cross-engine comparison of the reference cases (master plan A173; re/10 §1 item 5).
+"""Cross-engine comparison of the reference cases.
 
 For each reference case (LaB6, DRX_33) the script collects, per engine and
 profile model, the refined cell with its ESD, the difference from a stated
 reference in ppm and in σ, the uniform fit statistics (``rwp`` / ``r_exp`` /
-``gof``, A125: the same statistic over the same window points), the number of
+``gof``: the same statistic over the same window points), the number of
 parameters varied and a note on the model, and writes
 
 * ``docs/_generated/cross_engine_comparison.md`` — the tables the user page
@@ -17,11 +17,11 @@ Where each row comes from
 -------------------------
 * **GSAS-II** — a run of the committed example recipe (``examples/<case>/
   input.json``; a 0.26.0 recipe is converted in memory with
-  ``scripts/convert_recipe_026.py``, the LaB6 background peak dropped (P-01)
+  ``scripts/convert_recipe_026.py``, the LaB6 background peak dropped
   and, for LaB6, the cell freed so every engine refines it, EB-88). With
   ``--no-run`` the rows are read back from the committed JSON (their own run
   date and versions are kept).
-* **TOPAS 6** — never run here (P-08): the rows are rebuilt from the committed
+* **TOPAS 6** — never run here: the rows are rebuilt from the committed
   TOPAS 6 goldens (``tests/data/topas/native/golden/6/``) with the gateway's own
   result builder, so the statistics are the uniform ones.
 * **easydiffraction** — read from the committed goldens
@@ -221,7 +221,7 @@ def run_gsasii(case: str, work: Path) -> dict:
     recipe, report = gsasii_recipe(case)
     out = work / "gsasii" / case
     out.mkdir(parents=True, exist_ok=True)
-    result = powderline.run(recipe, out, execution_mode="subprocess")   # a failed run raises (re/12)
+    result = powderline.run(recipe, out, execution_mode="subprocess")   # a failed run raises
     if result["status"] != "ok":
         raise RuntimeError(f"GSAS-II run of {case} produced no fit: status {result['status']}")
     cells = {phase: _records_to_cell(df.to_dict("records")) for phase, df in result["unit_cell_data"].items()}
@@ -288,7 +288,7 @@ def ed_golden_row(fixture: str) -> dict:
 
 
 def ed_rerun(fixture: str, work: Path) -> dict:
-    """Run the fixture again and report the largest cell deviation from its golden (A179: rtol 1e-4)."""
+    """Run the fixture again and report the largest cell deviation from its golden (rtol 1e-4)."""
     import powderline
 
     recipe = json.loads((ED_NATIVE / f"{fixture}.json").read_text(encoding="utf-8"))

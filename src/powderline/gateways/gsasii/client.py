@@ -412,13 +412,13 @@ class GSASClient:
                     if verbose:
                         print(f"   Server started but not responding")
                     if not verbose:
-                        print(f"   Using subprocess mode (start server with: pixi run gsas-server start)")
+                        print(f"   Using subprocess mode (start server with: pixi run -e gsasii gsas-server start)")
             else:
                 if not verbose:
-                    print(f"   Using subprocess mode (start server with: pixi run gsas-server start)")
+                    print(f"   Using subprocess mode (start server with: pixi run -e gsasii gsas-server start)")
         else:
             if not verbose:
-                print(f"   Using subprocess mode (start server with: pixi run gsas-server start)")
+                print(f"   Using subprocess mode (start server with: pixi run -e gsasii gsas-server start)")
 
         # Fallback to subprocess
         if self.fallback_to_subprocess:

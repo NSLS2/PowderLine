@@ -3,7 +3,7 @@
 
 - **Schema layer** — ``validate`` / ``capabilities``: an
   ``easydiffraction.rietveld`` recipe validates against the native schema
-  (:mod:`.schema`, re/06); any other ``schema_name`` is a validation error at
+  (:mod:`.schema`); any other ``schema_name`` is a validation error at
   ``schema_name``. No easydiffraction import.
 - **Runtime layer** — ``run``: :func:`.native_run.run_native`. On a real run
   it first reads the installed easydiffraction version: missing ⇒
@@ -18,11 +18,11 @@ from powderline.gateways.easydiffraction import schema
 from powderline.registry import Gateway, check_engine_version
 
 NAME = "easydiffraction"
-#: Supported easydiffraction versions (A41/A44); mirrors the pixi pin.
+#: Supported easydiffraction versions; mirrors the pixi pin.
 ENGINE_VERSION_SPEC = "==0.21.1"
-#: Workflows served (the native schema; no SPF, A13.3).
+#: Workflows served (the native schema, no SPF).
 WORKFLOWS = tuple(schema.SCHEMA_NAMES)
-#: pixi environment providing easydiffraction + how to install it (re/08, A42).
+#: pixi environment providing easydiffraction + how to install it.
 ENV = "easydiffraction"
 INSTALL_COMMAND = "pixi install --frozen -e easydiffraction"
 
@@ -32,7 +32,7 @@ def capabilities() -> dict:
 
 
 def validate(recipe, *, verbose: bool = False):
-    """Validate a recipe (dict or model); return the validated model (A50, A59).
+    """Validate a recipe (dict or model); return the validated model.
 
     An ``easydiffraction.rietveld`` recipe gives its native model
     (``EasydiffractionRietveldRecipe``). ``verbose`` is part of the uniform
@@ -61,7 +61,7 @@ def run(recipe, output_dir, *, verbose: bool = False, validate_only: bool = Fals
     """
     from powderline.gateways.easydiffraction import native_run
 
-    model = schema.validate_recipe(recipe)  # the model validated from the user's recipe (A115)
+    model = schema.validate_recipe(recipe)  # the model validated from the user's recipe
     if validate_only:
         return native_run.run_native_validate(model)
     check_engine_version(gateway=NAME, engine="easydiffraction", installed=installed_engine_version(),

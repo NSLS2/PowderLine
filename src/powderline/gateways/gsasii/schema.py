@@ -530,7 +530,7 @@ class _Payload(CoreModel):
             found.append(StructuredWarning(
                 code="gsasii_background_default_applied",
                 message=(f"{where} left out, so PowderLine applies one fixed Chebyshev term 0.0 (no background) "
-                         "instead of GSAS-II's own default (a constant 1.0, which it would refine); state "
+                         "instead of GSAS-II's own default (a fixed constant 1.0); state "
                          "background.chebyshev to choose"),
                 field_path=where,
             ))

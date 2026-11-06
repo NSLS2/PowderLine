@@ -1,10 +1,10 @@
-"""Schema-version compatibility: declared support sets, never version arithmetic (A40, A65).
+"""Schema-version compatibility: declared support sets, never version arithmetic.
 
 Declarations:
 
 - core (:mod:`powderline.schema_core`): ``CORE_SCHEMA_VERSION`` and
   ``SUPPORTED_CORE_SCHEMAS`` (a PEP 440 specifier);
-- each gateway, as keys of its ``capabilities()`` dict (re/04-06):
+- each gateway, as keys of its ``capabilities()`` dict:
 
   - ``engine_schema_version`` -- the version new recipes are written against;
   - ``supported_engine_schemas`` -- specifier of accepted engine schema versions;

@@ -54,11 +54,11 @@ dependencies = [
 
 # Gateway plugins: each entry targets an engine-free factory
 # module. Entry-point metadata is written at install time -- after editing this
-# table, re-install the editable package (`pixi reinstall powderline`) or the
+# table, re-install the editable package (`pixi reinstall powderline --all`) or the
 # registry finds no gateways.
 # The one CLI: ``powderline <recipe.json>``; ``pixi run kicker`` runs the
 # same ``main`` (task names are pixi.toml's). Console scripts are written at install
-# time too (``pixi reinstall powderline``).
+# time too (``pixi reinstall powderline --all``).
 [project.scripts]
 powderline = "powderline.kicker:main"
 

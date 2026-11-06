@@ -1,6 +1,6 @@
 """GSAS-II gateway — post-refinement extraction and reporting.
 
-Moved verbatim from ``powderline/kicker.py`` (multi-engine refactor, re/01).
+Moved verbatim from ``powderline/kicker.py`` (multi-engine refactor).
 """
 from __future__ import annotations
 import json
@@ -56,7 +56,7 @@ def calculate_cell_esds_from_A_matrix(phase_idx: int, proj: Any, phase_name: str
         # Get covariance data
         cov_data = proj.data.get('Covariance', {}).get('data', {})
         if not cov_data:
-            # R34 (re/24, P-45): no covariance means nothing was refined (a simulation); every cell value is
+            # No covariance means nothing was refined (a simulation); every cell value is
             # a stated number, so its ESD is 0.0 under the one unit-cell report ESD rule -- not "unknown".
             return [0.0] * 7
 
@@ -565,7 +565,7 @@ def export_refined_parameters_csv(
     df['value'] = df['value'].apply(lambda x: f"{x:.6e}" if pd.notna(x) else "")
     df['esd'] = df['esd'].apply(lambda x: f"{x:.8e}" if pd.notna(x) else "")
 
-    if include_category and Path(output_file).name == "refined_parameters.csv":  # the core writer's file (A83)
+    if include_category and Path(output_file).name == "refined_parameters.csv":  # the core writer's file
         write_refined_parameters(Path(output_file).parent, pandas_csv_rows(df))
     else:
         df.to_csv(output_file, index=False, lineterminator="\n")
@@ -607,7 +607,7 @@ def _extract_fit_profile(hist: Any, output_dir: Path) -> dict:
         "q_values": q_values,
         "d_spacings": d_spacings,
     })
-    write_fit_profile(output_dir, pandas_csv_rows(fit_profile_df, "%.8f"))  # core writer (A83)
+    write_fit_profile(output_dir, pandas_csv_rows(fit_profile_df, "%.8f"))  # core writer
     return {col: fit_profile_df[col].tolist() for col in fit_profile_df.columns}
 
 
@@ -804,7 +804,7 @@ def _extract_phase_reports(
             "value": unit_cell,
             "esd": esds,
         })
-        write_unit_cell_report(output_dir, phase_name, pandas_csv_rows(unit_cell_df, "%.8f"))  # core writer (A83)
+        write_unit_cell_report(output_dir, phase_name, pandas_csv_rows(unit_cell_df, "%.8f"))  # core writer
         unit_cell_data[phase_name] = json.loads(unit_cell_df.to_json(orient='records'))
 
     # Peak list for each phase
@@ -823,7 +823,7 @@ def _extract_phase_reports(
         ]
         peak_list_df = pd.DataFrame(reflection_list, columns=headers)
         write_peak_list_report(output_dir, phase_name, pandas_csv_rows(peak_list_df, "%.8f"),
-                               columns=headers)  # core writer (A83)
+                               columns=headers)  # core writer
         peak_list_data[phase_name] = json.loads(peak_list_df.to_json(orient='records'))
 
     return unit_cell_data, peak_list_data
