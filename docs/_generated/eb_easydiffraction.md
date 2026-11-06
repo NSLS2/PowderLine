@@ -336,7 +336,7 @@
 
 {bdg-secondary}`documented` · easydiffraction 0.21.1 (CrysFML 0.8.0)
 
-**easydiffraction does:** Relative to m·|F|²·Lorentz, CrysFML's integrated intensities drift by −4 % from 3° to 15° 2θ. This biases `Uiso` by about +0.001 Å².
+**easydiffraction does:** Relative to m·|F|²·Lorentz, CrysFML's integrated intensities drift by −4 % from 3° to 15° 2θ. A drift this size is worth about 0.001 Å² of `Uiso`; a refinement compensates by lowering `Uiso`.
 
 **PowderLine does:** The calculator is recorded in every result.
 
@@ -345,7 +345,7 @@
 
 {bdg-secondary}`documented` · easydiffraction 0.21.1 (CrysPy 0.13.0, CrysFML 0.8.0)
 
-**easydiffraction does:** On GSAS-II-calculated LaB6 patterns, easydiffraction refines La's Uiso 10–22 % low. B's Uiso, the thermal expansion and GoF ≈ 1 agree. The cause is the series' profile: GSAS-II clamps its Lorentzian width to 0.001 centideg above about 10.7°, so the high-angle peaks are pure Gaussian. Neither a symmetric pseudo-Voigt nor TCH can represent that, and `Uiso` absorbs the mismatch. Simulated with a profile easydiffraction can represent, CrysPy's La Uiso is 0.00863 against 0.00858 programmed. CrysFML's is 0.00823 (−4 %), the size of its intensity drift ({ref}`EB-78 <eb-78>`).
+**easydiffraction does:** On GSAS-II-calculated LaB6 patterns, easydiffraction refines La's Uiso 10–22 % low. B's Uiso, the thermal expansion and GoF ≈ 1 agree. The cause is the series' profile: GSAS-II clamps its Lorentzian width to 0.001 centideg above about 10.7°, so the high-angle peaks are pure Gaussian. Neither a symmetric pseudo-Voigt nor TCH can represent that, and `Uiso` absorbs the mismatch. Simulated with a profile easydiffraction can represent, CrysPy's La Uiso is 0.00863 against 0.00858 programmed. CrysFML's is 0.00823 (−4 %), a difference traced to its remaining profile mismatch, not to its intensity model.
 
 **PowderLine does:** Documented, no code change. Across engines, compare cells, with the {ref}`EB-88 <eb-88>`-size offsets in mind, and the expansion. Absolute `Uiso` agrees only when the profile models agree.
 

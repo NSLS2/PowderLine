@@ -111,7 +111,7 @@ These examples show what an ill-posed refinement looks like.
 :::{admonition} These examples are ill-posed on purpose
 :class: caution
 
-They ask the data for more than they can determine. They are kept as they are,
+They ask more of the data than the data can determine. They are kept as they are,
 so you can see what that looks like and which signals PowderLine gives. Each
 one names its well-posed variant where one exists. Don't copy their
 refinement choices.

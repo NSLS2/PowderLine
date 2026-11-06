@@ -66,7 +66,7 @@ This example validates PowderLine's ability to refine structural parameters in m
 ## Expected Behavior
 
 ### Convergence:
-- Refinement should converge after 5 cycles
+- The refinement stops at its 5-cycle limit without converging (`converged: false`, warning `gsasii_fit_not_converged`)
 - Atom parameters may show larger shifts in first few cycles
 - Coordinate refinement is sensitive to starting values
 

@@ -1,7 +1,7 @@
 # Comparing engines
 
-What happens when models of the same data are refined in different engines?
-This page shows two reference cases, refined in every engine PowderLine drives and by
+What happens when models are refined against the same data in different
+engines? This page shows two reference cases, refined in every engine PowderLine drives and by
 each profile model the engines offer, and explains why the numbers differ.
 It does not rank the engines.
 
@@ -58,10 +58,13 @@ Two lessons:
   ({ref}`EB-87 <eb-87>`, warning `easydiffraction_negative_width`).
 - **Compare cells, and know what each model was free to do.**
 
-**Against the NIST certificate.** Every refined LaB6 cell sits about +80 to
-+180 ppm above the certified a = 4.156826(8) Å. The offset is common to all
-engines, so it belongs to the measurement, not to the refinement: the
-wavelength and the sample position were not refined against the standard.
+**Against the NIST certificate.** Every refined LaB6 cell sits above the
+certified a = 4.156826(8) Å: by +84 to +94 ppm with a physical asymmetry
+model, and by +161 to +181 ppm with a symmetric profile (the shift above).
+The common part is in the data, not in an engine: the pattern was integrated
+from 2D detector images without a parallax correction, which shifts the
+peaks. A zero shift has the wrong angular dependence to correct that and
+only partly compensates, so the recipes leave it at 0.
 The Δ vs GSAS-II columns are the ones that compare engines.
 
 **CrysFML depends on its starting values.** CrysFML computes in single
@@ -86,7 +89,8 @@ profile can represent, and the mismatch lands in the parameter that most
 affects intensity versus angle: Uiso. Simulated with a profile easydiffraction
 *can* represent, the same pattern gives a La Uiso of 0.00863 with CrysPy and
 0.00868 with GSAS-II, against 0.00858 programmed. CrysFML gives 0.00823, 4 %
-low, the size of its own intensity drift ({ref}`EB-78 <eb-78>`).
+low, a difference traced to its remaining profile mismatch, not to its
+intensity model.
 
 **Lesson:** compare cells and their changes across engines. Compare absolute
 displacement parameters only when the profile models agree.

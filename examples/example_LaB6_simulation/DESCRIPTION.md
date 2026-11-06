@@ -27,7 +27,7 @@ This example demonstrates simulation mode capabilities:
 - **Pure simulation mode**: All parameters have `refine_flag: false` (no optimization)
 - **Single-cycle execution**: `refinement_cycles: 1` with locked parameters (pure calculation)
 - **Complete parameter specification**: All structural, background, and instrument parameters provided
-- **Meaningless fit statistics**: `rwp` compares the simulated pattern with the placeholder data (Ycalc not optimized to Yobs); GSAS-II's own 100 % is under `engine_details`
+- **Meaningless fit statistics**: `rwp` compares the simulated pattern with the placeholder data (the measured pattern, used here only for its 2θ grid; Ycalc not optimized to Yobs); GSAS-II's own 100 % is under `engine_details`
 - **Forward calculation**: Demonstrates theoretical pattern generation from known structure
 - **Same schema as refinement**: Uses identical JSON structure with different refine_flag values
 

@@ -16,7 +16,7 @@ This example demonstrates fundamental refinement capabilities:
 - **Background modeling**: Chebyshev polynomial with 6 coefficients
 - **Instrument parameter refinement**: Thompson-Cox-Hastings pseudo-Voigt broadening (U, V, W, X, Y, Z parameters)
 - **Phase scale refinement**: Single-phase calibrant fitting for instrument profile characterization
-- **Held structural parameters**: Lattice parameter held at the certified SRM value; atomic parameters held at CIF values
+- **Held structural parameters**: Lattice parameter held at the certified SRM value; atomic parameters held at the stated values
 
 ## Input Parameters
 

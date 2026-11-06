@@ -144,7 +144,7 @@ PowderLine does not rank the engines. What each one needs and offers:
   tested). It does Rietveld refinement only, with bounds,
   and you choose one of two calculators.
 
-The same data refined in every engine, and why the numbers differ, is in
+The same data fitted in every engine, and why the numbers differ, is in
 [Comparing engines](../concepts/comparing-engines.md).
 
 ## How PowderLine treats engine quirks

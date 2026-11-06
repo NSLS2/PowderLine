@@ -56,7 +56,7 @@ Concretely, each phase's `peak_broadening.size_broadening` is set to
 
 ## Expected Behavior
 
-- **Convergence**: the refinement converges in a few cycles. Because both the
+- **Convergence**: the refinement stops at its 5-cycle limit without converging (`converged: false`, warning `gsasii_fit_not_converged`). Because both the
   isotropic strain magnitude and the strain LG-mixing term are refined, the two
   are fully correlated and GSAS-II reports a soft (SVD) singularity — see
   *Known Issues*. The reported equatorial microstrain (which combines them) is

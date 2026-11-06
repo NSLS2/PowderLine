@@ -23,7 +23,7 @@ This example demonstrates multi-phase simulation capabilities:
 - **Phase-specific outputs**: Separate reports for each phase (unit cell, peak lists)
 - **Combined pattern calculation**: Theoretical pattern from superposition of both phases
 - **Scale factor control**: Fixed phase scales (both set to 1.0)
-- **Meaningless fit statistics**: `rwp` compares the simulated pattern with the placeholder data (pure forward calculation, no fitting); GSAS-II's own 100 % is under `engine_details`
+- **Meaningless fit statistics**: `rwp` compares the simulated pattern with the placeholder data (the measured pattern, used here only for its 2θ grid; pure forward calculation, no fitting); GSAS-II's own 100 % is under `engine_details`
 
 ## Key Differences from Refinement
 

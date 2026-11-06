@@ -30,7 +30,7 @@ This example demonstrates multi-phase refinement capabilities:
 - **Multi-phase refinement**: Two phases with different crystal systems (cubic + monoclinic)
 - **Phase-specific parameters**: Independent scale, lattice, and broadening parameters for each phase
 - **Peak broadening modeling**: Both size and strain broadening with LG_eta (Lorentzian-Gaussian mixing)
-- **Held atomic structure**: Atomic positions, occupancies, and ADPs fixed (no structural parameters refined)
+- **Held atomic structure**: Atomic positions, occupancies, and ADPs fixed (no atom parameters refined)
 - **File-less payload**: Complete multi-phase dataset embedded in JSON
 - **Phase fraction quantification**: Refined scale factors enable phase fraction determination
 

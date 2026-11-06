@@ -207,8 +207,9 @@ pixi run -e easydiffraction powderline my_sample/input.json
 `path` starts with `payload.instrument` reads `held_by_user`.
 
 :::{warning}
-An instrument block belongs to one engine. GSAS-II's `U, V, W` are in
-centidegrees², TOPAS's and easydiffraction's in degrees², and `X` and `Y`
+An instrument block belongs to one engine. GSAS-II's `U, V, W` give the
+Gaussian variance σ² in centidegrees²; TOPAS's and easydiffraction's give
+the Gaussian FWHM² in degrees² (FWHM² = 8 ln 2 · σ² / 10⁴). `X` and `Y`
 swap roles. To use a GSAS-II calibration with TOPAS, refine the standard
 again with TOPAS.
 :::

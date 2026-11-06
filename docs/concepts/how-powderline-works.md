@@ -194,5 +194,5 @@ fourth gateway; nothing else changes. See
 
 - The PowderLine [preprint](https://doi.org/10.48550/arXiv.2608.17009)
   describes the design and its motivation.
-- [Comparing engines](comparing-engines.md) refines the same model against
-  the same data in every engine and explains why the numbers differ.
+- [Comparing engines](comparing-engines.md) fits the same data in every
+  engine and explains why the numbers differ.

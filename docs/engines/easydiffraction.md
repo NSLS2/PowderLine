@@ -193,8 +193,9 @@ displacement and transparency, and Hewat cylinder absorption
   settings whose computation passed for a general position and for every
   special site. The error names a setting of the same group that the
   calculator computes, or the other calculator ({ref}`EB-80 <eb-80>`).
-- **CrysFML's intensities drift** by −4 % from 3° to 15° 2θ, which biases
-  `Uiso` by about +0.001 Å² ({ref}`EB-78 <eb-78>`).
+- **CrysFML's intensities drift** by −4 % from 3° to 15° 2θ. A drift this
+  size is worth about 0.001 Å² of `Uiso`, and a refinement compensates by
+  lowering `Uiso` ({ref}`EB-78 <eb-78>`).
 - **Absolute `Uiso` agrees across engines only when the profile models
   agree.** On the LaB6 temperature series, easydiffraction refines La's
   `Uiso` 10–22 % low ({ref}`EB-93 <eb-93>`). Compare cells and expansion

@@ -66,7 +66,7 @@ The refinement uses the same disordered rocksalt battery material (DRX_33 + Li4M
 ## Expected Behavior
 
 ### Convergence:
-- Refinement should converge after 5 cycles
+- The refinement stops at its 5-cycle limit without converging (`converged: false`, warning `gsasii_fit_not_converged`)
 - The six Uij components of one atom can correlate strongly on powder data
 - In this run the O1 tensor ends unphysical: U11 = −0.170(12) Å² and
   U23 = −0.101(17) Å² (see *Positive-Definite Constraint* below)
@@ -154,9 +154,11 @@ The refined Uij values define a thermal ellipsoid representing the atom's vibrat
 - **Off-diagonal terms (U12, U13, U23)**: Correlations between axes
 
 For a general-position oxygen in the monoclinic Li4MgWO6_SG12 phase (C 1 2/m 1) all six
-components are independent; a physically reasonable result has:
-- U11, U22, U33 positive and of similar magnitude
-- U12, U13, U23 small compared with the diagonal terms
+components are independent. Judge the tensor by its principal values (the
+eigenvalues of U in Cartesian axes), not by the size of U12, U13, U23: a
+physically reasonable result has three positive principal values of similar
+magnitude. In this cell (β = 109.96°) even an isotropic atom has
+U13 = 0.34·Uiso.
 
 Significant deviations suggest:
 - Anisotropic bonding environment
