@@ -59,7 +59,7 @@ Two lessons:
 - **Compare cells, and know what each model was free to do.**
 
 **Against the NIST certificate.** Every refined LaB6 cell sits above the
-certified a = 4.156826(8) Å: by +84 to +94 ppm with a physical asymmetry
+certified a = 4.156826(80) Å: by +84 to +94 ppm with a physical asymmetry
 model, and by +161 to +181 ppm with a symmetric profile (the shift above).
 The common part is in the data, not in an engine: the pattern was integrated
 from 2D detector images without a parallax correction, which shifts the

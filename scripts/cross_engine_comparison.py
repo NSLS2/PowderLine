@@ -66,7 +66,7 @@ STEM = "cross_engine_comparison"
 #: NIST SRM 660c certificate (issued 29 October 2015): a = 0.415 682 6 nm ± 0.000 008 nm,
 #: expanded uncertainty k = 2, at 22.5 °C. Standard uncertainty = 0.000 04 Å.
 NIST_660C = {"value": 4.156826, "esd": 0.00004, "label": "NIST SRM 660c",
-             "note": "certificate 2015-10-29: 0.4156826(8) nm, k = 2, 22.5 °C"}
+             "note": "certificate 2015-10-29: 0.4156826(80) nm, k = 2, 22.5 °C"}
 
 #: The reference cases: the GSAS-II example and, per other engine, the committed fixture(s).
 CASES = {

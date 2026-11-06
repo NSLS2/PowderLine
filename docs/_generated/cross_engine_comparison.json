@@ -247,7 +247,7 @@
     "value": 4.156826,
     "esd": 4e-05,
     "label": "NIST SRM 660c",
-    "note": "certificate 2015-10-29: 0.4156826(8) nm, k = 2, 22.5 \u00b0C"
+    "note": "certificate 2015-10-29: 0.4156826(80) nm, k = 2, 22.5 \u00b0C"
    }
   },
   "DRX_33": {
@@ -558,8 +558,8 @@
   }
  ],
  "generated": {
-  "date": "2026-11-05",
-  "commit": "b6cee8a",
-  "no_run": false
+  "date": "2026-11-06",
+  "commit": "269fb7c",
+  "no_run": true
  }
 }

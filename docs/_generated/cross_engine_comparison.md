@@ -16,7 +16,7 @@ Fit window and points: 3767 points (every engine scores the same points).
 | easydiffraction | LaB6 | a | 4.157175(18) Å | -10 | -1.5 | +84 | +8.0 |
 | easydiffraction | LaB6 | a | 4.157495(17) Å | +67 | +10.2 | +161 | +15.4 |
 
-Reference for the NIST columns: NIST SRM 660c, a = 4.156826 Å (certificate 2015-10-29: 0.4156826(8) nm, k = 2, 22.5 °C; standard uncertainty 4e-05 Å used for σ).
+Reference for the NIST columns: NIST SRM 660c, a = 4.156826 Å (certificate 2015-10-29: 0.4156826(80) nm, k = 2, 22.5 °C; standard uncertainty 4e-05 Å used for σ).
 
 ### DRX_33
 
@@ -59,4 +59,4 @@ Fit window and points: 3767 points (every engine scores the same points).
 - GSAS-II 5.7.9: run 2026-11-05 (PowderLine 0.2.0, Python 3.13.16); `execution_mode='subprocess'`.
 - TOPAS: TOPAS-64 Version 6 goldens (`tests/data/topas/native/golden/6/`, TOPAS machine runs of 2026-10-09); **not executed for this page**: the rows are the gateway's result built from the committed files.
 - easydiffraction goldens (`tests/data/easydiffraction/native/golden/`, runs of 2026-10-09): easydiffraction 0.21.1, cryspy 0.13.0, crysfml 0.8.0, lmfit 1.3.4, numpy 2.4.6, scipy 1.18.0.
-- Table generated 2026-11-05 by `scripts/cross_engine_comparison.py` at commit `b6cee8a`.
+- Table generated 2026-11-06 by `scripts/cross_engine_comparison.py` at commit `269fb7c` in `--no-run` mode (GSAS-II rows from the committed JSON record).
