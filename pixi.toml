@@ -40,7 +40,7 @@ preview = ["pixi-build"]
 # ---------------------------------------------------------------------------
 
 [tasks]
-# The one CLI: `powderline <recipe.json>` after `pixi reinstall powderline`;
+# The one CLI: `powderline <recipe.json>`, installed by `pixi install --frozen`;
 # this task runs the same main. Dispatches on the recipe's schema_name.
 kicker = { cmd = "python -m powderline.kicker", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
 doctor = { cmd = "python -m powderline.kicker --doctor", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
@@ -57,7 +57,8 @@ test = { cmd = 'pytest -m "core or topas_gen"', env = { PYTHONPATH = "$PIXI_PROJ
 test-topas = { cmd = 'pytest -m "topas_gen or topas_exec"', env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
 fields-check = { cmd = "python scripts/gen_schema_field_tables.py --check", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
 # The EB/KI catalogue fragments (docs/_generated/eb_*.md, ids.md, known_issues.md) are
-# current, and every EB-/KI- id cited under src/ and docs/ has a catalogue entry.
+# current, every EB-/KI- id cited in the repository has a catalogue entry, and every
+# `you_see` item is a warning code or failure reason (hence PYTHONPATH).
 catalog-check = { cmd = "python scripts/gen_catalog.py --check", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT/src" } }
 # The example fit figures (docs/_generated/examples/*.svg) match the committed fit profiles.
 figures-check = { cmd = "python scripts/gen_example_figures.py --check" }

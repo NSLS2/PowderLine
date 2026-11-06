@@ -258,7 +258,7 @@ def main(argv=None) -> int:
         parts = [f"{label}: " + ", ".join(names)
                  for label, names in (("stale", stale), ("missing", missing), ("extra", extra)) if names]
         print(f"figures-check: under {shown}, " + "; ".join(parts)
-              + " (regenerate with scripts/gen_example_figures.py; delete an extra figure)", file=sys.stderr)
+              + " (regenerate with `pixi run python scripts/gen_example_figures.py`; delete an extra figure)", file=sys.stderr)
         return 1
     print(f"figures-check: {len(wanted)} figures under {shown} match the committed fit profiles "
           f"({len(skipped)} example recipes have none)")
