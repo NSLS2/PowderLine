@@ -1369,8 +1369,9 @@
     Gaussian. Neither a symmetric pseudo-Voigt nor TCH can represent that,
     and `Uiso` absorbs the mismatch. Simulated with a profile easydiffraction
     can represent, CrysPy's La Uiso is 0.00863 against 0.00858 programmed.
-    CrysFML's is 0.00823 (−4 %), a difference traced to its remaining profile
-    mismatch, not to its intensity model.
+    CrysFML's is 0.00823 (−4 %); its remaining profile mismatch and its
+    intensity drift (EB-78) both act on `Uiso`, and the two were not
+    separated.
   powderline_does: >-
     Documented, no code change. Across engines, compare cells, with the
     EB-88-size offsets in mind, and the expansion. Absolute `Uiso` agrees only

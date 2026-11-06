@@ -59,8 +59,8 @@ Two lessons:
 - **Compare cells, and know what each model was free to do.**
 
 **Against the NIST certificate.** Every refined LaB6 cell sits above the
-certified a = 4.156826(80) Å: by +84 to +94 ppm with a physical asymmetry
-model, and by +161 to +181 ppm with a symmetric profile (the shift above).
+certified a = 0.415 682 6 nm ± 0.000 008 nm (expanded uncertainty, k = 2): by +84 to +94 ppm with
+a physical asymmetry model, and by +161 to +181 ppm with a symmetric profile (the shift above).
 The common part is in the data, not in an engine: the pattern was integrated
 from 2D detector images without a parallax correction, which shifts the
 peaks. A zero shift has the wrong angular dependence to correct that and
@@ -89,8 +89,8 @@ profile can represent, and the mismatch lands in the parameter that most
 affects intensity versus angle: Uiso. Simulated with a profile easydiffraction
 *can* represent, the same pattern gives a La Uiso of 0.00863 with CrysPy and
 0.00868 with GSAS-II, against 0.00858 programmed. CrysFML gives 0.00823, 4 %
-low, a difference traced to its remaining profile mismatch, not to its
-intensity model.
+low; its remaining profile mismatch and its intensity drift
+({ref}`EB-78 <eb-78>`) both act on Uiso, and the two were not separated.
 
 **Lesson:** compare cells and their changes across engines. Compare absolute
 displacement parameters only when the profile models agree.
