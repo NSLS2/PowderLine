@@ -108,8 +108,10 @@ three different ways:
   times larger, so the gap is only about 3σ. The large ESD is the honest
   signal that these data don't pin the cell down. The GSAS-II recipe is the
   [teaching example](../examples/index.md#teaching-examples) `example_DRX_33`,
-  which asks the data for more than they can determine; it also stops before
-  converging (`gsasii_fit_not_converged`).
+  which asks the data for more than they can determine. It stops before
+  converging (`gsasii_fit_not_converged`), and its output recipe is not valid
+  (`output_recipe_not_valid`: a crystallite size refines negative,
+  {ref}`KI-15 <ki-15>`).
 - The monoclinic Li4MgWO6 cell differs by up to 0.2 % in the axes and 0.1° in
   β, within the correlations of a minor phase with broad peaks.
 

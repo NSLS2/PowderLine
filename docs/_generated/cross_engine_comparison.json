@@ -52,14 +52,14 @@
        "c"
       ]
      },
-     "run_date": "2026-10-13",
+     "run_date": "2026-11-05",
      "converged": true,
      "engine_rwp": 5.999947665798629,
      "recipe_report": [
       "payload.phases.LaB6.unit_cell: a, b, c freed (EB-88: every engine refines the cell)"
      ],
-     "python": "3.13.15",
-     "powderline": "0.1.1"
+     "python": "3.13.16",
+     "powderline": "0.2.0"
     },
     {
      "engine": "TOPAS",
@@ -241,7 +241,7 @@
    "reference": {
     "engine": "GSAS-II",
     "source": "run",
-    "run_date": "2026-10-13"
+    "run_date": "2026-11-05"
    },
    "nist": {
     "value": 4.156826,
@@ -257,15 +257,16 @@
      "engine_version": "5.7.9",
      "source": "run",
      "model": "FCJ axial asymmetry (SH/L 0.002); no background peak; isotropic size + microstrain refined per phase; not converged in 5 cycles",
-     "rwp": 10.828755586959636,
+     "rwp": 10.82875558695964,
      "r_exp": 9.814448722664777,
-     "gof": 1.1033483278538603,
+     "gof": 1.1033483278538605,
      "n_points": 3767,
      "parameters_varied": 21,
      "parameters_requested": 21,
      "warnings": [
       "gsasii_fit_not_converged",
-      "gsasii_refinement_message"
+      "gsasii_refinement_message",
+      "output_recipe_not_valid"
      ],
      "cell": {
       "DRX_33": {
@@ -334,12 +335,12 @@
        "beta"
       ]
      },
-     "run_date": "2026-10-13",
+     "run_date": "2026-11-05",
      "converged": false,
-     "engine_rwp": 10.828755586959636,
+     "engine_rwp": 10.82875558695964,
      "recipe_report": [],
-     "python": "3.13.15",
-     "powderline": "0.1.1"
+     "python": "3.13.16",
+     "powderline": "0.2.0"
     },
     {
      "engine": "TOPAS",
@@ -522,7 +523,7 @@
    "reference": {
     "engine": "GSAS-II",
     "source": "run",
-    "run_date": "2026-10-13"
+    "run_date": "2026-11-05"
    },
    "nist": null
   }
@@ -557,8 +558,8 @@
   }
  ],
  "generated": {
-  "date": "2026-11-04",
-  "commit": "4029d22",
-  "no_run": true
+  "date": "2026-11-05",
+  "commit": "b6cee8a",
+  "no_run": false
  }
 }
